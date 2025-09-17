@@ -572,13 +572,3 @@
     </script>
 </body>
 </html>
-<!-- GML Template System -->
-<script src="https://raw.githubusercontent.com/mikeb55/-gml-enhancement-suite/main/templates/TemplateSystem.js"></script>
-<script>
-window.addEventListener("DOMContentLoaded", async () => {
-    window.templateSystem = new TemplateSystem();
-    await window.templateSystem.init();
-    let c = document.getElementById("controls") || document.body;
-    window.templateSystem.createDropdown(c.id || "body", (g,t) => console.log("Loaded:", g));
-});
-</script>
