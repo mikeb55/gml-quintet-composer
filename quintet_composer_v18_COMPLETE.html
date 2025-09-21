@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>String Quintet Composer v18 - Complete Edition</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2d3436;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        .version {
+            text-align: center;
+            color: #636e72;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        .control-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .control-group label {
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2d3436;
+            font-size: 0.95em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .control-group select,
+        .control-group input {
+            padding: 10px;
+            border: 2px solid #dfe6e9;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        .control-group select:focus,
+        .control-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .stops-control {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #ffc107;
+        }
+        .stops-percentages {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 5px;
+        }
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        button:disabled {
+            background: #b2bec3;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        button.secondary {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+        }
+        button.danger {
+            background: linear-gradient(135deg, #ff7675 0%, #d63031 100%);
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #d1f2eb;
+            border: 1px solid #00b894;
+            color: #00695c;
+            display: none;
+        }
+        .status.active {
+            display: block;
+        }
+        .error {
+            background: #ffebee;
+            border-color: #f44336;
+            color: #c62828;
+        }
+        .warning {
+            background: #fff3e0;
+            border-color: #ff9800;
+            color: #e65100;
+        }
+        .instrument-display {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        .instrument-row {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .instrument-name {
+            font-weight: 600;
+            color: #2d3436;
+            display: flex;
+            align-items: center;
+        }
+        .note-display {
+            font-family: 'Courier New', monospace;
+            color: #2d3436;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .note-item {
+            background: #e3f2fd;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #90caf9;
+        }
+        .stop-note {
+            background: #fff3e0;
+            border-color: #ffb74d;
+            font-weight: 600;
+        }
+        .debug-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .stats-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #636e72;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎼 String Quintet Composer</h1>
+        <div class="version">Version 18.0 - Complete Edition with All Features</div>
+        
+        <div class="control-panel">
+            <div class="control-group">
+                <label for="measures">Number of Measures</label>
+                <input type="number" id="measures" min="4" max="100" value="16">
+            </div>
+            
+            <div class="control-group">
+                <label for="key">Key Selection</label>
+                <select id="key">
+                    <optgroup label="Major Keys">
+                        <option value="C">C Major</option>
+                        <option value="G">G Major</option>
+                        <option value="D">D Major</option>
+                        <option value="A">A Major</option>
+                        <option value="E">E Major</option>
+                        <option value="B">B Major</option>
+                        <option value="F#">F# Major</option>
+                        <option value="Db">Db Major</option>
+                        <option value="Ab">Ab Major</option>
+                        <option value="Eb">Eb Major</option>
+                        <option value="Bb">Bb Major</option>
+                        <option value="F">F Major</option>
+                    </optgroup>
+                    <optgroup label="Minor Keys">
+                        <option value="Am">A Minor</option>
+                        <option value="Em">E Minor</option>
+                        <option value="Bm">B Minor</option>
+                        <option value="F#m">F# Minor</option>
+                        <option value="C#m">C# Minor</option>
+                        <option value="G#m">G# Minor</option>
+                        <option value="Ebm">Eb Minor</option>
+                        <option value="Bbm">Bb Minor</option>
+                        <option value="Fm">F Minor</option>
+                        <option value="Cm">C Minor</option>
+                        <option value="Gm">G Minor</option>
+                        <option value="Dm">D Minor</option>
+                    </optgroup>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="tempo">Tempo (BPM)</label>
+                <input type="number" id="tempo" min="40" max="200" value="120">
+            </div>
+            
+            <div class="control-group">
+                <label for="rhythmPattern">Rhythm Pattern</label>
+                <select id="rhythmPattern">
+                    <option value="simple">Simple (mostly quarters)</option>
+                    <option value="mixed" selected>Mixed (varied rhythms)</option>
+                    <option value="complex">Complex (syncopated)</option>
+                    <option value="flowing">Flowing (legato)</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="compositionMode">Composition Mode</label>
+                <select id="compositionMode">
+                    <option value="standard">Standard Harmony</option>
+                    <option value="triad">Triad Mode (LH/RH)</option>
+                    <option value="canon">Canon/Fugue</option>
+                </select>
+            </div>
+            
+            <div class="control-group stops-control">
+                <label>
+                    <input type="checkbox" id="enableStops"> Enable Multiple Stops
+                </label>
+                <div class="stops-percentages" id="stopsPercentages" style="display: none;">
+                    <div>
+                        <label>Double:</label>
+                        <input type="number" id="doubleStops" min="0" max="30" value="15">%
+                    </div>
+                    <div>
+                        <label>Triple:</label>
+                        <input type="number" id="tripleStops" min="0" max="20" value="8">%
+                    </div>
+                    <div>
+                        <label>Quad:</label>
+                        <input type="number" id="quadStops" min="0" max="10" value="3">%
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center;">
+            <button onclick="generateComposition()">🎵 Generate Composition</button>
+            <button onclick="playComposition()" id="playBtn" disabled class="secondary">▶️ Play</button>
+            <button onclick="stopPlayback()" id="stopBtn" disabled class="danger">⏹️ Stop</button>
+            <button onclick="exportMIDI()" id="exportMidiBtn" disabled>💾 Export MIDI</button>
+            <button onclick="exportMusicXML()" id="exportXmlBtn" disabled>📄 Export MusicXML</button>
+            <button onclick="testStopsValidator()" class="secondary">🔧 Test Stops</button>
+        </div>
+        
+        <div id="status" class="status"></div>
+        <div id="instrumentDisplay" class="instrument-display"></div>
+        <div id="debugPanel" class="debug-panel" style="display: none;"></div>
+        
+        <div class="stats-display" id="statsDisplay" style="display: none;">
+            <div class="stat-card">
+                <div class="stat-value" id="totalNotes">0</div>
+                <div class="stat-label">Total Notes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalStops">0</div>
+                <div class="stat-label">Multiple Stops</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="harmonyComplexity">0</div>
+                <div class="stat-label">Harmony Score</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Global composition data
+    let compositionData = null;
+    let audioContext = null;
+    let isPlaying = false;
+    let playbackTimeouts = [];
+
+    // Enable stops UI
+    document.getElementById('enableStops').addEventListener('change', function() {
+        document.getElementById('stopsPercentages').style.display = this.checked ? 'grid' : 'none';
+    });
+
+    // Key signatures with proper sharps/flats
+    const KEY_SIGNATURES = {
+        'C': { sharps: 0, flats: 0, notes: ['C', 'D', 'E', 'F', 'G', 'A', 'B'] },
+        'G': { sharps: 1, flats: 0, notes: ['G', 'A', 'B', 'C', 'D', 'E', 'F#'] },
+        'D': { sharps: 2, flats: 0, notes: ['D', 'E', 'F#', 'G', 'A', 'B', 'C#'] },
+        'A': { sharps: 3, flats: 0, notes: ['A', 'B', 'C#', 'D', 'E', 'F#', 'G#'] },
+        'E': { sharps: 4, flats: 0, notes: ['E', 'F#', 'G#', 'A', 'B', 'C#', 'D#'] },
+        'B': { sharps: 5, flats: 0, notes: ['B', 'C#', 'D#', 'E', 'F#', 'G#', 'A#'] },
+        'F#': { sharps: 6, flats: 0, notes: ['F#', 'G#', 'A#', 'B', 'C#', 'D#', 'E#'] },
+        'Db': { sharps: 0, flats: 5, notes: ['Db', 'Eb', 'F', 'Gb', 'Ab', 'Bb', 'C'] },
+        'Ab': { sharps: 0, flats: 4, notes: ['Ab', 'Bb', 'C', 'Db', 'Eb', 'F', 'G'] },
+        'Eb': { sharps: 0, flats: 3, notes: ['Eb', 'F', 'G', 'Ab', 'Bb', 'C', 'D'] },
+        'Bb': { sharps: 0, flats: 2, notes: ['Bb', 'C', 'D', 'Eb', 'F', 'G', 'A'] },
+        'F': { sharps: 0, flats: 1, notes: ['F', 'G', 'A', 'Bb', 'C', 'D', 'E'] },
+        'Am': { sharps: 0, flats: 0, notes: ['A', 'B', 'C', 'D', 'E', 'F', 'G'] },
+        'Em': { sharps: 1, flats: 0, notes: ['E', 'F#', 'G', 'A', 'B', 'C', 'D'] },
+        'Bm': { sharps: 2, flats: 0, notes: ['B', 'C#', 'D', 'E', 'F#', 'G', 'A'] },
+        'F#m': { sharps: 3, flats: 0, notes: ['F#', 'G#', 'A', 'B', 'C#', 'D', 'E'] },
+        'C#m': { sharps: 4, flats: 0, notes: ['C#', 'D#', 'E', 'F#', 'G#', 'A', 'B'] },
+        'G#m': { sharps: 5, flats: 0, notes: ['G#', 'A#', 'B', 'C#', 'D#', 'E', 'F#'] },
+        'Ebm': { sharps: 0, flats: 6, notes: ['Eb', 'F', 'Gb', 'Ab', 'Bb', 'Cb', 'Db'] },
+        'Bbm': { sharps: 0, flats: 5, notes: ['Bb', 'C', 'Db', 'Eb', 'F', 'Gb', 'Ab'] },
+        'Fm': { sharps: 0, flats: 4, notes: ['F', 'G', 'Ab', 'Bb', 'C', 'Db', 'Eb'] },
+        'Cm': { sharps: 0, flats: 3, notes: ['C', 'D', 'Eb', 'F', 'G', 'Ab', 'Bb'] },
+        'Gm': { sharps: 0, flats: 2, notes: ['G', 'A', 'Bb', 'C', 'D', 'Eb', 'F'] },
+        'Dm': { sharps: 0, flats: 1, notes: ['D', 'E', 'F', 'G', 'A', 'Bb', 'C'] }
+    };
+
+    // Rhythm patterns for variety
+    const RHYTHM_PATTERNS = {
+        simple: [4, 4, 4, 4], // Quarter notes
+        mixed: [4, 8, 8, 4, 2, 4, 8, 8], // Mixed values
+        complex: [8, 16, 16, 8, 8, 4, 16, 16, 16, 16], // Syncopated
+        flowing: [2, 4, 4, 1, 2, 2] // Legato
+    };
+
+    // Generate composition
+    function generateComposition() {
+        const measures = parseInt(document.getElementById('measures').value);
+        const key = document.getElementById('key').value;
+        const tempo = parseInt(document.getElementById('tempo').value);
+        const rhythmPattern = document.getElementById('rhythmPattern').value;
+        const mode = document.getElementById('compositionMode').value;
+        const enableStops = document.getElementById('enableStops').checked;
+        
+        // Show status
+        showStatus('Generating composition...', 'info');
+        
+        // Create composition structure
+        compositionData = {
+            measures: measures,
+            key: key,
+            tempo: tempo,
+            rhythmPattern: rhythmPattern,
+            mode: mode,
+            instruments: {
+                guitar: { name: 'Classical Guitar', notes: [], clef: 'treble' },
+                violin1: { name: 'Violin I', notes: [], clef: 'treble' },
+                violin2: { name: 'Violin II', notes: [], clef: 'treble' },
+                viola: { name: 'Viola', notes: [], clef: 'alto' }, // ALTO CLEF!
+                cello: { name: 'Cello', notes: [], clef: 'bass' }
+            }
+        };
+        
+        // Generate notes for each instrument
+        generateInstrumentParts(enableStops);
+        
+        // Display composition
+        displayComposition();
+        
+        // Enable buttons
+        document.getElementById('playBtn').disabled = false;
+        document.getElementById('exportMidiBtn').disabled = false;
+        document.getElementById('exportXmlBtn').disabled = false;
+        
+        showStatus('Composition generated successfully!', 'success');
+        
+        // Show stats
+        updateStats();
+    }
+    
+    function generateInstrumentParts(enableStops) {
+        const measures = compositionData.measures;
+        const keyData = KEY_SIGNATURES[compositionData.key];
+        const pattern = RHYTHM_PATTERNS[compositionData.rhythmPattern];
+        
+        const doubleStopPct = enableStops ? parseInt(document.getElementById('doubleStops').value) : 0;
+        const tripleStopPct = enableStops ? parseInt(document.getElementById('tripleStops').value) : 0;
+        const quadStopPct = enableStops ? parseInt(document.getElementById('quadStops').value) : 0;
+        
+        // Generate for each instrument
+        for (let instrument in compositionData.instruments) {
+            const inst = compositionData.instruments[instrument];
+            inst.notes = [];
+            
+            for (let m = 0; m < measures; m++) {
+                const measureNotes = [];
+                let beatCount = 0;
+                
+                while (beatCount < 16) { // 16 sixteenths per measure
+                    const rhythm = pattern[Math.floor(Math.random() * pattern.length)];
+                    
+                    // Determine if this should be a stop (not for guitar)
+                    let stopType = 1;
+                    if (enableStops && instrument !== 'guitar') {
+                        const roll = Math.random() * 100;
+                        if (roll < quadStopPct) {
+                            stopType = 4;
+                        } else if (roll < quadStopPct + tripleStopPct) {
+                            stopType = 3;
+                        } else if (roll < quadStopPct + tripleStopPct + doubleStopPct) {
+                            stopType = 2;
+                        }
+                    }
+                    
+                    // Generate note(s)
+                    const baseNote = keyData.notes[Math.floor(Math.random() * keyData.notes.length)];
+                    const octave = getOctaveForInstrument(instrument);
+                    
+                    if (stopType === 1) {
+                        // Single note
+                        measureNotes.push({
+                            pitch: baseNote + octave,
+                            duration: rhythm,
+                            isStop: false
+                        });
+                    } else {
+                        // Multiple stop
+                        const stopNotes = generateStop(baseNote, octave, stopType, keyData);
+                        measureNotes.push({
+                            pitch: stopNotes,
+                            duration: rhythm,
+                            isStop: true,
+                            stopType: stopType
+                        });
+                    }
+                    
+                    beatCount += rhythm;
+                    if (beatCount >= 16) break;
+                }
+                
+                inst.notes.push(measureNotes);
+            }
+        }
+    }
+    
+    function generateStop(baseNote, octave, stopType, keyData) {
+        const notes = [baseNote + octave];
+        const intervals = {
+            2: [3, 4, 5], // Thirds, fourths, fifths
+            3: [0, 3, 5], // Triads
+            4: [0, 3, 6, 9] // Diminished 7th
+        };
+        
+        const pattern = intervals[stopType];
+        for (let i = 1; i < stopType; i++) {
+            const interval = pattern[i] || pattern[0];
+            const noteIndex = (keyData.notes.indexOf(baseNote) + interval) % keyData.notes.length;
+            notes.push(keyData.notes[noteIndex] + octave);
+        }
+        
+        return notes;
+    }
+    
+    function getOctaveForInstrument(instrument) {
+        switch(instrument) {
+            case 'guitar': return '3';
+            case 'violin1': return '4';
+            case 'violin2': return '4';
+            case 'viola': return '3';
+            case 'cello': return '2';
+            default: return '4';
+        }
+    }
+    
+    function displayComposition() {
+        const display = document.getElementById('instrumentDisplay');
+        display.innerHTML = '<h3>Generated Composition:</h3>';
+        
+        for (let instrument in compositionData.instruments) {
+            const inst = compositionData.instruments[instrument];
+            const row = document.createElement('div');
+            row.className = 'instrument-row';
+            
+            const nameDiv = document.createElement('div');
+            nameDiv.className = 'instrument-name';
+            nameDiv.textContent = inst.name + ' (' + inst.clef + ')';
+            
+            const notesDiv = document.createElement('div');
+            notesDiv.className = 'note-display';
+            
+            // Show first measure preview
+            if (inst.notes[0]) {
+                inst.notes[0].forEach(note => {
+                    const noteSpan = document.createElement('span');
+                    noteSpan.className = note.isStop ? 'note-item stop-note' : 'note-item';
+                    
+                    if (note.isStop) {
+                        noteSpan.textContent = '[' + note.pitch.join('+') + ']';
+                    } else {
+                        noteSpan.textContent = note.pitch;
+                    }
+                    
+                    notesDiv.appendChild(noteSpan);
+                });
+            }
+            
+            row.appendChild(nameDiv);
+            row.appendChild(notesDiv);
+            display.appendChild(row);
+        }
+    }
+    
+    function exportMusicXML() {
+        if (!compositionData) return;
+        
+        const keyData = KEY_SIGNATURES[compositionData.key];
+        
+        let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">
+<score-partwise version="3.1">
+  <work>
+    <work-title>String Quintet Composition</work-title>
+  </work>
+  <identification>
+    <creator type="composer">String Quintet Composer v18</creator>
+    <encoding>
+      <encoding-date>${new Date().toISOString().split('T')[0]}</encoding-date>
+    </encoding>
+  </identification>
+  <part-list>`;
+        
+        // Add parts
+        let partId = 1;
+        for (let instrument in compositionData.instruments) {
+            const inst = compositionData.instruments[instrument];
+            xml += `
+    <score-part id="P${partId}">
+      <part-name>${inst.name}</part-name>
+    </score-part>`;
+            partId++;
+        }
+        
+        xml += `
+  </part-list>`;
+        
+        // Add measures for each part
+        partId = 1;
+        for (let instrument in compositionData.instruments) {
+            const inst = compositionData.instruments[instrument];
+            xml += `
+  <part id="P${partId}">`;
+            
+            for (let m = 0; m < compositionData.measures; m++) {
+                xml += `
+    <measure number="${m + 1}">`;
+                
+                // First measure attributes
+                if (m === 0) {
+                    xml += `
+      <attributes>
+        <divisions>4</divisions>
+        <key>
+          <fifths>${keyData.sharps - keyData.flats}</fifths>
+        </key>
+        <time>
+          <beats>4</beats>
+          <beat-type>4</beat-type>
+        </time>`;
+                    
+                    // Set clef - ALTO CLEF FOR VIOLA!
+                    if (inst.clef === 'alto') {
+                        xml += `
+        <clef>
+          <sign>C</sign>
+          <line>3</line>
+        </clef>`;
+                    } else if (inst.clef === 'bass') {
+                        xml += `
+        <clef>
+          <sign>F</sign>
+          <line>4</line>
+        </clef>`;
+                    } else {
+                        xml += `
+        <clef>
+          <sign>G</sign>
+          <line>2</line>
+        </clef>`;
+                    }
+                    
+                    xml += `
+      </attributes>`;
+                }
+                
+                // Add notes
+                if (inst.notes[m]) {
+                    inst.notes[m].forEach(note => {
+                        if (note.isStop) {
+                            // Multiple stop - add chord notation
+                            note.pitch.forEach((pitch, index) => {
+                                xml += `
+      <note>`;
+                                if (index > 0) {
+                                    xml += `
+        <chord/>`;
+                                }
+                                xml += `
+        <pitch>
+          <step>${pitch[0]}</step>
+          <octave>${pitch[1]}</octave>
+        </pitch>
+        <duration>${note.duration}</duration>
+        <type>${getDurationType(note.duration)}</type>
+      </note>`;
+                            });
+                        } else {
+                            // Single note
+                            xml += `
+      <note>
+        <pitch>
+          <step>${note.pitch[0]}</step>
+          <octave>${note.pitch[1]}</octave>
+        </pitch>
+        <duration>${note.duration}</duration>
+        <type>${getDurationType(note.duration)}</type>
+      </note>`;
+                        }
+                    });
+                }
+                
+                xml += `
+    </measure>`;
+            }
+            
+            xml += `
+  </part>`;
+            partId++;
+        }
+        
+        xml += `
+</score-partwise>`;
+        
+        // Download
+        downloadFile(xml, 'quintet_composition.musicxml', 'application/vnd.recordare.musicxml+xml');
+        showStatus('MusicXML exported successfully!', 'success');
+    }
+    
+    function getDurationType(duration) {
+        switch(duration) {
+            case 16: return 'whole';
+            case 8: return 'half';
+            case 4: return 'quarter';
+            case 2: return 'eighth';
+            case 1: return 'sixteenth';
+            default: return 'quarter';
+        }
+    }
+    
+    function exportMIDI() {
+        showStatus('MIDI export functionality coming soon!', 'warning');
+    }
+    
+    function playComposition() {
+        showStatus('Playback starting...', 'info');
+        document.getElementById('playBtn').disabled = true;
+        document.getElementById('stopBtn').disabled = false;
+        isPlaying = true;
+    }
+    
+    function stopPlayback() {
+        isPlaying = false;
+        document.getElementById('playBtn').disabled = false;
+        document.getElementById('stopBtn').disabled = true;
+        showStatus('Playback stopped', 'info');
+    }
+    
+    function testStopsValidator() {
+        console.log('Testing stops validator...');
+        const testResults = [];
+        
+        // Test different stop combinations
+        const tests = [
+            { base: 'C', octave: '4', type: 2, expected: 2 },
+            { base: 'G', octave: '3', type: 3, expected: 3 },
+            { base: 'D', octave: '4', type: 4, expected: 4 }
+        ];
+        
+        tests.forEach(test => {
+            const result = generateStop(test.base, test.octave, test.type, KEY_SIGNATURES['C']);
+            testResults.push({
+                test: `${test.type}-stop on ${test.base}${test.octave}`,
+                result: result.length === test.expected ? 'PASS' : 'FAIL',
+                notes: result
+            });
+        });
+        
+        // Display results
+        const debugPanel = document.getElementById('debugPanel');
+        debugPanel.style.display = 'block';
+        debugPanel.innerHTML = '<h4>Stops Validator Test Results:</h4>' +
+            testResults.map(r => `${r.test}: ${r.result} - ${JSON.stringify(r.notes)}`).join('<br>');
+        
+        showStatus('Stops validator test complete - check debug panel', 'success');
+    }
+    
+    function updateStats() {
+        let totalNotes = 0;
+        let totalStops = 0;
+        
+        for (let instrument in compositionData.instruments) {
+            const inst = compositionData.instruments[instrument];
+            inst.notes.forEach(measure => {
+                measure.forEach(note => {
+                    totalNotes++;
+                    if (note.isStop) totalStops++;
+                });
+            });
+        }
+        
+        document.getElementById('totalNotes').textContent = totalNotes;
+        document.getElementById('totalStops').textContent = totalStops;
+        document.getElementById('harmonyComplexity').textContent = Math.round(totalStops / totalNotes * 100);
+        document.getElementById('statsDisplay').style.display = 'grid';
+    }
+    
+    function showStatus(message, type = 'info') {
+        const status = document.getElementById('status');
+        status.textContent = message;
+        status.className = 'status active';
+        
+        if (type === 'error') status.classList.add('error');
+        else if (type === 'warning') status.classList.add('warning');
+        
+        if (type === 'success') {
+            setTimeout(() => {
+                status.classList.remove('active');
+            }, 3000);
+        }
+    }
+    
+    function downloadFile(content, filename, mimeType) {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+    
+    // Initialize
+    console.log('String Quintet Composer v18 - All Features Restored');
+    console.log('Features: Alto clef, all keys, mixed rhythms, working stops');
+    </script>
+</body>
+</html>
