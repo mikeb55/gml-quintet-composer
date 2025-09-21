@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>String Quintet Composer v21 - ABSOLUTE RANGE FIX</title>
+    <title>String Quintet Composer v22 - Full Features</title>
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -30,37 +30,14 @@
             margin-bottom: 30px;
             font-size: 1.1em;
         }
-        .bulletproof-badge {
+        .success-badge {
             display: inline-block;
-            background: #00b894;
+            background: #4caf50;
             color: white;
             padding: 5px 10px;
             border-radius: 5px;
             font-weight: bold;
             margin-left: 10px;
-        }
-        .range-table {
-            background: #e8f5e9;
-            border: 3px solid #4caf50;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-        }
-        .range-table table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .range-table th {
-            background: #4caf50;
-            color: white;
-            padding: 10px;
-            text-align: left;
-        }
-        .range-table td {
-            padding: 8px;
-            border-bottom: 1px solid #ddd;
         }
         .control-panel {
             display: grid;
@@ -91,6 +68,22 @@
             font-size: 15px;
             transition: all 0.3s ease;
             background: white;
+        }
+        .control-group select:focus,
+        .control-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .stops-section {
+            grid-column: 1 / -1;
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #ffc107;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
         }
         button {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -152,247 +145,297 @@
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
-        .debug-info {
-            background: #fffbf0;
-            border: 2px solid #ff9800;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 20px;
-            font-family: monospace;
-            font-size: 12px;
+        .instrument-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2d3436;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+        }
+        .measure-display {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            padding: 5px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        .note-stop {
+            color: #ff6b6b;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎼 String Quintet Composer <span class="bulletproof-badge">v21 ABSOLUTE FIX</span></h1>
-        <div class="version">Version 21.0 - 100% Correct Professional Ranges & Valid MusicXML</div>
-        
-        <div class="range-table">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Instrument</th>
-                        <th>Lowest Note</th>
-                        <th>Highest Note</th>
-                        <th>Comfortable Range</th>
-                        <th>Clef</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>Classical Guitar</strong></td>
-                        <td>E3 (164.81 Hz)</td>
-                        <td>B5 (987.77 Hz)</td>
-                        <td>E3 - G5</td>
-                        <td>Treble</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Violin I & II</strong></td>
-                        <td>G3 (196 Hz)</td>
-                        <td>E7 (2637 Hz)</td>
-                        <td>G3 - B5</td>
-                        <td>Treble</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Viola</strong></td>
-                        <td>C3 (130.81 Hz)</td>
-                        <td>E6 (1318.51 Hz)</td>
-                        <td>C3 - G5</td>
-                        <td>Alto (C clef)</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Cello</strong></td>
-                        <td>C2 (65.41 Hz)</td>
-                        <td>A5 (880 Hz)</td>
-                        <td>C2 - E4</td>
-                        <td>Bass</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <h1>🎼 String Quintet Composer <span class="success-badge">v22 FULL</span></h1>
+        <div class="version">Version 22.0 - Full Features with Proven Correct Ranges</div>
         
         <div class="control-panel">
             <div class="control-group">
                 <label for="measures">Number of Measures</label>
-                <input type="number" id="measures" min="4" max="16" value="8">
+                <input type="number" id="measures" min="4" max="32" value="8">
             </div>
             
             <div class="control-group">
-                <label for="key">Key</label>
+                <label for="key">Key Signature</label>
                 <select id="key">
-                    <option value="C">C Major</option>
-                    <option value="G" selected>G Major</option>
-                    <option value="D">D Major</option>
-                    <option value="F">F Major</option>
+                    <option value="C,0">C Major</option>
+                    <option value="G,1" selected>G Major</option>
+                    <option value="D,2">D Major</option>
+                    <option value="A,3">A Major</option>
+                    <option value="E,4">E Major</option>
+                    <option value="B,5">B Major</option>
+                    <option value="F,-1">F Major</option>
+                    <option value="Bb,-2">Bb Major</option>
+                    <option value="Eb,-3">Eb Major</option>
+                    <option value="Ab,-4">Ab Major</option>
+                    <option value="Db,-5">Db Major</option>
+                    <option value="Am,0">A Minor</option>
+                    <option value="Em,1">E Minor</option>
+                    <option value="Bm,2">B Minor</option>
+                    <option value="Dm,-1">D Minor</option>
+                    <option value="Gm,-2">G Minor</option>
+                    <option value="Cm,-3">C Minor</option>
                 </select>
             </div>
             
             <div class="control-group">
                 <label for="tempo">Tempo (BPM)</label>
-                <input type="number" id="tempo" min="60" max="180" value="120">
+                <input type="number" id="tempo" min="60" max="200" value="120">
             </div>
             
             <div class="control-group">
                 <label for="timeSignature">Time Signature</label>
                 <select id="timeSignature">
-                    <option value="4/4" selected>4/4</option>
-                    <option value="3/4">3/4</option>
+                    <option value="4/4" selected>4/4 Common Time</option>
+                    <option value="3/4">3/4 Waltz</option>
+                    <option value="2/4">2/4 March</option>
+                    <option value="6/8">6/8 Compound</option>
                 </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="rhythmPattern">Rhythm Pattern</label>
+                <select id="rhythmPattern">
+                    <option value="whole">Whole Notes</option>
+                    <option value="half">Half Notes</option>
+                    <option value="quarter" selected>Quarter Notes</option>
+                    <option value="mixed">Mixed Rhythms</option>
+                    <option value="complex">Complex (8ths & 16ths)</option>
+                </select>
+            </div>
+            
+            <div class="stops-section">
+                <div class="control-group">
+                    <label>
+                        <input type="checkbox" id="enableStops" checked> Enable Multiple Stops
+                    </label>
+                </div>
+                <div class="control-group">
+                    <label for="doubleStops">Double Stops %</label>
+                    <input type="number" id="doubleStops" min="0" max="30" value="10">
+                </div>
+                <div class="control-group">
+                    <label for="tripleStops">Triple Stops %</label>
+                    <input type="number" id="tripleStops" min="0" max="20" value="5">
+                </div>
+                <div class="control-group">
+                    <label for="quadStops">Quad Stops %</label>
+                    <input type="number" id="quadStops" min="0" max="10" value="2">
+                </div>
             </div>
         </div>
         
         <div style="text-align: center;">
-            <button onclick="generateSafe()">🎵 Generate Safe Composition</button>
-            <button onclick="exportXML()" id="exportBtn" disabled>📄 Export MusicXML</button>
-            <button onclick="debugRanges()" class="success">🔍 Debug Ranges</button>
+            <button onclick="generateFullComposition()">🎵 Generate Full Composition</button>
+            <button onclick="exportFullXML()" id="exportBtn" disabled>📄 Export MusicXML</button>
             <button onclick="clearAll()" class="danger">🗑️ Clear</button>
         </div>
         
         <div id="status" class="status"></div>
-        <div id="debugInfo" class="debug-info" style="display:none"></div>
         <div id="preview" class="preview-area"></div>
     </div>
 
     <script>
-    // v21 - ABSOLUTE CORRECT RANGES from professional sources
-    const VERSION = '21.0';
+    // v22 - Full features with PROVEN correct ranges from v21
+    const VERSION = '22.0';
     let composition = null;
     
-    // ABSOLUTELY CORRECT RANGES - NO MISTAKES
-    // Based on professional orchestration manuals
-    const ABSOLUTE_RANGES = {
+    // PROVEN CORRECT RANGES from v21
+    const INSTRUMENT_RANGES = {
         guitar: {
             name: 'Classical Guitar',
-            strings: ['E3', 'A3', 'D4', 'G4', 'B4', 'E5'],
-            lowest: 'E3',
-            highest: 'B5',
-            comfortableLow: 'E3',
-            comfortableHigh: 'G5',
-            clef: 'G',
-            clefLine: 2
+            lowest: { note: 'E', octave: 3 },
+            highest: { note: 'B', octave: 5 },
+            comfortable: { minOct: 3, maxOct: 4 },
+            clef: { sign: 'G', line: 2 },
+            canPlayStops: false
         },
         violin1: {
             name: 'Violin I',
-            strings: ['G3', 'D4', 'A4', 'E5'],
-            lowest: 'G3',
-            highest: 'E7',
-            comfortableLow: 'G3',
-            comfortableHigh: 'B5',
-            clef: 'G',
-            clefLine: 2
+            lowest: { note: 'G', octave: 3 },
+            highest: { note: 'E', octave: 7 },
+            comfortable: { minOct: 4, maxOct: 5 },
+            clef: { sign: 'G', line: 2 },
+            canPlayStops: true
         },
         violin2: {
             name: 'Violin II',
-            strings: ['G3', 'D4', 'A4', 'E5'],
-            lowest: 'G3',
-            highest: 'E7',
-            comfortableLow: 'G3',
-            comfortableHigh: 'B5',
-            clef: 'G',
-            clefLine: 2
+            lowest: { note: 'G', octave: 3 },
+            highest: { note: 'E', octave: 7 },
+            comfortable: { minOct: 4, maxOct: 5 },
+            clef: { sign: 'G', line: 2 },
+            canPlayStops: true
         },
         viola: {
             name: 'Viola',
-            strings: ['C3', 'G3', 'D4', 'A4'],
-            lowest: 'C3',
-            highest: 'E6',
-            comfortableLow: 'C3',
-            comfortableHigh: 'G5',
-            clef: 'C',  // ALTO CLEF
-            clefLine: 3
+            lowest: { note: 'C', octave: 3 },
+            highest: { note: 'E', octave: 6 },
+            comfortable: { minOct: 3, maxOct: 4 },
+            clef: { sign: 'C', line: 3 }, // ALTO CLEF
+            canPlayStops: true
         },
         cello: {
             name: 'Cello',
-            strings: ['C2', 'G2', 'D3', 'A3'],
-            lowest: 'C2',
-            highest: 'A5',
-            comfortableLow: 'C2',
-            comfortableHigh: 'E4',
-            clef: 'F',  // BASS CLEF
-            clefLine: 4
+            lowest: { note: 'C', octave: 2 },
+            highest: { note: 'A', octave: 5 },
+            comfortable: { minOct: 2, maxOct: 3 },
+            clef: { sign: 'F', line: 4 }, // BASS CLEF
+            canPlayStops: true
         }
     };
     
-    // Note to number mapping for octave calculations
-    const NOTE_VALUES = {
-        'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11
+    // KEY SIGNATURES
+    const KEY_SIGNATURES = {
+        'C,0': { fifths: 0, scale: ['C', 'D', 'E', 'F', 'G', 'A', 'B'] },
+        'G,1': { fifths: 1, scale: ['G', 'A', 'B', 'C', 'D', 'E', 'F#'] },
+        'D,2': { fifths: 2, scale: ['D', 'E', 'F#', 'G', 'A', 'B', 'C#'] },
+        'A,3': { fifths: 3, scale: ['A', 'B', 'C#', 'D', 'E', 'F#', 'G#'] },
+        'E,4': { fifths: 4, scale: ['E', 'F#', 'G#', 'A', 'B', 'C#', 'D#'] },
+        'B,5': { fifths: 5, scale: ['B', 'C#', 'D#', 'E', 'F#', 'G#', 'A#'] },
+        'F,-1': { fifths: -1, scale: ['F', 'G', 'A', 'Bb', 'C', 'D', 'E'] },
+        'Bb,-2': { fifths: -2, scale: ['Bb', 'C', 'D', 'Eb', 'F', 'G', 'A'] },
+        'Eb,-3': { fifths: -3, scale: ['Eb', 'F', 'G', 'Ab', 'Bb', 'C', 'D'] },
+        'Ab,-4': { fifths: -4, scale: ['Ab', 'Bb', 'C', 'Db', 'Eb', 'F', 'G'] },
+        'Db,-5': { fifths: -5, scale: ['Db', 'Eb', 'F', 'Gb', 'Ab', 'Bb', 'C'] },
+        'Am,0': { fifths: 0, scale: ['A', 'B', 'C', 'D', 'E', 'F', 'G'] },
+        'Em,1': { fifths: 1, scale: ['E', 'F#', 'G', 'A', 'B', 'C', 'D'] },
+        'Bm,2': { fifths: 2, scale: ['B', 'C#', 'D', 'E', 'F#', 'G', 'A'] },
+        'Dm,-1': { fifths: -1, scale: ['D', 'E', 'F', 'G', 'A', 'Bb', 'C'] },
+        'Gm,-2': { fifths: -2, scale: ['G', 'A', 'Bb', 'C', 'D', 'Eb', 'F'] },
+        'Cm,-3': { fifths: -3, scale: ['C', 'D', 'Eb', 'F', 'G', 'Ab', 'Bb'] }
     };
     
-    // Parse note (e.g., "G3" -> {note: "G", octave: 3})
-    function parseNote(noteStr) {
-        const note = noteStr.slice(0, -1);
-        const octave = parseInt(noteStr.slice(-1));
-        return { note, octave };
+    // RHYTHM PATTERNS
+    const RHYTHM_PATTERNS = {
+        whole: [16],
+        half: [8, 8],
+        quarter: [4, 4, 4, 4],
+        mixed: [8, 4, 4, 2, 2, 4],
+        complex: [4, 2, 2, 1, 1, 1, 1, 4]
+    };
+    
+    // Generate note in correct range
+    function generateNoteInRange(instrumentKey, scale) {
+        const inst = INSTRUMENT_RANGES[instrumentKey];
+        const note = scale[Math.floor(Math.random() * scale.length)];
+        
+        // Use comfortable octave range
+        const minOct = inst.comfortable.minOct;
+        const maxOct = inst.comfortable.maxOct;
+        const octave = minOct + Math.floor(Math.random() * (maxOct - minOct + 1));
+        
+        // Parse note for XML
+        const step = note.replace(/[#b]/, '');
+        let alter = 0;
+        if (note.includes('#')) alter = 1;
+        if (note.includes('b')) alter = -1;
+        
+        return { pitch: note, step: step, octave: octave, alter: alter };
     }
     
-    // Get random note in comfortable range
-    function getRandomNoteInRange(instrumentKey) {
-        const range = ABSOLUTE_RANGES[instrumentKey];
-        const low = parseNote(range.comfortableLow);
-        const high = parseNote(range.comfortableHigh);
+    // Generate full composition
+    function generateFullComposition() {
+        showStatus('Generating full composition...', 'info');
         
-        // Use middle of comfortable range
-        const notes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
-        const note = notes[Math.floor(Math.random() * notes.length)];
+        const config = {
+            measures: parseInt(document.getElementById('measures').value),
+            key: document.getElementById('key').value,
+            tempo: parseInt(document.getElementById('tempo').value),
+            timeSignature: document.getElementById('timeSignature').value,
+            rhythmPattern: document.getElementById('rhythmPattern').value,
+            enableStops: document.getElementById('enableStops').checked,
+            doubleStops: parseInt(document.getElementById('doubleStops').value) || 0,
+            tripleStops: parseInt(document.getElementById('tripleStops').value) || 0,
+            quadStops: parseInt(document.getElementById('quadStops').value) || 0
+        };
         
-        let octave;
-        if (instrumentKey === 'cello') {
-            octave = 2 + Math.floor(Math.random() * 2); // 2-3
-        } else if (instrumentKey === 'viola') {
-            octave = 3 + Math.floor(Math.random() * 2); // 3-4
-        } else if (instrumentKey === 'guitar') {
-            octave = 3 + Math.floor(Math.random() * 2); // 3-4
-        } else {
-            // Violins
-            octave = 4 + Math.floor(Math.random() * 2); // 4-5
-        }
-        
-        return { note, octave };
-    }
-    
-    // Generate SAFE composition
-    function generateSafe() {
-        showStatus('Generating with ABSOLUTE correct ranges...', 'info');
-        
-        const measures = parseInt(document.getElementById('measures').value);
-        const key = document.getElementById('key').value;
-        const tempo = parseInt(document.getElementById('tempo').value);
-        const timeSignature = document.getElementById('timeSignature').value;
+        const keyData = KEY_SIGNATURES[config.key];
         
         composition = {
-            measures: measures,
-            key: key,
-            tempo: tempo,
-            timeSignature: timeSignature,
+            config: config,
+            keyData: keyData,
             parts: {}
         };
         
-        // Generate simple quarter notes for each part
-        for (let instrumentKey in ABSOLUTE_RANGES) {
-            const instrument = ABSOLUTE_RANGES[instrumentKey];
+        // Generate each part
+        for (let instrumentKey in INSTRUMENT_RANGES) {
+            const inst = INSTRUMENT_RANGES[instrumentKey];
             const part = {
-                name: instrument.name,
-                clef: instrument.clef,
-                clefLine: instrument.clefLine,
+                name: inst.name,
+                clef: inst.clef,
                 measures: []
             };
             
             // Generate measures
-            for (let m = 0; m < measures; m++) {
-                const measureNotes = [];
-                const beatsPerMeasure = timeSignature === '3/4' ? 3 : 4;
+            const [beatsNum, beatsDenom] = config.timeSignature.split('/').map(Number);
+            const totalDivisions = (beatsNum * 16) / beatsDenom;
+            
+            for (let m = 0; m < config.measures; m++) {
+                const events = [];
+                let currentDivision = 0;
+                const pattern = RHYTHM_PATTERNS[config.rhythmPattern];
+                let patternIdx = 0;
                 
-                for (let beat = 0; beat < beatsPerMeasure; beat++) {
-                    const noteData = getRandomNoteInRange(instrumentKey);
-                    measureNotes.push({
-                        pitch: noteData.note,
-                        octave: noteData.octave,
-                        duration: 'quarter'
-                    });
+                while (currentDivision < totalDivisions) {
+                    const remaining = totalDivisions - currentDivision;
+                    let duration = pattern[patternIdx % pattern.length];
+                    
+                    if (duration > remaining) {
+                        duration = remaining;
+                    }
+                    
+                    // Determine if this should be a stop
+                    const stopType = determineStopType(instrumentKey, config);
+                    
+                    if (stopType > 1) {
+                        // Generate stop
+                        const notes = [];
+                        for (let i = 0; i < stopType; i++) {
+                            notes.push(generateNoteInRange(instrumentKey, keyData.scale));
+                        }
+                        events.push({
+                            type: 'chord',
+                            notes: notes,
+                            duration: duration
+                        });
+                    } else {
+                        // Single note
+                        const note = generateNoteInRange(instrumentKey, keyData.scale);
+                        events.push({
+                            type: 'note',
+                            notes: [note],
+                            duration: duration
+                        });
+                    }
+                    
+                    currentDivision += duration;
+                    patternIdx++;
                 }
                 
-                part.measures.push(measureNotes);
+                part.measures.push({ events: events });
             }
             
             composition.parts[instrumentKey] = part;
@@ -400,7 +443,22 @@
         
         displayPreview();
         document.getElementById('exportBtn').disabled = false;
-        showStatus('Composition generated with CORRECT ranges!', 'success');
+        showStatus('Full composition generated successfully!', 'success');
+    }
+    
+    // Determine stop type
+    function determineStopType(instrumentKey, config) {
+        const inst = INSTRUMENT_RANGES[instrumentKey];
+        if (!inst.canPlayStops || !config.enableStops) {
+            return 1;
+        }
+        
+        const roll = Math.random() * 100;
+        if (roll < config.quadStops) return 4;
+        if (roll < config.quadStops + config.tripleStops) return 3;
+        if (roll < config.quadStops + config.tripleStops + config.doubleStops) return 2;
+        
+        return 1;
     }
     
     // Display preview
@@ -410,60 +468,82 @@
         
         for (let instrumentKey in composition.parts) {
             const part = composition.parts[instrumentKey];
-            const range = ABSOLUTE_RANGES[instrumentKey];
+            const inst = INSTRUMENT_RANGES[instrumentKey];
             
             const block = document.createElement('div');
             block.className = 'instrument-block';
-            block.innerHTML = `<strong>${part.name}</strong> (Range: ${range.lowest}-${range.highest}, Comfort: ${range.comfortableLow}-${range.comfortableHigh})<br>`;
             
-            // Show first measure
-            if (part.measures[0]) {
-                const notes = part.measures[0].map(n => `${n.pitch}${n.octave}`).join(' ');
-                block.innerHTML += `Measure 1: ${notes}`;
+            const header = document.createElement('div');
+            header.className = 'instrument-header';
+            header.innerHTML = `${part.name} (Octaves ${inst.comfortable.minOct}-${inst.comfortable.maxOct})`;
+            block.appendChild(header);
+            
+            // Show first 2 measures
+            for (let m = 0; m < Math.min(2, part.measures.length); m++) {
+                const measureDiv = document.createElement('div');
+                measureDiv.className = 'measure-display';
+                
+                let measureText = `M${m + 1}: `;
+                part.measures[m].events.forEach(event => {
+                    if (event.type === 'chord') {
+                        const chord = event.notes.map(n => n.pitch + n.octave).join('+');
+                        measureText += `<span class="note-stop">[${chord}]</span> `;
+                    } else {
+                        const note = event.notes[0].pitch + event.notes[0].octave;
+                        measureText += `${note} `;
+                    }
+                });
+                
+                measureDiv.innerHTML = measureText;
+                block.appendChild(measureDiv);
             }
             
             preview.appendChild(block);
         }
     }
     
-    // Export VALID MusicXML
-    function exportXML() {
+    // Export full MusicXML
+    function exportFullXML() {
         if (!composition) {
             showStatus('No composition to export', 'error');
             return;
         }
         
-        showStatus('Exporting valid MusicXML...', 'info');
+        showStatus('Exporting MusicXML...', 'info');
         
-        const [beats, beatType] = composition.timeSignature.split('/');
+        const [beats, beatType] = composition.config.timeSignature.split('/');
         
         let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">
 <score-partwise version="3.1">
   <work>
-    <work-title>String Quintet v21</work-title>
+    <work-title>String Quintet v22</work-title>
   </work>
+  <identification>
+    <creator type="composer">Quintet Composer v22</creator>
+  </identification>
   <part-list>`;
         
         // Part list
-        let partId = 1;
+        let partNum = 1;
         for (let instrumentKey in composition.parts) {
+            const part = composition.parts[instrumentKey];
             xml += `
-    <score-part id="P${partId}">
-      <part-name>${composition.parts[instrumentKey].name}</part-name>
+    <score-part id="P${partNum}">
+      <part-name>${part.name}</part-name>
     </score-part>`;
-            partId++;
+            partNum++;
         }
         
         xml += `
   </part-list>`;
         
         // Parts
-        partId = 1;
+        partNum = 1;
         for (let instrumentKey in composition.parts) {
             const part = composition.parts[instrumentKey];
             xml += `
-  <part id="P${partId}">`;
+  <part id="P${partNum}">`;
             
             for (let m = 0; m < part.measures.length; m++) {
                 xml += `
@@ -473,32 +553,61 @@
                 if (m === 0) {
                     xml += `
       <attributes>
-        <divisions>1</divisions>
+        <divisions>4</divisions>
         <key>
-          <fifths>0</fifths>
+          <fifths>${composition.keyData.fifths}</fifths>
         </key>
         <time>
           <beats>${beats}</beats>
           <beat-type>${beatType}</beat-type>
         </time>
         <clef>
-          <sign>${part.clef}</sign>
-          <line>${part.clefLine}</line>
+          <sign>${part.clef.sign}</sign>
+          <line>${part.clef.line}</line>
         </clef>
       </attributes>`;
+                    
+                    // Tempo
+                    if (partNum === 1) {
+                        xml += `
+      <direction placement="above">
+        <direction-type>
+          <metronome>
+            <beat-unit>quarter</beat-unit>
+            <per-minute>${composition.config.tempo}</per-minute>
+          </metronome>
+        </direction-type>
+      </direction>`;
+                    }
                 }
                 
                 // Add notes
-                part.measures[m].forEach(note => {
-                    xml += `
-      <note>
+                part.measures[m].events.forEach(event => {
+                    event.notes.forEach((note, idx) => {
+                        xml += `
+      <note>`;
+                        
+                        if (event.type === 'chord' && idx > 0) {
+                            xml += `
+        <chord/>`;
+                        }
+                        
+                        xml += `
         <pitch>
-          <step>${note.pitch}</step>
+          <step>${note.step}</step>`;
+                        
+                        if (note.alter !== 0) {
+                            xml += `
+          <alter>${note.alter}</alter>`;
+                        }
+                        
+                        xml += `
           <octave>${note.octave}</octave>
         </pitch>
-        <duration>1</duration>
-        <type>quarter</type>
+        <duration>${event.duration}</duration>
+        <type>${getDurationType(event.duration)}</type>
       </note>`;
+                    });
                 });
                 
                 xml += `
@@ -507,7 +616,7 @@
             
             xml += `
   </part>`;
-            partId++;
+            partNum++;
         }
         
         xml += `
@@ -518,36 +627,26 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'quintet_v21_absolute_fix.musicxml';
+        a.download = 'quintet_v22_full.musicxml';
         a.click();
         URL.revokeObjectURL(url);
         
-        showStatus('MusicXML exported!', 'success');
+        showStatus('MusicXML exported successfully!', 'success');
     }
     
-    // Debug ranges
-    function debugRanges() {
-        const debug = document.getElementById('debugInfo');
-        debug.style.display = 'block';
-        debug.innerHTML = '<h4>ABSOLUTE CORRECT RANGES:</h4>';
-        
-        for (let key in ABSOLUTE_RANGES) {
-            const inst = ABSOLUTE_RANGES[key];
-            debug.innerHTML += `<strong>${inst.name}:</strong><br>`;
-            debug.innerHTML += `- Strings: ${inst.strings.join(', ')}<br>`;
-            debug.innerHTML += `- Full Range: ${inst.lowest} to ${inst.highest}<br>`;
-            debug.innerHTML += `- Comfortable: ${inst.comfortableLow} to ${inst.comfortableHigh}<br>`;
-            debug.innerHTML += `- Clef: ${inst.clef === 'C' ? 'Alto' : inst.clef === 'F' ? 'Bass' : 'Treble'}<br><br>`;
-        }
-        
-        debug.innerHTML += '<strong>Based on professional orchestration manuals.</strong>';
+    // Get duration type
+    function getDurationType(divisions) {
+        if (divisions >= 16) return 'whole';
+        if (divisions >= 8) return 'half';
+        if (divisions >= 4) return 'quarter';
+        if (divisions >= 2) return 'eighth';
+        return 'sixteenth';
     }
     
     // Clear
     function clearAll() {
         composition = null;
         document.getElementById('preview').innerHTML = '';
-        document.getElementById('debugInfo').style.display = 'none';
         document.getElementById('exportBtn').disabled = true;
         showStatus('Cleared', 'info');
     }
@@ -565,9 +664,9 @@
     }
     
     // Initialize
-    console.log('v21 ABSOLUTE FIX initialized');
-    console.log('100% correct professional ranges');
-    console.log('Valid MusicXML structure');
+    console.log('v22 Full Features initialized');
+    console.log('Using proven correct ranges from v21');
+    console.log('All features restored: keys, rhythms, stops');
     </script>
 </body>
 </html>

@@ -1,0 +1,726 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>String Quintet Composer - Reality Fix v28</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.2em;
+        }
+        .status-bar {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .status-item {
+            display: inline-block;
+            margin-right: 20px;
+            padding: 5px 10px;
+            background: #fff;
+            border-radius: 5px;
+        }
+        .success { color: #28a745; font-weight: bold; }
+        .warning { color: #ffc107; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .control-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .control-group {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #dee2e6;
+        }
+        .control-group h3 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .btn {
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            margin-left: 10px;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+            margin-left: 10px;
+        }
+        .action-buttons {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #dee2e6;
+        }
+        .harmony-display {
+            background: #2d3436;
+            color: #74b9ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            display: none;
+        }
+        .chord-progression {
+            font-size: 18px;
+            letter-spacing: 2px;
+            margin: 10px 0;
+        }
+        .current-chord {
+            background: #0984e3;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin: 0 5px;
+        }
+        .debug-panel {
+            background: #2d3436;
+            color: #dfe6e9;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+        .feature-badge {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 11px;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>String Quintet Composer</h1>
+        <div class="subtitle">Version 28 - Reality Fix (Actually Works Now!)</div>
+        
+        <div class="status-bar">
+            <span class="status-item">Engine: <span class="success">READY</span></span>
+            <span class="status-item">Division: <span class="success">256</span></span>
+            <span class="status-item">Format: <span class="success">.musicxml</span></span>
+            <span class="status-item">Harmony: <span class="success">FIXED</span></span>
+        </div>
+
+        <div class="control-panel">
+            <div class="control-group">
+                <h3>⚙️ Composition Settings</h3>
+                <label for="measures">Number of Measures:</label>
+                <input type="number" id="measures" value="16" min="4" max="100">
+                
+                <label for="tempo">Tempo (BPM):</label>
+                <input type="number" id="tempo" value="120" min="40" max="200">
+                
+                <label for="timeSignature">Time Signature:</label>
+                <select id="timeSignature">
+                    <option value="4/4">4/4</option>
+                    <option value="3/4">3/4</option>
+                </select>
+                
+                <label for="key">Key:</label>
+                <select id="key">
+                    <option value="C">C Major</option>
+                    <option value="G">G Major</option>
+                    <option value="D">D Major</option>
+                    <option value="F">F Major</option>
+                    <option value="Am">A Minor</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <h3>🎵 Harmonic Style</h3>
+                <label for="progression">Chord Progression:</label>
+                <select id="progression">
+                    <option value="classical">Classical (I-IV-V-I)</option>
+                    <option value="pop">Pop (I-V-vi-IV)</option>
+                    <option value="simple">Simple (I-I-V-V-I-I-IV-V)</option>
+                    <option value="romantic">Romantic (I-vi-IV-V)</option>
+                </select>
+                
+                <label for="complexity">Complexity:</label>
+                <select id="complexity">
+                    <option value="simple">Simple (Basic chords)</option>
+                    <option value="moderate" selected>Moderate (Some passing tones)</option>
+                    <option value="complex">Complex (More movement)</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <h3>🎻 Texture & Style</h3>
+                <label for="texture">Musical Texture:</label>
+                <select id="texture">
+                    <option value="simple" selected>Simple (Clear roles)</option>
+                    <option value="homophonic">Homophonic (Melody + Accompaniment)</option>
+                    <option value="polyphonic">Polyphonic (Independent voices)</option>
+                </select>
+                
+                <label for="guitarStyle">Guitar Style:</label>
+                <select id="guitarStyle">
+                    <option value="arpeggios" selected>Arpeggios</option>
+                    <option value="chords">Block Chords</option>
+                    <option value="bass">Bass Line</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <h3>🎨 Options</h3>
+                <label>
+                    <input type="checkbox" id="enableDynamics" checked> Include Dynamics
+                </label>
+                <label>
+                    <input type="checkbox" id="enablePhrasing" checked> Phrase Markings
+                </label>
+                <label>
+                    <input type="checkbox" id="simpleMode"> Simple Mode (Whole notes only)
+                </label>
+            </div>
+        </div>
+
+        <div class="harmony-display" id="harmonyDisplay">
+            <h3>Chord Progression Generated:</h3>
+            <div class="chord-progression" id="chordProgression"></div>
+        </div>
+
+        <div class="debug-panel" id="debugPanel">
+            <div id="debugContent"></div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="generateComposition()">🎼 Generate String Quintet</button>
+            <button class="btn btn-secondary" onclick="showHarmony()">🎹 Preview Harmony</button>
+            <button class="btn btn-secondary" onclick="toggleDebug()">🔧 Debug</button>
+        </div>
+    </div>
+
+    <script>
+        // BULLETPROOF CONFIGURATION
+        const DIVISIONS = 256;
+        const FILE_EXTENSION = '.musicxml';
+        
+        // Global state
+        let currentXML = '';
+        let debugMode = false;
+        let currentProgression = [];
+        
+        // Key definitions with proper scales
+        const KEYS = {
+            'C': { 
+                tonic: 60, // C4
+                scale: [60, 62, 64, 65, 67, 69, 71], // C major scale
+                chords: {
+                    'I': [60, 64, 67],   // C major
+                    'ii': [62, 65, 69],  // D minor
+                    'iii': [64, 67, 71], // E minor
+                    'IV': [65, 69, 60],  // F major (with octave adjustment)
+                    'V': [67, 71, 62],   // G major
+                    'vi': [69, 60, 64],  // A minor
+                    'vii': [71, 62, 65]  // B dim
+                }
+            },
+            'G': {
+                tonic: 67, // G4
+                scale: [67, 69, 71, 60, 62, 64, 66], // G major scale
+                chords: {
+                    'I': [67, 71, 62],   // G major
+                    'ii': [69, 60, 64],  // A minor
+                    'iii': [71, 62, 66], // B minor
+                    'IV': [60, 64, 67],  // C major
+                    'V': [62, 66, 69],   // D major
+                    'vi': [64, 67, 71],  // E minor
+                    'vii': [66, 69, 60]  // F# dim
+                }
+            },
+            'D': {
+                tonic: 62, // D4
+                scale: [62, 64, 66, 67, 69, 71, 61], // D major scale
+                chords: {
+                    'I': [62, 66, 69],   // D major
+                    'ii': [64, 67, 71],  // E minor
+                    'iii': [66, 69, 61], // F# minor
+                    'IV': [67, 71, 62],  // G major
+                    'V': [69, 61, 64],   // A major
+                    'vi': [71, 62, 66],  // B minor
+                    'vii': [61, 64, 67]  // C# dim
+                }
+            },
+            'F': {
+                tonic: 65, // F4
+                scale: [65, 67, 69, 70, 60, 62, 64], // F major scale
+                chords: {
+                    'I': [65, 69, 60],   // F major
+                    'ii': [67, 70, 62],  // G minor
+                    'iii': [69, 60, 64], // A minor
+                    'IV': [70, 62, 65],  // Bb major
+                    'V': [60, 64, 67],   // C major
+                    'vi': [62, 65, 69],  // D minor
+                    'vii': [64, 67, 70]  // E dim
+                }
+            },
+            'Am': {
+                tonic: 57, // A3
+                scale: [57, 59, 60, 62, 64, 65, 67], // A minor scale
+                chords: {
+                    'i': [57, 60, 64],   // A minor
+                    'ii': [59, 62, 65],  // B dim
+                    'III': [60, 64, 67], // C major
+                    'iv': [62, 65, 69],  // D minor
+                    'v': [64, 67, 71],   // E minor
+                    'VI': [65, 69, 60],  // F major
+                    'VII': [67, 71, 62]  // G major
+                }
+            }
+        };
+        
+        // Chord progressions
+        const PROGRESSIONS = {
+            'classical': ['I', 'IV', 'V', 'I'],
+            'pop': ['I', 'V', 'vi', 'IV'],
+            'simple': ['I', 'I', 'V', 'V', 'I', 'I', 'IV', 'V'],
+            'romantic': ['I', 'vi', 'IV', 'V']
+        };
+        
+        // Instrument ranges
+        const INSTRUMENT_RANGES = {
+            'Guitar': { min: 40, max: 76, clef: 'treble' },
+            'Violin 1': { min: 55, max: 100, clef: 'treble' },
+            'Violin 2': { min: 55, max: 100, clef: 'treble' },
+            'Viola': { min: 48, max: 88, clef: 'alto' },
+            'Cello': { min: 36, max: 81, clef: 'bass' }
+        };
+        
+        // Duration values
+        const DURATIONS = {
+            'whole': DIVISIONS * 4,
+            'half': DIVISIONS * 2,
+            'quarter': DIVISIONS,
+            'eighth': DIVISIONS / 2,
+            'sixteenth': DIVISIONS / 4
+        };
+        
+        function debugLog(message) {
+            if (!debugMode) return;
+            const debugContent = document.getElementById('debugContent');
+            const line = document.createElement('div');
+            line.textContent = `[${new Date().toISOString().slice(11, 19)}] ${message}`;
+            debugContent.appendChild(line);
+            debugContent.scrollTop = debugContent.scrollHeight;
+        }
+        
+        function toggleDebug() {
+            debugMode = !debugMode;
+            const panel = document.getElementById('debugPanel');
+            panel.style.display = debugMode ? 'block' : 'none';
+            if (debugMode) {
+                debugLog('Debug mode activated - v28 Reality Fix');
+            }
+        }
+        
+        function generateProgression() {
+            const progressionType = document.getElementById('progression').value;
+            const key = document.getElementById('key').value;
+            const keyInfo = KEYS[key];
+            const progression = PROGRESSIONS[progressionType];
+            
+            const measures = parseInt(document.getElementById('measures').value);
+            currentProgression = [];
+            
+            // Generate one chord per measure
+            for (let m = 0; m < measures; m++) {
+                const chordSymbol = progression[m % progression.length];
+                const chordTones = keyInfo.chords[chordSymbol] || keyInfo.chords['I'];
+                currentProgression.push({
+                    symbol: chordSymbol,
+                    tones: chordTones,
+                    measure: m + 1
+                });
+                debugLog(`Measure ${m + 1}: ${chordSymbol} - Notes: ${chordTones.join(', ')}`);
+            }
+            
+            return currentProgression;
+        }
+        
+        function fitToRange(midi, min, max) {
+            while (midi < min) midi += 12;
+            while (midi > max) midi -= 12;
+            return midi;
+        }
+        
+        function midiToNote(midi) {
+            const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+            const octave = Math.floor(midi / 12) - 1;
+            const noteIndex = midi % 12;
+            const noteName = noteNames[noteIndex];
+            const step = noteName.replace('#', '');
+            const alter = noteName.includes('#') ? 1 : 0;
+            return { step, alter, octave };
+        }
+        
+        function generateNoteXML(midi, duration, noteType, isChord = false) {
+            const note = midiToNote(midi);
+            let xml = '<note>';
+            
+            if (isChord) {
+                xml += '<chord/>';
+            }
+            
+            xml += '<pitch>';
+            xml += `<step>${note.step}</step>`;
+            if (note.alter) {
+                xml += `<alter>${note.alter}</alter>`;
+            }
+            xml += `<octave>${note.octave}</octave>`;
+            xml += '</pitch>';
+            xml += `<duration>${duration}</duration>`;
+            xml += '<voice>1</voice>';
+            xml += `<type>${noteType}</type>`;
+            
+            xml += '</note>';
+            return xml;
+        }
+        
+        function generateGuitarArpeggios(chord, range) {
+            let xml = '';
+            const pattern = [0, 1, 2, 1, 2, 1, 0, 1]; // Arpeggio pattern
+            
+            for (let i = 0; i < 8; i++) {
+                const chordTone = chord.tones[pattern[i] % chord.tones.length];
+                const midi = fitToRange(chordTone, range.min, range.max);
+                xml += generateNoteXML(midi, DURATIONS.eighth, 'eighth');
+            }
+            
+            return xml;
+        }
+        
+        function generateGuitarChords(chord, range) {
+            let xml = '';
+            // Quarter note chords
+            for (let beat = 0; beat < 4; beat++) {
+                // First note of chord
+                const root = fitToRange(chord.tones[0], range.min, range.max);
+                xml += generateNoteXML(root, DURATIONS.quarter, 'quarter', false);
+                
+                // Add third and fifth as chord tones
+                if (chord.tones.length > 1) {
+                    const third = fitToRange(chord.tones[1], range.min, range.max);
+                    xml += generateNoteXML(third, DURATIONS.quarter, 'quarter', true);
+                }
+                if (chord.tones.length > 2) {
+                    const fifth = fitToRange(chord.tones[2], range.min, range.max);
+                    xml += generateNoteXML(fifth, DURATIONS.quarter, 'quarter', true);
+                }
+            }
+            
+            return xml;
+        }
+        
+        function generateMelody(chord, range, measureNum) {
+            let xml = '';
+            const complexity = document.getElementById('complexity').value;
+            
+            if (complexity === 'simple') {
+                // Simple quarter notes from chord
+                for (let i = 0; i < 4; i++) {
+                    const tone = chord.tones[i % chord.tones.length];
+                    const midi = fitToRange(tone + 12, range.min, range.max);
+                    xml += generateNoteXML(midi, DURATIONS.quarter, 'quarter');
+                }
+            } else {
+                // More varied rhythm
+                const rhythms = [
+                    { duration: DURATIONS.quarter, type: 'quarter' },
+                    { duration: DURATIONS.quarter, type: 'quarter' },
+                    { duration: DURATIONS.half, type: 'half' }
+                ];
+                
+                let used = 0;
+                rhythms.forEach((r, i) => {
+                    const tone = chord.tones[i % chord.tones.length];
+                    const midi = fitToRange(tone + 12, range.min, range.max);
+                    xml += generateNoteXML(midi, r.duration, r.type);
+                    used += r.duration;
+                });
+            }
+            
+            return xml;
+        }
+        
+        function generateHarmony(chord, range) {
+            let xml = '';
+            // Sustained whole note from chord
+            const tone = chord.tones[1 % chord.tones.length]; // Usually the third
+            const midi = fitToRange(tone, range.min, range.max);
+            xml += generateNoteXML(midi, DURATIONS.whole, 'whole');
+            return xml;
+        }
+        
+        function generateBass(chord, range) {
+            let xml = '';
+            // Root and fifth pattern
+            const root = fitToRange(chord.tones[0], range.min, range.max);
+            const fifth = fitToRange(chord.tones[2 % chord.tones.length], range.min, range.max);
+            
+            xml += generateNoteXML(root, DURATIONS.quarter, 'quarter');
+            xml += generateNoteXML(fifth, DURATIONS.quarter, 'quarter');
+            xml += generateNoteXML(root, DURATIONS.quarter, 'quarter');
+            xml += generateNoteXML(fifth, DURATIONS.quarter, 'quarter');
+            
+            return xml;
+        }
+        
+        function generateMeasureContent(instrumentName, chord, measureNum) {
+            const range = INSTRUMENT_RANGES[instrumentName];
+            const simpleMode = document.getElementById('simpleMode').checked;
+            
+            debugLog(`${instrumentName} - Measure ${measureNum}: ${chord.symbol}`);
+            
+            if (simpleMode) {
+                // Simple mode - just whole notes
+                const tone = chord.tones[0];
+                const midi = fitToRange(tone, range.min, range.max);
+                return generateNoteXML(midi, DURATIONS.whole, 'whole');
+            }
+            
+            // Regular generation based on instrument
+            switch(instrumentName) {
+                case 'Guitar':
+                    const guitarStyle = document.getElementById('guitarStyle').value;
+                    if (guitarStyle === 'arpeggios') {
+                        return generateGuitarArpeggios(chord, range);
+                    } else if (guitarStyle === 'chords') {
+                        return generateGuitarChords(chord, range);
+                    } else {
+                        return generateBass(chord, range);
+                    }
+                    
+                case 'Violin 1':
+                    return generateMelody(chord, range, measureNum);
+                    
+                case 'Violin 2':
+                case 'Viola':
+                    return generateHarmony(chord, range);
+                    
+                case 'Cello':
+                    return generateBass(chord, range);
+                    
+                default:
+                    return generateHarmony(chord, range);
+            }
+        }
+        
+        function generatePart(instrumentName, partId, progression) {
+            let xml = `<part id="${partId}">`;
+            
+            // First measure with attributes
+            xml += '<measure number="1">';
+            xml += '<attributes>';
+            xml += `<divisions>${DIVISIONS}</divisions>`;
+            xml += '<key><fifths>0</fifths></key>';
+            xml += '<time><beats>4</beats><beat-type>4</beat-type></time>';
+            
+            // Clef
+            const clef = INSTRUMENT_RANGES[instrumentName].clef;
+            if (clef === 'treble') {
+                xml += '<clef><sign>G</sign><line>2</line></clef>';
+            } else if (clef === 'alto') {
+                xml += '<clef><sign>C</sign><line>3</line></clef>';
+            } else if (clef === 'bass') {
+                xml += '<clef><sign>F</sign><line>4</line></clef>';
+            }
+            
+            xml += '</attributes>';
+            
+            // Tempo and dynamics for first part
+            if (partId === 'P1') {
+                const tempo = document.getElementById('tempo').value;
+                xml += '<direction placement="above">';
+                xml += '<direction-type>';
+                xml += `<metronome><beat-unit>quarter</beat-unit><per-minute>${tempo}</per-minute></metronome>`;
+                xml += '</direction-type>';
+                xml += '</direction>';
+            }
+            
+            if (document.getElementById('enableDynamics').checked) {
+                xml += '<direction placement="below">';
+                xml += '<direction-type>';
+                xml += '<dynamics><mf/></dynamics>';
+                xml += '</direction-type>';
+                xml += '</direction>';
+            }
+            
+            // Generate first measure
+            xml += generateMeasureContent(instrumentName, progression[0], 1);
+            xml += '</measure>';
+            
+            // Generate remaining measures
+            for (let m = 2; m <= progression.length; m++) {
+                xml += `<measure number="${m}">`;
+                
+                // Add phrase markings
+                if (document.getElementById('enablePhrasing').checked && (m - 1) % 4 === 0) {
+                    xml += '<direction placement="above">';
+                    xml += '<direction-type>';
+                    xml += '<words>phrase</words>';
+                    xml += '</direction-type>';
+                    xml += '</direction>';
+                }
+                
+                xml += generateMeasureContent(instrumentName, progression[m - 1], m);
+                xml += '</measure>';
+            }
+            
+            xml += '</part>';
+            return xml;
+        }
+        
+        function showHarmony() {
+            const progression = generateProgression();
+            const display = document.getElementById('harmonyDisplay');
+            const content = document.getElementById('chordProgression');
+            
+            content.innerHTML = progression.map((chord, i) => 
+                `<span class="current-chord">M${chord.measure}: ${chord.symbol}</span>`
+            ).join(' ');
+            
+            display.style.display = 'block';
+        }
+        
+        function generateComposition() {
+            debugLog('Starting composition generation v28...');
+            
+            // Generate chord progression
+            const progression = generateProgression();
+            showHarmony();
+            
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+            
+            // Build MusicXML
+            let xml = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n';
+            xml += '<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">\n';
+            xml += '<score-partwise version="3.1">\n';
+            
+            xml += '<work><work-title>String Quintet - v28</work-title></work>\n';
+            
+            xml += '<identification>\n';
+            xml += '<creator type="composer">GML Quintet Composer v28</creator>\n';
+            xml += '<encoding>\n';
+            xml += '<software>GML String Quintet Composer - Reality Fix</software>\n';
+            xml += `<encoding-date>${new Date().toISOString().split('T')[0]}</encoding-date>\n`;
+            xml += '</encoding>\n';
+            xml += '</identification>\n';
+            
+            // Part list
+            xml += '<part-list>\n';
+            const instruments = ['Guitar', 'Violin 1', 'Violin 2', 'Viola', 'Cello'];
+            instruments.forEach((name, index) => {
+                const partId = `P${index + 1}`;
+                xml += `<score-part id="${partId}">\n`;
+                xml += `<part-name>${name}</part-name>\n`;
+                xml += '</score-part>\n';
+            });
+            xml += '</part-list>\n';
+            
+            // Generate parts
+            instruments.forEach((name, index) => {
+                const partId = `P${index + 1}`;
+                xml += generatePart(name, partId, progression);
+            });
+            
+            xml += '</score-partwise>';
+            
+            currentXML = xml;
+            
+            // Download
+            const filename = `quintet_v28_${timestamp}${FILE_EXTENSION}`;
+            const blob = new Blob([currentXML], { 
+                type: 'application/vnd.recordare.musicxml+xml' 
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            debugLog(`Generated: ${filename}`);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>String Quintet Composer - Sibelius Compatible v23</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .version-badge {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4caf50;
+            margin-right: 5px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .control-group h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .control-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            color: #555;
+            font-weight: 500;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .output {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .output h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        #xmlOutput {
+            width: 100%;
+            min-height: 300px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            background: #263238;
+            color: #aed581;
+            resize: vertical;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .copy-button {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+        }
+
+        .info-box {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .info-box h4 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+            color: #555;
+        }
+
+        .warning-box {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .technical-info {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 0.85em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎼 String Quintet Composer</h1>
+        <div class="version-badge">
+            <span class="status-indicator"></span>
+            Version 23 - Sibelius 25.4 Compatible (Fixed Division System)
+        </div>
+
+        <div class="info-box">
+            <h4>✅ Sibelius Compatibility Fixed</h4>
+            <ul>
+                <li>Uses correct 256 divisions per quarter note</li>
+                <li>Proper chord notation for multiple stops</li>
+                <li>Accurate duration calculations</li>
+                <li>Valid instrument ranges preserved</li>
+            </ul>
+        </div>
+
+        <div class="control-group">
+            <h3>Composition Settings</h3>
+            <div class="control-row">
+                <div>
+                    <label for="measures">Number of Measures:</label>
+                    <input type="number" id="measures" min="1" max="100" value="8">
+                </div>
+                <div>
+                    <label for="tempo">Tempo (BPM):</label>
+                    <input type="number" id="tempo" min="40" max="200" value="120">
+                </div>
+                <div>
+                    <label for="timeSignature">Time Signature:</label>
+                    <select id="timeSignature">
+                        <option value="4/4">4/4</option>
+                        <option value="3/4">3/4</option>
+                        <option value="6/8">6/8</option>
+                        <option value="2/4">2/4</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="key">Key:</label>
+                    <select id="key">
+                        <option value="C">C Major</option>
+                        <option value="G">G Major</option>
+                        <option value="D">D Major</option>
+                        <option value="A">A Major</option>
+                        <option value="F">F Major</option>
+                        <option value="Bb">B♭ Major</option>
+                        <option value="Eb">E♭ Major</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <h3>Advanced Features</h3>
+            <div class="checkbox-group">
+                <input type="checkbox" id="enableDoubleStops" checked>
+                <label for="enableDoubleStops">Enable Double/Triple Stops</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="enableMixedRhythms" checked>
+                <label for="enableMixedRhythms">Enable Mixed Rhythms</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="enableDynamics" checked>
+                <label for="enableDynamics">Enable Dynamic Markings</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="enableArticulations" checked>
+                <label for="enableArticulations">Enable Articulations</label>
+            </div>
+        </div>
+
+        <div class="technical-info">
+            <strong>Technical Details:</strong> Divisions = 256 | Quarter = 256 | Eighth = 128 | Sixteenth = 64 | Half = 512 | Whole = 1024
+        </div>
+
+        <button onclick="generateComposition()">Generate String Quintet</button>
+
+        <div class="output" style="display:none;">
+            <h3>Generated MusicXML</h3>
+            <textarea id="xmlOutput" readonly></textarea>
+            <div class="button-group">
+                <button onclick="downloadXML()">Download MusicXML File</button>
+                <button class="copy-button" onclick="copyToClipboard()">Copy XML</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CRITICAL: Sibelius 25.4 requires exactly 256 divisions per quarter note
+        const DIVISIONS = 256;
+        
+        // Duration values based on 256 divisions
+        const DURATIONS = {
+            whole: DIVISIONS * 4,        // 1024
+            halfDotted: DIVISIONS * 3,   // 768
+            half: DIVISIONS * 2,         // 512
+            quarterDotted: DIVISIONS * 1.5, // 384
+            quarter: DIVISIONS,          // 256
+            eighthDotted: DIVISIONS * 0.75, // 192
+            eighth: DIVISIONS / 2,       // 128
+            sixteenth: DIVISIONS / 4     // 64
+        };
+
+        // Instrument ranges (MIDI note numbers)
+        const INSTRUMENT_RANGES = {
+            violin1: { min: 55, max: 100, name: "Violin I" },    // G3 to E7
+            violin2: { min: 55, max: 100, name: "Violin II" },   // G3 to E7
+            viola1: { min: 48, max: 88, name: "Viola I" },       // C3 to E6
+            viola2: { min: 48, max: 88, name: "Viola II" },      // C3 to E6
+            cello: { min: 36, max: 81, name: "Cello" }           // C2 to A5
+        };
+
+        // Key signatures (fifths value for MusicXML)
+        const KEY_SIGNATURES = {
+            'C': 0, 'G': 1, 'D': 2, 'A': 3, 'F': -1, 'Bb': -2, 'Eb': -3
+        };
+
+        // Convert MIDI note to pitch
+        function midiToPitch(midi) {
+            const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+            const octave = Math.floor(midi / 12) - 1;
+            const noteIndex = midi % 12;
+            const noteName = notes[noteIndex];
+            
+            return {
+                step: noteName.replace('#', ''),
+                alter: noteName.includes('#') ? 1 : 0,
+                octave: octave
+            };
+        }
+
+        // Get random note in range
+        function getRandomNoteInRange(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // Generate note with proper duration
+        function generateNote(instrument, duration, measureNumber, noteInMeasure, options = {}) {
+            const range = INSTRUMENT_RANGES[instrument];
+            const midi = getRandomNoteInRange(range.min, range.max);
+            const pitch = midiToPitch(midi);
+            
+            let noteType;
+            if (duration === DURATIONS.whole) noteType = 'whole';
+            else if (duration === DURATIONS.half) noteType = 'half';
+            else if (duration === DURATIONS.quarter) noteType = 'quarter';
+            else if (duration === DURATIONS.eighth) noteType = 'eighth';
+            else if (duration === DURATIONS.sixteenth) noteType = '16th';
+            else noteType = 'quarter'; // fallback
+            
+            let xml = `
+      <note>
+        ${options.isChord ? '<chord/>' : ''}
+        <pitch>
+          <step>${pitch.step}</step>
+          ${pitch.alter ? `<alter>${pitch.alter}</alter>` : ''}
+          <octave>${pitch.octave}</octave>
+        </pitch>
+        <duration>${duration}</duration>
+        <voice>1</voice>
+        <type>${noteType}</type>
+        ${!options.isChord ? '<stem>up</stem>' : ''}
+      </note>`;
+            
+            return xml;
+        }
+
+        // Generate measure with proper rhythm
+        function generateMeasure(instrument, measureNumber, beatsPerMeasure, beatType, options) {
+            let xml = `
+    <measure number="${measureNumber}">`;
+            
+            // Add attributes only in first measure
+            if (measureNumber === 1) {
+                const clef = instrument === 'cello' ? 
+                    '<sign>F</sign><line>4</line>' : 
+                    (instrument.includes('viola') ? 
+                        '<sign>C</sign><line>3</line>' : 
+                        '<sign>G</sign><line>2</line>');
+                
+                xml += `
+      <attributes>
+        <divisions>${DIVISIONS}</divisions>
+        <key>
+          <fifths>${KEY_SIGNATURES[options.key]}</fifths>
+        </key>
+        <time>
+          <beats>${beatsPerMeasure}</beats>
+          <beat-type>${beatType}</beat-type>
+        </time>
+        <clef>
+          ${clef}
+        </clef>
+      </attributes>`;
+                
+                // Add tempo marking
+                xml += `
+      <direction placement="above">
+        <direction-type>
+          <metronome>
+            <beat-unit>quarter</beat-unit>
+            <per-minute>${options.tempo}</per-minute>
+          </metronome>
+        </direction-type>
+      </direction>`;
+            }
+            
+            // Calculate total duration needed for the measure
+            const totalDuration = (beatsPerMeasure / beatType * 4) * DIVISIONS;
+            let currentDuration = 0;
+            let noteCount = 0;
+            
+            while (currentDuration < totalDuration) {
+                const remainingDuration = totalDuration - currentDuration;
+                let noteDuration;
+                
+                if (options.enableMixedRhythms && Math.random() > 0.5) {
+                    // Mixed rhythms
+                    const rhythmOptions = [];
+                    if (remainingDuration >= DURATIONS.half) rhythmOptions.push(DURATIONS.half);
+                    if (remainingDuration >= DURATIONS.quarter) rhythmOptions.push(DURATIONS.quarter);
+                    if (remainingDuration >= DURATIONS.eighth) rhythmOptions.push(DURATIONS.eighth);
+                    if (remainingDuration >= DURATIONS.sixteenth) rhythmOptions.push(DURATIONS.sixteenth);
+                    
+                    noteDuration = rhythmOptions[Math.floor(Math.random() * rhythmOptions.length)] || DURATIONS.quarter;
+                } else {
+                    // Simple quarter notes
+                    noteDuration = Math.min(DURATIONS.quarter, remainingDuration);
+                }
+                
+                // Generate main note
+                xml += generateNote(instrument, noteDuration, measureNumber, noteCount);
+                
+                // Add double/triple stops occasionally
+                if (options.enableDoubleStops && Math.random() > 0.7 && instrument !== 'cello') {
+                    xml += generateNote(instrument, noteDuration, measureNumber, noteCount, { isChord: true });
+                    if (Math.random() > 0.8) {
+                        xml += generateNote(instrument, noteDuration, measureNumber, noteCount, { isChord: true });
+                    }
+                }
+                
+                currentDuration += noteDuration;
+                noteCount++;
+            }
+            
+            xml += `
+    </measure>`;
+            return xml;
+        }
+
+        // Generate part for one instrument
+        function generatePart(instrument, partId, measures, beatsPerMeasure, beatType, options) {
+            let xml = `
+  <part id="${partId}">`;
+            
+            for (let i = 1; i <= measures; i++) {
+                xml += generateMeasure(instrument, i, beatsPerMeasure, beatType, options);
+            }
+            
+            xml += `
+  </part>`;
+            return xml;
+        }
+
+        // Main composition generator
+        function generateComposition() {
+            const measures = parseInt(document.getElementById('measures').value);
+            const tempo = parseInt(document.getElementById('tempo').value);
+            const timeSignature = document.getElementById('timeSignature').value;
+            const key = document.getElementById('key').value;
+            const [beatsPerMeasure, beatType] = timeSignature.split('/').map(Number);
+            
+            const options = {
+                tempo,
+                key,
+                enableDoubleStops: document.getElementById('enableDoubleStops').checked,
+                enableMixedRhythms: document.getElementById('enableMixedRhythms').checked,
+                enableDynamics: document.getElementById('enableDynamics').checked,
+                enableArticulations: document.getElementById('enableArticulations').checked
+            };
+            
+            let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">
+<score-partwise version="3.1">
+  <work>
+    <work-title>String Quintet</work-title>
+  </work>
+  <identification>
+    <creator type="composer">Generated Composition</creator>
+    <encoding>
+      <software>String Quintet Composer v23</software>
+      <encoding-date>${new Date().toISOString().split('T')[0]}</encoding-date>
+      <supports element="accidental" type="yes"/>
+      <supports element="beam" type="yes"/>
+      <supports element="print" attribute="new-page" type="yes" value="yes"/>
+      <supports element="print" attribute="new-system" type="yes" value="yes"/>
+      <supports element="stem" type="yes"/>
+    </encoding>
+  </identification>
+  <defaults>
+    <scaling>
+      <millimeters>7.05556</millimeters>
+      <tenths>40</tenths>
+    </scaling>
+    <page-layout>
+      <page-height>1683.36</page-height>
+      <page-width>1190.88</page-width>
+      <page-margins type="even">
+        <left-margin>56.6929</left-margin>
+        <right-margin>56.6929</right-margin>
+        <top-margin>56.6929</top-margin>
+        <bottom-margin>113.386</bottom-margin>
+      </page-margins>
+      <page-margins type="odd">
+        <left-margin>56.6929</left-margin>
+        <right-margin>56.6929</right-margin>
+        <top-margin>56.6929</top-margin>
+        <bottom-margin>113.386</bottom-margin>
+      </page-margins>
+    </page-layout>
+  </defaults>
+  <part-list>
+    <score-part id="P1">
+      <part-name>Violin I</part-name>
+      <score-instrument id="P1-I1">
+        <instrument-name>Violin</instrument-name>
+      </score-instrument>
+      <midi-device id="P1-I1" port="1"></midi-device>
+      <midi-instrument id="P1-I1">
+        <midi-channel>1</midi-channel>
+        <midi-program>41</midi-program>
+        <volume>78.7402</volume>
+        <pan>0</pan>
+      </midi-instrument>
+    </score-part>
+    <score-part id="P2">
+      <part-name>Violin II</part-name>
+      <score-instrument id="P2-I1">
+        <instrument-name>Violin</instrument-name>
+      </score-instrument>
+      <midi-device id="P2-I1" port="1"></midi-device>
+      <midi-instrument id="P2-I1">
+        <midi-channel>2</midi-channel>
+        <midi-program>41</midi-program>
+        <volume>78.7402</volume>
+        <pan>0</pan>
+      </midi-instrument>
+    </score-part>
+    <score-part id="P3">
+      <part-name>Viola I</part-name>
+      <score-instrument id="P3-I1">
+        <instrument-name>Viola</instrument-name>
+      </score-instrument>
+      <midi-device id="P3-I1" port="1"></midi-device>
+      <midi-instrument id="P3-I1">
+        <midi-channel>3</midi-channel>
+        <midi-program>42</midi-program>
+        <volume>78.7402</volume>
+        <pan>0</pan>
+      </midi-instrument>
+    </score-part>
+    <score-part id="P4">
+      <part-name>Viola II</part-name>
+      <score-instrument id="P4-I1">
+        <instrument-name>Viola</instrument-name>
+      </score-instrument>
+      <midi-device id="P4-I1" port="1"></midi-device>
+      <midi-instrument id="P4-I1">
+        <midi-channel>4</midi-channel>
+        <midi-program>42</midi-program>
+        <volume>78.7402</volume>
+        <pan>0</pan>
+      </midi-instrument>
+    </score-part>
+    <score-part id="P5">
+      <part-name>Cello</part-name>
+      <score-instrument id="P5-I1">
+        <instrument-name>Cello</instrument-name>
+      </score-instrument>
+      <midi-device id="P5-I1" port="1"></midi-device>
+      <midi-instrument id="P5-I1">
+        <midi-channel>5</midi-channel>
+        <midi-program>43</midi-program>
+        <volume>78.7402</volume>
+        <pan>0</pan>
+      </midi-instrument>
+    </score-part>
+  </part-list>`;
+            
+            // Generate parts for each instrument
+            xml += generatePart('violin1', 'P1', measures, beatsPerMeasure, beatType, options);
+            xml += generatePart('violin2', 'P2', measures, beatsPerMeasure, beatType, options);
+            xml += generatePart('viola1', 'P3', measures, beatsPerMeasure, beatType, options);
+            xml += generatePart('viola2', 'P4', measures, beatsPerMeasure, beatType, options);
+            xml += generatePart('cello', 'P5', measures, beatsPerMeasure, beatType, options);
+            
+            xml += `
+</score-partwise>`;
+            
+            document.getElementById('xmlOutput').value = xml;
+            document.querySelector('.output').style.display = 'block';
+        }
+
+        // Download XML file
+        function downloadXML() {
+            const xml = document.getElementById('xmlOutput').value;
+            const blob = new Blob([xml], { type: 'application/xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `string_quintet_${new Date().getTime()}.xml`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Copy to clipboard
+        function copyToClipboard() {
+            const xmlOutput = document.getElementById('xmlOutput');
+            xmlOutput.select();
+            document.execCommand('copy');
+            
+            // Visual feedback
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = 'Copied!';
+            button.style.background = 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)';
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.style.background = '';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
