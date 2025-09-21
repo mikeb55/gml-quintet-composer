@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>String Quintet Composer v17 - Triad Foundation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1100px;
+            width: 100%;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #764ba2;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .version {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .version .status {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .triad-display {
+            background: linear-gradient(135deg, #00c9ff 0%, #92fe9d 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            color: white;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            text-align: center;
+        }
+
+        .triad-section {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .triad-section h3 {
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .control-panel {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .mode-selector {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .mode-btn {
+            padding: 10px 20px;
+            margin: 5px;
+            border: 2px solid #2196F3;
+            background: white;
+            color: #2196F3;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .mode-btn.active {
+            background: #2196F3;
+            color: white;
+        }
+
+        .control-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        select, input[type="number"], input[type="range"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 5px;
+        }
+
+        #generateBtn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        #playBtn {
+            background: #4CAF50;
+            color: white;
+        }
+
+        #stopBtn {
+            background: #f44336;
+            color: white;
+        }
+
+        #exportMidiBtn {
+            background: #2196F3;
+            color: white;
+        }
+
+        #exportXmlBtn {
+            background: #FF9800;
+            color: white;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #output {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            min-height: 150px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .triad-settings {
+            background: #f0f8ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .voice-motion {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎼 String Quintet - Triad Composer</h1>
+        <div class="version">
+            v17.0 - <span class="status">✓ TRIAD FOUNDATION</span>
+        </div>
+        
+        <div class="triad-display">
+            <div class="triad-section">
+                <h3>🎸 MELODY</h3>
+                <div>Guitar</div>
+                <small>Independent melodic line</small>
+            </div>
+            <div class="triad-section">
+                <h3>🎻 RIGHT HAND</h3>
+                <div>Violin I + II</div>
+                <small>Upper triad voices</small>
+            </div>
+            <div class="triad-section">
+                <h3>🎻 LEFT HAND</h3>
+                <div>Viola + Cello</div>
+                <small>Lower triad voices</small>
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <div class="mode-selector">
+                <button class="mode-btn active" data-mode="standard">Standard Harmony</button>
+                <button class="mode-btn" data-mode="triad">Triad Mode</button>
+                <button class="mode-btn" data-mode="polyphonic">Polyphonic Triads</button>
+            </div>
+
+            <div class="control-row">
+                <div class="control-group">
+                    <label for="composer">Composer Style</label>
+                    <select id="composer">
+                        <option value="classical">Classical (Bach-style)</option>
+                        <option value="romantic">Romantic (Chopin-style)</option>
+                        <option value="modern">Modern (Ravel-style)</option>
+                        <option value="minimalist">Minimalist (Pärt-style)</option>
+                        <option value="impressionist">Impressionist (Debussy)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="tempo">Tempo (BPM)</label>
+                    <input type="number" id="tempo" min="60" max="200" value="90">
+                </div>
+                <div class="control-group">
+                    <label for="measures">Measures</label>
+                    <input type="number" id="measures" min="4" max="32" value="8">
+                </div>
+            </div>
+            
+            <div class="control-row">
+                <div class="control-group">
+                    <label for="key">Key</label>
+                    <select id="key">
+                        <option value="C">C Major</option>
+                        <option value="G">G Major</option>
+                        <option value="D">D Major</option>
+                        <option value="A">A Major</option>
+                        <option value="F">F Major</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="timeSignature">Time Signature</label>
+                    <select id="timeSignature">
+                        <option value="4/4">4/4</option>
+                        <option value="3/4">3/4</option>
+                        <option value="6/8">6/8</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="triad-settings" id="triadSettings" style="display: none;">
+                <h3>Triad Settings</h3>
+                <div class="voice-motion">
+                    <div>
+                        <label>
+                            <input type="radio" name="voicing" value="close" checked>
+                            Close Position
+                        </label>
+                    </div>
+                    <div>
+                        <label>
+                            <input type="radio" name="voicing" value="open">
+                            Open Position
+                        </label>
+                    </div>
+                    <div>
+                        <label>
+                            <input type="radio" name="voicing" value="mixed">
+                            Mixed Voicing
+                        </label>
+                    </div>
+                </div>
+                <div class="control-row" style="margin-top: 15px;">
+                    <div class="control-group">
+                        <label>Triad Motion</label>
+                        <select id="triadMotion">
+                            <option value="parallel">Parallel Motion</option>
+                            <option value="contrary">Contrary Motion</option>
+                            <option value="oblique">Oblique Motion</option>
+                            <option value="mixed">Mixed Motion</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Voice Leading</label>
+                        <select id="voiceLeading">
+                            <option value="smooth">Smooth (minimal movement)</option>
+                            <option value="leap">Leaping (dramatic)</option>
+                            <option value="chromatic">Chromatic</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button id="generateBtn">🎲 Generate</button>
+                <button id="playBtn" disabled>▶️ Play</button>
+                <button id="stopBtn" disabled>⏹️ Stop</button>
+                <button id="exportMidiBtn" disabled>💾 Export MIDI</button>
+                <button id="exportXmlBtn" disabled>📄 Export MusicXML</button>
+            </div>
+        </div>
+        
+        <div id="output">Click Generate to create your triad-based composition...</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.js"></script>
+    <script>
+        // String Quintet v17 - TRIAD FOUNDATION with BULLETPROOF-9x3
+        
+        // BULLETPROOF: Initialize with failsafe defaults
+        let composition = null;
+        let synths = [];
+        let parts = [];
+        let currentMode = 'standard';
+
+        // Initialize synths for each instrument
+        function initSynths() {
+            try {
+                for (let i = 0; i < 5; i++) {
+                    synths[i] = new Tone.PolySynth(Tone.Synth, {
+                        oscillator: { type: i === 0 ? 'triangle' : 'sawtooth' },
+                        envelope: {
+                            attack: 0.02,
+                            decay: 0.1,
+                            sustain: 0.3,
+                            release: 0.8
+                        }
+                    }).toDestination();
+                }
+                console.log('✓ Synths initialized');
+            } catch (e) {
+                console.error('Synth initialization failed:', e);
+                alert('Audio initialization failed. Please refresh the page.');
+            }
+        }
+
+        // Chord progressions with triad focus
+        const progressions = {
+            classical: ['I', 'IV', 'V', 'I', 'ii', 'V', 'I', 'I'],
+            romantic: ['I', 'vi', 'ii', 'V', 'I', 'IV', 'V', 'I'],
+            modern: ['I', 'bII', 'IV', '#iv', 'I', 'V', 'bVI', 'I'],
+            minimalist: ['I', 'I', 'V', 'V', 'I', 'I', 'V', 'I'],
+            impressionist: ['I', 'iii', 'vi', 'II', 'V', 'I', 'IV', 'I']
+        };
+
+        // Get chord notes for triads
+        function getChordNotes(key, chordSymbol) {
+            const scales = {
+                'C': [60, 62, 64, 65, 67, 69, 71],
+                'G': [67, 69, 71, 72, 74, 76, 78],
+                'D': [62, 64, 66, 67, 69, 71, 73],
+                'A': [69, 71, 73, 74, 76, 78, 80],
+                'F': [65, 67, 69, 70, 72, 74, 76]
+            };
+
+            const scale = scales[key] || scales['C'];
+            
+            // Extended chord mappings for triads
+            const chordMap = {
+                'I': [0, 2, 4],
+                'ii': [1, 3, 5],
+                'iii': [2, 4, 6],
+                'IV': [3, 5, 0],
+                'V': [4, 6, 1],
+                'vi': [5, 0, 2],
+                'vii': [6, 1, 3],
+                'bII': [1, 3, 5],
+                'bVI': [5, 0, 2],
+                '#iv': [3, 5, 0],
+                'II': [1, 3, 5]
+            };
+
+            const degrees = chordMap[chordSymbol] || chordMap['I'];
+            const triad = degrees.map(d => scale[d % 7]);
+            
+            return {
+                root: triad[0],
+                third: triad[1],
+                fifth: triad[2],
+                triad: triad,
+                inversions: {
+                    root: [triad[0], triad[1], triad[2]],
+                    first: [triad[1], triad[2], triad[0] + 12],
+                    second: [triad[2], triad[0] + 12, triad[1] + 12]
+                }
+            };
+        }
+
+        // TRIAD GENERATION - Core feature
+        function generateTriadPart(chord, instrument, voicing, measure, beat) {
+            let notes = [];
+            
+            if (currentMode === 'triad' || currentMode === 'polyphonic') {
+                switch(instrument) {
+                    case 'guitar':
+                        // Melody - independent line using chord tones
+                        const melodyNote = chord.triad[Math.floor(Math.random() * 3)] + 
+                                         (Math.random() < 0.3 ? 12 : 0);
+                        notes = [melodyNote];
+                        break;
+                        
+                    case 'violins':
+                        // Right Hand Triad - upper voices
+                        if (voicing === 'close') {
+                            notes = [chord.third + 12, chord.fifth + 12];
+                        } else if (voicing === 'open') {
+                            notes = [chord.third + 12, chord.root + 24];
+                        } else {
+                            notes = beat % 2 === 0 ? 
+                                   [chord.third + 12, chord.fifth + 12] :
+                                   [chord.root + 12, chord.third + 12];
+                        }
+                        break;
+                        
+                    case 'lower':
+                        // Left Hand Triad - lower voices
+                        if (voicing === 'close') {
+                            notes = [chord.root, chord.third];
+                        } else if (voicing === 'open') {
+                            notes = [chord.root - 12, chord.fifth];
+                        } else {
+                            notes = beat % 2 === 0 ?
+                                   [chord.root, chord.fifth] :
+                                   [chord.fifth - 12, chord.third];
+                        }
+                        // Keep cello in range
+                        notes = notes.map(n => n < 36 ? n + 12 : n > 60 ? n - 12 : n);
+                        break;
+                }
+            }
+            
+            return notes;
+        }
+
+        // Main generation function with BULLETPROOF error handling
+        function generate() {
+            try {
+                const tempo = parseInt(document.getElementById('tempo').value) || 90;
+                const measures = parseInt(document.getElementById('measures').value) || 8;
+                const key = document.getElementById('key').value || 'C';
+                const timeSignature = document.getElementById('timeSignature').value || '4/4';
+                const composer = document.getElementById('composer').value || 'classical';
+                const voicing = document.querySelector('input[name="voicing"]:checked')?.value || 'close';
+                
+                composition = {
+                    tempo: tempo,
+                    timeSignature: timeSignature,
+                    key: key,
+                    measures: [],
+                    instruments: ['Guitar', 'Violin I', 'Violin II', 'Viola', 'Cello'],
+                    progression: progressions[composer],
+                    mode: currentMode
+                };
+
+                const [beats] = timeSignature.split('/').map(Number);
+                
+                // Generate measures
+                for (let m = 0; m < measures; m++) {
+                    const measure = { number: m + 1, notes: [] };
+                    const chordSymbol = composition.progression[m % composition.progression.length];
+                    const chord = getChordNotes(key, chordSymbol);
+                    measure.chord = chordSymbol;
+
+                    if (currentMode === 'standard') {
+                        // Standard harmonic generation (from v16)
+                        for (let inst = 0; inst < 5; inst++) {
+                            for (let beat = 0; beat < beats; beat++) {
+                                let pitch;
+                                switch(inst) {
+                                    case 0: // Guitar
+                                        pitch = beat % 2 === 0 ? chord.root : chord.fifth;
+                                        break;
+                                    case 1: // Violin I
+                                        pitch = chord.third + 12;
+                                        break;
+                                    case 2: // Violin II  
+                                        pitch = chord.fifth + 12;
+                                        break;
+                                    case 3: // Viola
+                                        pitch = chord.root;
+                                        break;
+                                    case 4: // Cello
+                                        pitch = chord.root - 12;
+                                        pitch = Math.max(36, Math.min(pitch, 60));
+                                        break;
+                                }
+                                
+                                measure.notes.push({
+                                    instrument: inst,
+                                    pitch: pitch,
+                                    time: beat,
+                                    duration: 1,
+                                    velocity: 80
+                                });
+                            }
+                        }
+                    } else {
+                        // TRIAD MODE - New feature!
+                        for (let beat = 0; beat < beats; beat++) {
+                            // Guitar - melody
+                            const guitarNotes = generateTriadPart(chord, 'guitar', voicing, m, beat);
+                            measure.notes.push({
+                                instrument: 0,
+                                pitch: guitarNotes[0],
+                                time: beat,
+                                duration: 1,
+                                velocity: 80
+                            });
+                            
+                            // Violins - RH triad
+                            const violinNotes = generateTriadPart(chord, 'violins', voicing, m, beat);
+                            if (violinNotes.length >= 2) {
+                                measure.notes.push({
+                                    instrument: 1,
+                                    pitch: violinNotes[0],
+                                    time: beat,
+                                    duration: 1,
+                                    velocity: 75
+                                });
+                                measure.notes.push({
+                                    instrument: 2,
+                                    pitch: violinNotes[1],
+                                    time: beat,
+                                    duration: 1,
+                                    velocity: 75
+                                });
+                            }
+                            
+                            // Viola/Cello - LH triad
+                            const lowerNotes = generateTriadPart(chord, 'lower', voicing, m, beat);
+                            if (lowerNotes.length >= 2) {
+                                measure.notes.push({
+                                    instrument: 3,
+                                    pitch: lowerNotes[0],
+                                    time: beat,
+                                    duration: 1,
+                                    velocity: 75
+                                });
+                                measure.notes.push({
+                                    instrument: 4,
+                                    pitch: lowerNotes[1],
+                                    time: beat,
+                                    duration: 1,
+                                    velocity: 75
+                                });
+                            }
+                        }
+                    }
+                    
+                    composition.measures.push(measure);
+                }
+
+                Tone.Transport.bpm.value = tempo;
+                updateDisplay();
+                
+                document.getElementById('playBtn').disabled = false;
+                document.getElementById('exportMidiBtn').disabled = false;
+                document.getElementById('exportXmlBtn').disabled = false;
+                
+                console.log('✓ Composition generated successfully');
+            } catch (error) {
+                console.error('Generation failed:', error);
+                alert('Generation failed: ' + error.message);
+            }
+        }
+
+        // Update display
+        function updateDisplay() {
+            let output = `Generated ${composition.measures.length} measures in ${composition.key} Major\n`;
+            output += `Mode: ${currentMode.toUpperCase()} | Tempo: ${composition.tempo} BPM | Time: ${composition.timeSignature}\n`;
+            output += `Progression: ${composition.progression.join(' - ')}\n\n`;
+            
+            composition.measures.forEach(measure => {
+                output += `Measure ${measure.number} [${measure.chord}]:\n`;
+                
+                if (currentMode === 'triad' || currentMode === 'polyphonic') {
+                    output += `  MELODY: Guitar\n`;
+                    output += `  RH TRIAD: Violin I + II (upper voices)\n`;
+                    output += `  LH TRIAD: Viola + Cello (lower voices)\n`;
+                } else {
+                    composition.instruments.forEach((inst, idx) => {
+                        const notes = measure.notes.filter(n => n.instrument === idx);
+                        output += `  ${inst}: ${notes.length} notes\n`;
+                    });
+                }
+                output += '\n';
+            });
+            
+            document.getElementById('output').textContent = output;
+        }
+
+        // Play composition
+        function play() {
+            if (!composition) return;
+            
+            stop(); // Clear any existing playback
+            
+            composition.measures.forEach(measure => {
+                measure.notes.forEach(note => {
+                    const time = `${measure.number - 1}:${note.time}:0`;
+                    const part = new Tone.Part((time, value) => {
+                        synths[value.inst].triggerAttackRelease(value.pitch, '4n', time);
+                    }, [{time: time, pitch: Tone.Frequency(note.pitch, 'midi'), inst: note.instrument}]).start(0);
+                    parts.push(part);
+                });
+            });
+            
+            Tone.Transport.start();
+            
+            document.getElementById('playBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = false;
+        }
+
+        // Stop playback
+        function stop() {
+            parts.forEach(part => {
+                part.stop();
+                part.dispose();
+            });
+            parts = [];
+            
+            Tone.Transport.stop();
+            Tone.Transport.position = 0;
+            
+            document.getElementById('playBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+        }
+
+        // Export MIDI with BULLETPROOF error handling
+        function exportMIDI() {
+            try {
+                if (!composition) throw new Error('No composition to export');
+                
+                const ticksPerQuarter = 480;
+                const tracks = [];
+                
+                // Tempo track
+                const tempoTrack = [];
+                const microsecondsPerQuarter = Math.round(60000000 / composition.tempo);
+                tempoTrack.push(0x00, 0xFF, 0x51, 0x03);
+                tempoTrack.push((microsecondsPerQuarter >> 16) & 0xFF);
+                tempoTrack.push((microsecondsPerQuarter >> 8) & 0xFF);
+                tempoTrack.push(microsecondsPerQuarter & 0xFF);
+                tempoTrack.push(0x00, 0xFF, 0x2F, 0x00);
+                tracks.push(tempoTrack);
+                
+                // Instrument tracks
+                const midiPrograms = [24, 40, 40, 41, 42]; // Guitar, Violin, Violin, Viola, Cello
+                
+                for (let inst = 0; inst < 5; inst++) {
+                    const track = [];
+                    const events = [];
+                    
+                    // Program change
+                    track.push(0x00, 0xC0 | inst, midiPrograms[inst]);
+                    
+                    // Collect notes
+                    composition.measures.forEach((measure, mIdx) => {
+                        const instNotes = measure.notes.filter(n => n.instrument === inst);
+                        instNotes.forEach(note => {
+                            const startTick = (mIdx * 4 + note.time) * ticksPerQuarter;
+                            const endTick = startTick + ticksPerQuarter;
+                            
+                            events.push({ tick: startTick, type: 'on', pitch: note.pitch });
+                            events.push({ tick: endTick, type: 'off', pitch: note.pitch });
+                        });
+                    });
+                    
+                    // Sort events
+                    events.sort((a, b) => a.tick - b.tick || (a.type === 'off' ? -1 : 1));
+                    
+                    let currentTick = 0;
+                    events.forEach(event => {
+                        const delta = event.tick - currentTick;
+                        if (delta < 128) {
+                            track.push(delta);
+                        } else {
+                            track.push(((delta >> 7) & 0x7F) | 0x80, delta & 0x7F);
+                        }
+                        
+                        if (event.type === 'on') {
+                            track.push(0x90 | inst, event.pitch, 80);
+                        } else {
+                            track.push(0x80 | inst, event.pitch, 0);
+                        }
+                        currentTick = event.tick;
+                    });
+                    
+                    track.push(0x00, 0xFF, 0x2F, 0x00);
+                    tracks.push(track);
+                }
+                
+                // Build MIDI file
+                const header = [0x4D, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06, 
+                              0x00, 0x01, 0x00, tracks.length,
+                              (ticksPerQuarter >> 8) & 0xFF, ticksPerQuarter & 0xFF];
+                
+                let midiData = [...header];
+                tracks.forEach(track => {
+                    midiData.push(0x4D, 0x54, 0x72, 0x6B);
+                    const len = track.length;
+                    midiData.push((len >> 24) & 0xFF, (len >> 16) & 0xFF, 
+                                (len >> 8) & 0xFF, len & 0xFF);
+                    midiData.push(...track);
+                });
+                
+                // Download
+                const blob = new Blob([new Uint8Array(midiData)], { type: 'audio/midi' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `quintet_triad_${Date.now()}.mid`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                console.log('✓ MIDI exported successfully');
+            } catch (error) {
+                console.error('MIDI export failed:', error);
+                alert('MIDI export failed: ' + error.message);
+            }
+        }
+
+        // Export MusicXML
+        function exportMusicXML() {
+            try {
+                if (!composition) throw new Error('No composition to export');
+                
+                let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+                xml += '<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">\n';
+                xml += '<score-partwise version="3.1">\n';
+                xml += '  <work><work-title>Triad Composition</work-title></work>\n';
+                xml += '  <part-list>\n';
+                
+                composition.instruments.forEach((inst, idx) => {
+                    xml += `    <score-part id="P${idx + 1}"><part-name>${inst}</part-name></score-part>\n`;
+                });
+                xml += '  </part-list>\n';
+                
+                for (let inst = 0; inst < 5; inst++) {
+                    xml += `  <part id="P${inst + 1}">\n`;
+                    
+                    composition.measures.forEach((measure, mIdx) => {
+                        xml += `    <measure number="${measure.number}">\n`;
+                        
+                        if (mIdx === 0) {
+                            xml += '      <attributes>\n';
+                            xml += '        <divisions>4</divisions>\n';
+                            xml += '        <key><fifths>0</fifths></key>\n';
+                            const [beats, beatType] = composition.timeSignature.split('/');
+                            xml += `        <time><beats>${beats}</beats><beat-type>${beatType}</beat-type></time>\n`;
+                            xml += `        <clef><sign>${inst === 4 ? 'F' : 'G'}</sign><line>${inst === 4 ? '4' : '2'}</line></clef>\n`;
+                            xml += '      </attributes>\n';
+                        }
+                        
+                        const instNotes = measure.notes.filter(n => n.instrument === inst);
+                        instNotes.forEach(note => {
+                            const noteNames = ['C', 'C', 'D', 'D', 'E', 'F', 'F', 'G', 'G', 'A', 'A', 'B'];
+                            const step = noteNames[note.pitch % 12];
+                            const octave = Math.floor(note.pitch / 12) - 1;
+                            
+                            xml += '      <note>\n';
+                            xml += `        <pitch><step>${step}</step><octave>${octave}</octave></pitch>\n`;
+                            xml += '        <duration>4</duration>\n';
+                            xml += '        <type>quarter</type>\n';
+                            xml += '      </note>\n';
+                        });
+                        
+                        xml += '    </measure>\n';
+                    });
+                    
+                    xml += '  </part>\n';
+                }
+                
+                xml += '</score-partwise>';
+                
+                // Download
+                const blob = new Blob([xml], { type: 'application/vnd.recordare.musicxml+xml' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `quintet_triad_${Date.now()}.musicxml`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                console.log('✓ MusicXML exported successfully');
+            } catch (error) {
+                console.error('MusicXML export failed:', error);
+                alert('MusicXML export failed: ' + error.message);
+            }
+        }
+
+        // Mode selection
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                currentMode = e.target.dataset.mode;
+                
+                // Show/hide triad settings
+                document.getElementById('triadSettings').style.display = 
+                    (currentMode === 'triad' || currentMode === 'polyphonic') ? 'block' : 'none';
+                
+                console.log('Mode changed to:', currentMode);
+            });
+        });
+
+        // Event listeners
+        document.getElementById('generateBtn').addEventListener('click', generate);
+        document.getElementById('playBtn').addEventListener('click', play);
+        document.getElementById('stopBtn').addEventListener('click', stop);
+        document.getElementById('exportMidiBtn').addEventListener('click', exportMIDI);
+        document.getElementById('exportXmlBtn').addEventListener('click', exportMusicXML);
+
+        // Initialize on load
+        initSynths();
+        generate();
+    </script>
+</body>
+</html>
