@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>String Quintet Composer v32 - COMPOSER PROFILES</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #1e3c72;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .version-badge {
+            display: inline-block;
+            background: #22c55e;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        .composer-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        .composer-selector {
+            margin: 20px 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            border-radius: 12px;
+            border: 2px solid #667eea;
+        }
+        .composer-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .composer-card {
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            border: 2px solid transparent;
+        }
+        .composer-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .composer-card.selected {
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 20px rgba(102,126,234,0.3);
+        }
+        .composer-card h4 {
+            margin: 0 0 5px 0;
+            color: #333;
+        }
+        .composer-card p {
+            margin: 0;
+            font-size: 12px;
+            color: #666;
+        }
+        .bach { background: #fef3c7; }
+        .mozart { background: #fce7f3; }
+        .beethoven { background: #ddd6fe; }
+        .debussy { background: #e0e7ff; }
+        .glass { background: #cffafe; }
+        .pop { background: #d1fae5; }
+        .jazz { background: #fed7aa; }
+        .control-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .control-group h3 {
+            margin-top: 0;
+            color: #555;
+            font-size: 16px;
+        }
+        label {
+            display: inline-block;
+            margin-right: 10px;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        input, select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #5a67d8;
+        }
+        .generate-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-size: 18px;
+            padding: 15px 40px;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f3f4f6;
+        }
+        .success { background: #d1fae5; color: #065f46; }
+        .error { background: #fee2e2; color: #991b1b; }
+        .warning { background: #fef3c7; color: #92400e; }
+        .failsafe-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #22c55e;
+            color: white;
+            border-radius: 8px;
+            font-weight: bold;
+            z-index: 1000;
+        }
+        .debug-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            max-width: 400px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 15px;
+            background: rgba(31, 41, 55, 0.95);
+            color: #10b981;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            display: none;
+        }
+        .debug-panel.show { display: block; }
+        .style-preview {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f9fafb;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="failsafe-indicator" id="failsafeIndicator">FAILSAFE: READY</div>
+    
+    <div class="container">
+        <h1>
+            String Quintet Composer
+            <span class="version-badge">v32</span>
+            <span class="composer-badge">COMPOSER PROFILES</span>
+        </h1>
+        
+        <div class="composer-selector">
+            <h3>🎼 Select Composer Style</h3>
+            <div class="composer-cards">
+                <div class="composer-card bach" onclick="selectComposer('bach')" id="bach-card">
+                    <h4>J.S. Bach</h4>
+                    <p>Baroque • Counterpoint</p>
+                </div>
+                <div class="composer-card mozart" onclick="selectComposer('mozart')" id="mozart-card">
+                    <h4>Mozart</h4>
+                    <p>Classical • Elegant</p>
+                </div>
+                <div class="composer-card beethoven" onclick="selectComposer('beethoven')" id="beethoven-card">
+                    <h4>Beethoven</h4>
+                    <p>Classical • Dramatic</p>
+                </div>
+                <div class="composer-card debussy" onclick="selectComposer('debussy')" id="debussy-card">
+                    <h4>Debussy</h4>
+                    <p>Impressionist</p>
+                </div>
+                <div class="composer-card glass" onclick="selectComposer('glass')" id="glass-card">
+                    <h4>Philip Glass</h4>
+                    <p>Minimalist</p>
+                </div>
+                <div class="composer-card pop selected" onclick="selectComposer('pop')" id="pop-card">
+                    <h4>Pop/Rock</h4>
+                    <p>Contemporary</p>
+                </div>
+                <div class="composer-card jazz" onclick="selectComposer('jazz')" id="jazz-card">
+                    <h4>Jazz</h4>
+                    <p>Swing • Extended</p>
+                </div>
+            </div>
+            <div class="style-preview" id="stylePreview">
+                <strong>Pop/Rock Style:</strong> I-V-vi-IV progression, steady rhythms, guitar strumming, melody-focused
+            </div>
+        </div>
+
+        <div class="control-group">
+            <h3>🛡️ Failsafe Settings</h3>
+            <label>
+                <input type="checkbox" id="useFailsafe" checked>
+                Enable Failsafe Protection
+            </label>
+            <label>
+                <input type="checkbox" id="showDebug">
+                Show Debug Info
+            </label>
+        </div>
+
+        <div class="control-group">
+            <h3>📊 Basic Settings</h3>
+            <label>Tempo: <span id="tempoDisplay">120</span> BPM</label>
+            <input type="range" id="tempo" min="40" max="200" value="120" oninput="updateTempo(this.value)">
+            <br>
+            <label>Measures: <input type="number" id="measures" value="16" min="4" max="64"></label>
+            <label>Time Signature: 
+                <select id="timeSig">
+                    <option value="4/4">4/4</option>
+                    <option value="3/4">3/4</option>
+                    <option value="6/8">6/8</option>
+                </select>
+            </label>
+        </div>
+
+        <div class="control-group">
+            <h3>🎵 Advanced Options</h3>
+            <label><input type="checkbox" id="useCustomProgression"> Custom Progression</label>
+            <input type="text" id="customProgression" placeholder="e.g. I,vi,IV,V" style="display:none;">
+            <br>
+            <label><input type="checkbox" id="includeOrnamentation"> Include Ornamentation</label>
+            <label><input type="checkbox" id="includeDynamics" checked> Include Dynamics</label>
+        </div>
+
+        <button class="generate-btn" onclick="generateComposition()">🎼 Generate Composition</button>
+        <button onclick="testFailsafe()">🧪 Test Failsafe</button>
+        <button onclick="previewStyle()">👁️ Preview Current Style</button>
+        <button onclick="randomComposer()">🎲 Random Composer</button>
+
+        <div id="status" class="status"></div>
+    </div>
+
+    <div class="debug-panel" id="debugPanel"></div>
+
+    <script>
+        // CORE CONSTANTS - BULLETPROOF
+        const DIVISIONS = 256;
+        const FILE_EXTENSION = '.musicxml';
+        const MIME_TYPE = 'application/vnd.recordare.musicxml+xml';
+
+        // Instrument ranges - VALIDATED
+        const instrumentRanges = {
+            'Guitar': { min: 40, max: 76 },
+            'Violin 1': { min: 55, max: 88 },
+            'Violin 2': { min: 55, max: 88 },
+            'Viola': { min: 48, max: 76 },
+            'Cello': { min: 36, max: 69 }
+        };
+
+        // Current composer selection
+        let currentComposer = 'pop';
+        let failsafeCount = 0;
+
+        // COMPOSER PROFILES - The heart of v32
+        const COMPOSER_PROFILES = {
+            'bach': {
+                name: 'J.S. Bach',
+                era: 'Baroque',
+                progression: ['I', 'V', 'I', 'IV', 'I', 'V', 'I'],
+                rhythmPattern: 'constant_eighth',
+                texture: 'polyphonic',
+                dynamics: 'terraced',
+                tempo: 96,
+                guitarStyle: 'arpeggios',
+                ornaments: true,
+                description: 'Contrapuntal texture with constant eighth notes'
+            },
+            'mozart': {
+                name: 'W.A. Mozart',
+                era: 'Classical',
+                progression: ['I', 'V7', 'I', 'IV', 'I', 'V', 'I'],
+                rhythmPattern: 'alberti',
+                texture: 'melody_accompaniment',
+                dynamics: 'gradual',
+                tempo: 120,
+                guitarStyle: 'alberti',
+                ornaments: true,
+                description: 'Elegant melodies with Alberti bass accompaniment'
+            },
+            'beethoven': {
+                name: 'L. van Beethoven',
+                era: 'Classical-Romantic',
+                progression: ['I', 'I', 'V', 'V', 'vi', 'IV', 'V', 'I'],
+                rhythmPattern: 'dramatic',
+                texture: 'homophonic',
+                dynamics: 'sforzando',
+                tempo: 108,
+                guitarStyle: 'block',
+                ornaments: false,
+                description: 'Dramatic dynamics with strong rhythmic motifs'
+            },
+            'debussy': {
+                name: 'Claude Debussy',
+                era: 'Impressionist',
+                progression: ['I', 'bVII', 'IV', 'I', 'ii', 'V', 'I'],
+                rhythmPattern: 'flowing',
+                texture: 'coloristic',
+                dynamics: 'subtle',
+                tempo: 72,
+                guitarStyle: 'tremolo',
+                ornaments: false,
+                description: 'Flowing harmonies with coloristic effects'
+            },
+            'glass': {
+                name: 'Philip Glass',
+                era: 'Minimalist',
+                progression: ['I', 'I', 'IV', 'IV', 'I', 'I', 'V', 'V'],
+                rhythmPattern: 'repetitive',
+                texture: 'additive',
+                dynamics: 'gradual',
+                tempo: 144,
+                guitarStyle: 'repetitive',
+                ornaments: false,
+                description: 'Repetitive patterns with gradual changes'
+            },
+            'pop': {
+                name: 'Pop/Rock',
+                era: 'Contemporary',
+                progression: ['I', 'V', 'vi', 'IV'],
+                rhythmPattern: 'steady',
+                texture: 'melody_chords',
+                dynamics: 'consistent',
+                tempo: 120,
+                guitarStyle: 'strumming',
+                ornaments: false,
+                description: 'I-V-vi-IV progression with steady rhythm'
+            },
+            'jazz': {
+                name: 'Jazz',
+                era: 'Jazz',
+                progression: ['IMaj7', 'vi7', 'ii7', 'V7'],
+                rhythmPattern: 'swing',
+                texture: 'extended_harmony',
+                dynamics: 'expressive',
+                tempo: 132,
+                guitarStyle: 'jazz_comping',
+                ornaments: true,
+                description: 'ii-V-I with extended harmonies and swing'
+            }
+        };
+
+        // Rhythm patterns for each style
+        const RHYTHM_PATTERNS = {
+            'constant_eighth': [128, 128, 128, 128, 128, 128, 128, 128],
+            'alberti': [128, 128, 128, 128, 128, 128, 128, 128],
+            'dramatic': [256, 128, 128, 256, 256],
+            'flowing': [384, 128, 256, 384],
+            'repetitive': [128, 128, 128, 128, 128, 128, 128, 128],
+            'steady': [256, 256, 256, 256],
+            'swing': [384, 128, 384, 128]
+        };
+
+        function selectComposer(composerId) {
+            currentComposer = composerId;
+            
+            // Update UI
+            document.querySelectorAll('.composer-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.getElementById(`${composerId}-card`).classList.add('selected');
+            
+            // Update preview
+            const profile = COMPOSER_PROFILES[composerId];
+            document.getElementById('stylePreview').innerHTML = 
+                `<strong>${profile.name} Style:</strong> ${profile.description}`;
+            
+            // Update tempo
+            document.getElementById('tempo').value = profile.tempo;
+            document.getElementById('tempoDisplay').textContent = profile.tempo;
+            
+            // Update ornaments checkbox
+            document.getElementById('includeOrnamentation').checked = profile.ornaments;
+            
+            debugLog(`Selected composer: ${profile.name} (${profile.era})`);
+        }
+
+        function debugLog(message) {
+            if (!document.getElementById('showDebug').checked) return;
+            
+            const panel = document.getElementById('debugPanel');
+            const time = new Date().toTimeString().substring(0, 8);
+            panel.innerHTML += `[${time}] ${message}\n`;
+            panel.classList.add('show');
+            panel.scrollTop = panel.scrollHeight;
+            console.log(message);
+        }
+
+        // FAILSAFE NOTE GENERATION - Bulletproof from v31
+        function generateNotesWithFailsafe(instrument, measure, chord, profile) {
+            let notes = [];
+            
+            try {
+                // Try profile-specific generation
+                notes = generateProfileNotes(instrument, chord, profile);
+                
+                if (notes.length > 0) {
+                    debugLog(`✓ Generated ${notes.length} notes for ${instrument} m${measure}`);
+                }
+            } catch (error) {
+                debugLog(`⚠️ Profile generation failed: ${error.message}`);
+            }
+            
+            // FAILSAFE LEVEL 1
+            if (!notes || notes.length === 0) {
+                if (document.getElementById('useFailsafe').checked) {
+                    failsafeCount++;
+                    debugLog(`🛡️ Failsafe L1 activated for ${instrument}`);
+                    notes = generateSimpleNotes(instrument, chord);
+                    updateFailsafeIndicator('ACTIVE');
+                }
+            }
+            
+            // FAILSAFE LEVEL 2
+            if (!notes || notes.length === 0) {
+                debugLog(`🛡️ Failsafe L2 activated for ${instrument}`);
+                const range = instrumentRanges[instrument];
+                const mid = Math.floor((range.min + range.max) / 2);
+                notes = [
+                    { midi: mid, duration: 256 },
+                    { midi: mid + 2, duration: 256 },
+                    { midi: mid - 1, duration: 256 },
+                    { midi: mid, duration: 256 }
+                ];
+            }
+            
+            return notes;
+        }
+
+        // Generate notes based on composer profile
+        function generateProfileNotes(instrument, chord, profile) {
+            const range = instrumentRanges[instrument];
+            const chordNotes = getChordNotes(chord, profile.era === 'Jazz');
+            const rhythms = RHYTHM_PATTERNS[profile.rhythmPattern];
+            const notes = [];
+            
+            // Guitar-specific patterns
+            if (instrument === 'Guitar') {
+                if (profile.guitarStyle === 'strumming') {
+                    // Strummed chords
+                    for (let i = 0; i < 4; i++) {
+                        const midi = 48 + chordNotes[0];
+                        notes.push({ 
+                            midi: Math.min(range.max, midi), 
+                            duration: 256,
+                            chord: false 
+                        });
+                        // Add chord tones
+                        if (i % 2 === 0) {
+                            notes.push({ 
+                                midi: Math.min(range.max, 48 + chordNotes[1]), 
+                                duration: 0,
+                                chord: true 
+                            });
+                            notes.push({ 
+                                midi: Math.min(range.max, 48 + chordNotes[2]), 
+                                duration: 0,
+                                chord: true 
+                            });
+                        }
+                    }
+                } else if (profile.guitarStyle === 'alberti') {
+                    // Alberti bass pattern
+                    const pattern = [0, 2, 1, 2];
+                    pattern.forEach(index => {
+                        const midi = 48 + chordNotes[index % chordNotes.length];
+                        notes.push({ 
+                            midi: Math.min(range.max, midi), 
+                            duration: 128 
+                        });
+                    });
+                } else if (profile.guitarStyle === 'arpeggios') {
+                    // Bach-style arpeggios
+                    for (let i = 0; i < 8; i++) {
+                        const noteIndex = i % chordNotes.length;
+                        const octaveShift = Math.floor(i / chordNotes.length) * 12;
+                        const midi = 48 + chordNotes[noteIndex] + octaveShift;
+                        notes.push({ 
+                            midi: Math.min(range.max, midi), 
+                            duration: 128 
+                        });
+                    }
+                } else if (profile.guitarStyle === 'repetitive') {
+                    // Glass-style repetition
+                    const pattern = [0, 1, 2, 1];
+                    pattern.forEach(() => {
+                        pattern.forEach(index => {
+                            const midi = 48 + chordNotes[index % chordNotes.length];
+                            notes.push({ 
+                                midi: Math.min(range.max, midi), 
+                                duration: 64 
+                            });
+                        });
+                    });
+                } else {
+                    // Default pattern
+                    return generateSimpleNotes(instrument, chord);
+                }
+            } 
+            // Violin 1 - Melody
+            else if (instrument === 'Violin 1') {
+                if (profile.texture === 'polyphonic') {
+                    // Bach-style melodic line
+                    const melodicPattern = [0, 1, 2, 1, 0, -1, 0, 2];
+                    melodicPattern.forEach((interval, i) => {
+                        const base = 67 + chordNotes[0];
+                        const midi = Math.min(range.max, Math.max(range.min, base + interval));
+                        notes.push({ 
+                            midi: midi, 
+                            duration: rhythms[i % rhythms.length] 
+                        });
+                    });
+                } else if (profile.texture === 'melody_accompaniment') {
+                    // Mozart-style melody
+                    const melodicShape = [0, 2, 4, 2, 3, 1, 2, 0];
+                    melodicShape.forEach((degree, i) => {
+                        const midi = 67 + chordNotes[degree % chordNotes.length];
+                        notes.push({ 
+                            midi: Math.min(range.max, midi), 
+                            duration: i % 4 === 3 ? 384 : 128 
+                        });
+                    });
+                } else {
+                    // Simple melodic line
+                    for (let i = 0; i < 4; i++) {
+                        const midi = 67 + chordNotes[i % chordNotes.length];
+                        notes.push({ 
+                            midi: Math.min(range.max, midi), 
+                            duration: 256 
+                        });
+                    }
+                }
+            }
+            // Other instruments - Harmony
+            else {
+                // Simple harmony based on style
+                let patternLength = rhythms.reduce((a, b) => a + b, 0);
+                let currentDuration = 0;
+                let noteIndex = 0;
+                
+                while (currentDuration < 1024) {
+                    const chordTone = instrument === 'Cello' ? 0 : 
+                                     instrument === 'Viola' ? 1 : 2;
+                    const octaveAdjust = instrument === 'Cello' ? -12 : 0;
+                    const midi = 60 + chordNotes[chordTone % chordNotes.length] + octaveAdjust;
+                    const duration = rhythms[noteIndex % rhythms.length];
+                    
+                    notes.push({ 
+                        midi: Math.min(range.max, Math.max(range.min, midi)), 
+                        duration: duration 
+                    });
+                    
+                    currentDuration += duration;
+                    noteIndex++;
+                }
+            }
+            
+            return notes;
+        }
+
+        // Simple note generation (failsafe)
+        function generateSimpleNotes(instrument, chord) {
+            const range = instrumentRanges[instrument];
+            const chordNotes = getChordNotes(chord, false);
+            const notes = [];
+            
+            for (let i = 0; i < 4; i++) {
+                const chordTone = chordNotes[i % chordNotes.length];
+                const octave = Math.floor((range.min + range.max) / 2 / 12);
+                const midi = chordTone + (octave * 12);
+                
+                notes.push({ 
+                    midi: Math.max(range.min, Math.min(range.max, midi)), 
+                    duration: 256 
+                });
+            }
+            
+            return notes;
+        }
+
+        function getChordNotes(chordSymbol, isJazz) {
+            const basicChords = {
+                'I': [0, 4, 7],
+                'ii': [2, 5, 9],
+                'iii': [4, 7, 11],
+                'IV': [5, 9, 0],
+                'V': [7, 11, 2],
+                'V7': [7, 11, 2, 5],
+                'vi': [9, 0, 4],
+                'bVII': [10, 2, 5]
+            };
+            
+            const jazzChords = {
+                'IMaj7': [0, 4, 7, 11],
+                'ii7': [2, 5, 9, 0],
+                'V7': [7, 11, 2, 5],
+                'vi7': [9, 0, 4, 7]
+            };
+            
+            if (isJazz && jazzChords[chordSymbol]) {
+                return jazzChords[chordSymbol];
+            }
+            
+            return basicChords[chordSymbol] || basicChords['I'];
+        }
+
+        function midiToNote(midi) {
+            const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+            const octave = Math.floor(midi / 12) - 1;
+            const noteName = noteNames[midi % 12];
+            return { 
+                step: noteName.replace('#', ''), 
+                alter: noteName.includes('#') ? 1 : 0, 
+                octave 
+            };
+        }
+
+        function generateMusicXML() {
+            const profile = COMPOSER_PROFILES[currentComposer];
+            const tempo = document.getElementById('tempo').value;
+            const measures = document.getElementById('measures').value;
+            const timeSig = document.getElementById('timeSig').value.split('/');
+            
+            failsafeCount = 0;
+            debugLog(`Generating ${profile.name} style composition...`);
+            
+            let xml = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" 
+"http://www.musicxml.org/dtds/partwise.dtd">
+<score-partwise version="3.1">
+  <work><work-title>String Quintet in ${profile.name} Style</work-title></work>
+  <identification>
+    <creator type="composer">Style of ${profile.name}</creator>
+    <encoding>
+      <software>Quintet Composer v32 - Composer Profiles</software>
+      <encoding-date>${new Date().toISOString().split('T')[0]}</encoding-date>
+    </encoding>
+  </identification>
+  <part-list>`;
+
+            const instruments = ['Guitar', 'Violin 1', 'Violin 2', 'Viola', 'Cello'];
+            
+            instruments.forEach((inst, idx) => {
+                xml += `
+    <score-part id="P${idx + 1}">
+      <part-name>${inst}</part-name>
+    </score-part>`;
+            });
+            
+            xml += `
+  </part-list>`;
+
+            // Generate parts
+            instruments.forEach((instrumentName, partIndex) => {
+                xml += `
+  <part id="P${partIndex + 1}">`;
+                
+                const progression = document.getElementById('useCustomProgression').checked ?
+                    document.getElementById('customProgression').value.split(',').map(c => c.trim()) :
+                    profile.progression;
+                
+                for (let measure = 0; measure < measures; measure++) {
+                    const chord = progression[measure % progression.length];
+                    
+                    xml += `
+    <measure number="${measure + 1}">`;
+                    
+                    if (measure === 0) {
+                        xml += `
+      <attributes>
+        <divisions>${DIVISIONS}</divisions>
+        <key><fifths>0</fifths></key>
+        <time>
+          <beats>${timeSig[0]}</beats>
+          <beat-type>${timeSig[1]}</beat-type>
+        </time>
+        <clef>
+          <sign>${instrumentName === 'Cello' ? 'F' : 'G'}</sign>
+          <line>${instrumentName === 'Cello' ? '4' : '2'}</line>
+        </clef>
+      </attributes>
+      <direction placement="above">
+        <direction-type>
+          <metronome>
+            <beat-unit>quarter</beat-unit>
+            <per-minute>${tempo}</per-minute>
+          </metronome>
+        </direction-type>
+      </direction>`;
+                        
+                        // Add initial dynamic
+                        if (document.getElementById('includeDynamics').checked) {
+                            const dynamics = profile.dynamics === 'terraced' ? 'f' : 
+                                          profile.dynamics === 'subtle' ? 'pp' : 'mf';
+                            xml += `
+      <direction placement="below">
+        <direction-type>
+          <dynamics><${dynamics}/></dynamics>
+        </direction-type>
+      </direction>`;
+                        }
+                    }
+                    
+                    // Generate notes with failsafe
+                    const notes = generateNotesWithFailsafe(
+                        instrumentName, 
+                        measure + 1, 
+                        chord, 
+                        profile
+                    );
+                    
+                    notes.forEach((noteData, noteIndex) => {
+                        const note = midiToNote(noteData.midi);
+                        xml += `
+      <note>
+        ${noteData.chord ? '<chord/>' : ''}
+        <pitch>
+          <step>${note.step}</step>
+          ${note.alter ? `<alter>${note.alter}</alter>` : ''}
+          <octave>${note.octave}</octave>
+        </pitch>
+        <duration>${noteData.duration}</duration>
+        <type>${getDurationType(noteData.duration)}</type>`;
+                        
+                        // Add ornaments for appropriate styles
+                        if (profile.ornaments && Math.random() < 0.1 && noteIndex === 0) {
+                            xml += `
+        <ornaments>
+          <trill-mark/>
+        </ornaments>`;
+                        }
+                        
+                        xml += `
+      </note>`;
+                    });
+                    
+                    xml += `
+    </measure>`;
+                }
+                
+                xml += `
+  </part>`;
+            });
+            
+            xml += `
+</score-partwise>`;
+
+            debugLog(`Composition complete: ${failsafeCount} failsafes triggered`);
+            return xml;
+        }
+
+        function getDurationType(duration) {
+            if (duration >= 1024) return 'whole';
+            if (duration >= 512) return 'half';
+            if (duration >= 384) return 'dotted-quarter';
+            if (duration >= 256) return 'quarter';
+            if (duration >= 128) return 'eighth';
+            return 'sixteenth';
+        }
+
+        function generateComposition() {
+            try {
+                updateFailsafeIndicator('GENERATING');
+                const profile = COMPOSER_PROFILES[currentComposer];
+                showStatus(`Generating ${profile.name} style composition...`, 'status');
+                
+                const musicXML = generateMusicXML();
+                downloadMusicXML(musicXML);
+                
+                if (failsafeCount > 0) {
+                    showStatus(`${profile.name} composition generated (${failsafeCount} failsafes used)`, 'warning');
+                } else {
+                    showStatus(`${profile.name} composition generated successfully!`, 'success');
+                }
+                updateFailsafeIndicator('READY');
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+                updateFailsafeIndicator('ERROR');
+                debugLog(`Fatal error: ${error.message}`);
+            }
+        }
+
+        function downloadMusicXML(xmlContent) {
+            const profile = COMPOSER_PROFILES[currentComposer];
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+            const filename = `quintet_v32_${currentComposer}_${timestamp}${FILE_EXTENSION}`;
+            
+            const blob = new Blob([xmlContent], { type: MIME_TYPE });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            debugLog(`Downloaded: ${filename}`);
+        }
+
+        function updateTempo(value) {
+            document.getElementById('tempoDisplay').textContent = value;
+        }
+
+        function updateFailsafeIndicator(status) {
+            const indicator = document.getElementById('failsafeIndicator');
+            indicator.textContent = `FAILSAFE: ${status}`;
+            indicator.style.background = 
+                status === 'ACTIVE' ? '#f59e0b' :
+                status === 'ERROR' ? '#ef4444' :
+                status === 'GENERATING' ? '#3b82f6' : '#22c55e';
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+
+        function testFailsafe() {
+            debugLog('=== TESTING FAILSAFE SYSTEM ===');
+            showStatus('Testing failsafe system...', 'status');
+            
+            const testNotes = generateNotesWithFailsafe(
+                'Violin 1', 
+                1, 
+                'I', 
+                COMPOSER_PROFILES['bach']
+            );
+            
+            if (testNotes && testNotes.length > 0) {
+                showStatus('Failsafe test successful!', 'success');
+                debugLog(`Test generated ${testNotes.length} notes`);
+            } else {
+                showStatus('Failsafe test failed!', 'error');
+            }
+        }
+
+        function previewStyle() {
+            const profile = COMPOSER_PROFILES[currentComposer];
+            alert(`${profile.name} Style Preview:\n\n` +
+                  `Era: ${profile.era}\n` +
+                  `Progression: ${profile.progression.join(' - ')}\n` +
+                  `Texture: ${profile.texture}\n` +
+                  `Rhythm: ${profile.rhythmPattern}\n` +
+                  `Tempo: ${profile.tempo} BPM\n` +
+                  `Guitar Style: ${profile.guitarStyle}`);
+        }
+
+        function randomComposer() {
+            const composers = Object.keys(COMPOSER_PROFILES);
+            const random = composers[Math.floor(Math.random() * composers.length)];
+            selectComposer(random);
+        }
+
+        // Event listeners
+        document.getElementById('useCustomProgression').addEventListener('change', (e) => {
+            document.getElementById('customProgression').style.display = 
+                e.target.checked ? 'inline-block' : 'none';
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            selectComposer('pop');
+            showStatus('Ready - Select a composer style and generate', 'status');
+            debugLog('v32 Composer Profiles initialized');
+        });
+    </script>
+</body>
+</html>
