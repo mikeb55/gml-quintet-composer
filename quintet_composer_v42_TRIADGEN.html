@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quintet Composer v42 - TriadGen Harmony</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .version-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+        
+        .status-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .main-content {
+            padding: 30px;
+        }
+        
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .profile-card {
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .profile-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .profile-card.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .control-group {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .harmony-display {
+            background: #2d3748;
+            color: #48bb78;
+            font-family: 'Courier New', monospace;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 13px;
+        }
+        
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-musicxml {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        }
+        
+        .btn-midi {
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        select, input[type="range"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #cbd5e0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎼 Quintet Composer <span class="version-badge">v42 TriadGen</span></h1>
+            <p>Enhanced with TriadGen Harmony System + Scale-Based Melodies</p>
+            <div class="status-indicator" id="status">Ready</div>
+        </div>
+        
+        <div class="main-content">
+            <div class="composer-profiles">
+                <h3>Select Composer Style:</h3>
+                <div class="profile-grid" id="profileGrid"></div>
+            </div>
+            
+            <div class="control-group">
+                <h3>Composition Settings</h3>
+                <div class="controls">
+                    <div>
+                        <label>Key:
+                            <select id="key">
+                                <option value="C">C Major</option>
+                                <option value="G">G Major</option>
+                                <option value="D">D Major</option>
+                                <option value="A">A Major</option>
+                                <option value="F">F Major</option>
+                                <option value="Bb">B♭ Major</option>
+                                <option value="Am">A Minor</option>
+                                <option value="Em">E Minor</option>
+                                <option value="Dm">D Minor</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div>
+                        <label>Tempo: <span id="tempoValue">120</span> BPM
+                            <input type="range" id="tempo" min="40" max="200" value="120">
+                        </label>
+                    </div>
+                    <div>
+                        <label>Measures: <span id="measuresValue">16</span>
+                            <input type="range" id="measures" min="8" max="64" value="16" step="4">
+                        </label>
+                    </div>
+                    <div>
+                        <label>Complexity:
+                            <select id="complexity">
+                                <option value="simple">Simple</option>
+                                <option value="moderate" selected>Moderate</option>
+                                <option value="complex">Complex</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="harmony-display" id="harmonyDisplay">
+                Harmony analysis will appear here...
+            </div>
+            
+            <div class="export-buttons">
+                <button id="generateMusicXML" class="btn-musicxml">📄 Export MusicXML</button>
+                <button id="generateMIDI" class="btn-midi">🎹 Export MIDI</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ============================================
+        // TRIADGEN INTEGRATION - Harmony System
+        // ============================================
+        const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        
+        function midiToNoteName(midi) {
+            const octave = Math.floor(midi / 12) - 1;
+            return noteNames[midi % 12] + octave;
+        }
+        
+        // From TriadGen - Inversion system
+        function applyInversion(notes, inversion) {
+            const inverted = [...notes];
+            for (let i = 0; i < inversion; i++) {
+                if (inverted.length > 0) {
+                    const note = inverted.shift();
+                    inverted.push(note + 12);
+                }
+            }
+            return inverted;
+        }
+        
+        // ============================================
+        // ENHANCED COMPOSER PROFILES
+        // ============================================
+        const composers = [
+            {
+                name: 'J.S. Bach',
+                era: 'Baroque (1685-1750)',
+                color: '#8B4513',
+                tempo: 108,
+                characteristics: {
+                    harmony: 'functional',
+                    texture: 'polyphonic',
+                    rhythm: 'constant_motion',
+                    chordTypes: [[0,4,7], [0,3,7], [0,4,7,11]], // Major, minor, maj7
+                    progressions: [
+                        ['I', 'IV', 'V', 'I'],
+                        ['I', 'vi', 'ii', 'V', 'I'],
+                        ['I', 'IV', 'I', 'V', 'vi', 'IV', 'V', 'I']
+                    ],
+                    scale: 'major'
+                }
+            },
+            {
+                name: 'Mozart',
+                era: 'Classical (1756-1791)',
+                color: '#FFD700',
+                tempo: 120,
+                characteristics: {
+                    harmony: 'classical',
+                    texture: 'melody_accompaniment',
+                    rhythm: 'alberti',
+                    chordTypes: [[0,4,7], [0,3,7], [0,4,7,10]], // Major, minor, dom7
+                    progressions: [
+                        ['I', 'IV', 'V7', 'I'],
+                        ['I', 'ii', 'V7', 'I'],
+                        ['I', 'IV', 'I64', 'V7', 'I']
+                    ],
+                    scale: 'major'
+                }
+            },
+            {
+                name: 'Beethoven',
+                era: 'Classical-Romantic (1770-1827)',
+                color: '#4B0082',
+                tempo: 96,
+                characteristics: {
+                    harmony: 'dramatic',
+                    texture: 'homophonic',
+                    rhythm: 'sforzando',
+                    chordTypes: [[0,4,7], [0,3,7], [0,3,6]], // Major, minor, dim
+                    progressions: [
+                        ['I', 'I', 'IV', 'iv', 'I', 'V7', 'I'],
+                        ['I', 'vi', 'IV', 'V', 'I'],
+                        ['I', 'III', 'vi', 'V', 'I']
+                    ],
+                    scale: 'major'
+                }
+            },
+            {
+                name: 'Debussy',
+                era: 'Impressionist (1862-1918)',
+                color: '#E6E6FA',
+                tempo: 66,
+                characteristics: {
+                    harmony: 'modal',
+                    texture: 'coloristic',
+                    rhythm: 'flowing',
+                    chordTypes: [[0,4,7,11], [0,2,4,6,8,10]], // Maj7, whole-tone
+                    progressions: [
+                        ['I', 'bIII', 'IV', 'bVII', 'I'],
+                        ['i', 'III', 'VII', 'i'],
+                        ['I', 'II', 'IV', 'I']
+                    ],
+                    scale: 'whole_tone'
+                }
+            },
+            {
+                name: 'Philip Glass',
+                era: 'Minimalist (1937-present)',
+                color: '#00CED1',
+                tempo: 144,
+                characteristics: {
+                    harmony: 'repetitive',
+                    texture: 'additive',
+                    rhythm: 'motoristic',
+                    chordTypes: [[0,4,7], [0,5,7]], // Major, sus4
+                    progressions: [
+                        ['i', 'i', 'VII', 'VII', 'i', 'i', 'VII', 'VII'],
+                        ['I', 'I', 'I', 'I', 'vi', 'vi', 'vi', 'vi'],
+                        ['i', 'v', 'i', 'v', 'i', 'v', 'i', 'v']
+                    ],
+                    scale: 'minor'
+                }
+            },
+            {
+                name: 'Jazz',
+                era: '20th Century',
+                color: '#4169E1',
+                tempo: 120,
+                characteristics: {
+                    harmony: 'extended',
+                    texture: 'combo',
+                    rhythm: 'swing',
+                    chordTypes: [[0,4,7,11], [0,3,7,10], [0,4,7,11,2]], // Maj7, m7, Maj9
+                    progressions: [
+                        ['IIM7', 'V7', 'IMaj7', 'IMaj7'],
+                        ['IMaj7', 'VI7', 'IIM7', 'V7'],
+                        ['IIM7', 'V7', 'IIIM7', 'VI7', 'IIM7', 'V7', 'IMaj7', 'IMaj7']
+                    ],
+                    scale: 'dorian'
+                }
+            },
+            {
+                name: 'Pop/Rock',
+                era: 'Contemporary',
+                color: '#FF69B4',
+                tempo: 120,
+                characteristics: {
+                    harmony: 'simple',
+                    texture: 'homophonic',
+                    rhythm: 'backbeat',
+                    chordTypes: [[0,4,7], [0,3,7], [0,7]], // Major, minor, power
+                    progressions: [
+                        ['I', 'V', 'vi', 'IV'],
+                        ['I', 'IV', 'I', 'V'],
+                        ['vi', 'IV', 'I', 'V']
+                    ],
+                    scale: 'major'
+                }
+            }
+        ];
+        
+        // ============================================
+        // SCALE DEFINITIONS FOR MELODY GENERATION
+        // ============================================
+        const scales = {
+            'major': [0, 2, 4, 5, 7, 9, 11],
+            'minor': [0, 2, 3, 5, 7, 8, 10],
+            'dorian': [0, 2, 3, 5, 7, 9, 10],
+            'phrygian': [0, 1, 3, 5, 7, 8, 10],
+            'lydian': [0, 2, 4, 6, 7, 9, 11],
+            'mixolydian': [0, 2, 4, 5, 7, 9, 10],
+            'whole_tone': [0, 2, 4, 6, 8, 10],
+            'blues': [0, 3, 5, 6, 7, 10],
+            'pentatonic': [0, 2, 4, 7, 9]
+        };
+        
+        // ============================================
+        // KEY MAPPINGS
+        // ============================================
+        const keyMappings = {
+            'C': { root: 60, type: 'major' },
+            'G': { root: 67, type: 'major' },
+            'D': { root: 62, type: 'major' },
+            'A': { root: 69, type: 'major' },
+            'F': { root: 65, type: 'major' },
+            'Bb': { root: 70, type: 'major' },
+            'Am': { root: 57, type: 'minor' },
+            'Em': { root: 64, type: 'minor' },
+            'Dm': { root: 62, type: 'minor' }
+        };
+        
+        // ============================================
+        // INSTRUMENTS
+        // ============================================
+        const instruments = {
+            'Guitar': { 
+                range: { min: 40, max: 76 },
+                role: 'accompaniment',
+                clef: { sign: 'G', line: 2 }
+            },
+            'Violin I': { 
+                range: { min: 55, max: 103 },
+                role: 'melody',
+                clef: { sign: 'G', line: 2 }
+            },
+            'Violin II': { 
+                range: { min: 55, max: 96 },
+                role: 'harmony',
+                clef: { sign: 'G', line: 2 }
+            },
+            'Viola': { 
+                range: { min: 48, max: 84 },
+                role: 'inner_voice',
+                clef: { sign: 'C', line: 3 }
+            },
+            'Cello': { 
+                range: { min: 24, max: 60 },
+                role: 'bass',
+                clef: { sign: 'F', line: 4 }
+            }
+        };
+        
+        let selectedComposer = composers[0];
+        let generatedProgression = [];
+        let generatedNotes = {};
+        
+        // ============================================
+        // TRIADGEN-INSPIRED CHORD BUILDER
+        // ============================================
+        function buildChord(rootNote, chordType, inversion = 0) {
+            const chord = chordType.map(interval => rootNote + interval);
+            return applyInversion(chord, inversion);
+        }
+        
+        function generateProgression(composer, key, measures) {
+            const keyData = keyMappings[key];
+            const progressionPattern = composer.characteristics.progressions[
+                Math.floor(Math.random() * composer.characteristics.progressions.length)
+            ];
+            
+            const progression = [];
+            const harmonyInfo = [];
+            
+            for (let m = 0; m < measures; m++) {
+                const chordSymbol = progressionPattern[m % progressionPattern.length];
+                const degree = parseChordDegree(chordSymbol);
+                const chordRoot = keyData.root + degree;
+                
+                // Select chord type based on symbol
+                let chordType = [0, 4, 7]; // Default major
+                if (chordSymbol.toLowerCase() === chordSymbol) {
+                    chordType = [0, 3, 7]; // Minor
+                }
+                if (chordSymbol.includes('7')) {
+                    chordType.push(10); // Add 7th
+                }
+                if (chordSymbol.includes('Maj7')) {
+                    chordType[3] = 11; // Major 7th
+                }
+                
+                // Apply inversion based on voice leading
+                const inversion = m > 0 ? getOptimalInversion(progression[m-1], chordRoot, chordType) : 0;
+                const chord = buildChord(chordRoot, chordType, inversion);
+                
+                progression.push(chord);
+                harmonyInfo.push({
+                    symbol: chordSymbol,
+                    root: chordRoot,
+                    notes: chord,
+                    inversion: inversion
+                });
+            }
+            
+            updateHarmonyDisplay(harmonyInfo);
+            return progression;
+        }
+        
+        function parseChordDegree(symbol) {
+            const degrees = {
+                'I': 0, 'II': 2, 'III': 4, 'IV': 5, 'V': 7, 'VI': 9, 'VII': 11,
+                'i': 0, 'ii': 2, 'iii': 4, 'iv': 5, 'v': 7, 'vi': 9, 'vii': 11
+            };
+            
+            let base = symbol.replace(/[0-9]/g, '').replace('Maj', '').replace('M', '');
+            if (base.startsWith('b')) {
+                return (degrees[base.substring(1)] || 0) - 1;
+            }
+            return degrees[base] || 0;
+        }
+        
+        function getOptimalInversion(prevChord, newRoot, chordType) {
+            if (!prevChord) return 0;
+            
+            // Find inversion that minimizes voice movement
+            let minMovement = Infinity;
+            let bestInversion = 0;
+            
+            for (let inv = 0; inv < 3; inv++) {
+                const testChord = buildChord(newRoot, chordType, inv);
+                const movement = Math.abs(prevChord[0] - testChord[0]);
+                if (movement < minMovement) {
+                    minMovement = movement;
+                    bestInversion = inv;
+                }
+            }
+            
+            return bestInversion;
+        }
+        
+        // ============================================
+        // MELODY GENERATION (RiffGen-inspired)
+        // ============================================
+        function generateMelody(scale, root, measures, complexity) {
+            const melody = [];
+            const scaleNotes = scales[scale] || scales['major'];
+            
+            for (let m = 0; m < measures; m++) {
+                const measureNotes = [];
+                
+                if (complexity === 'simple') {
+                    // Quarter notes on chord tones
+                    for (let i = 0; i < 4; i++) {
+                        const scaleIndex = Math.floor(Math.random() * 5); // First 5 notes of scale
+                        const pitch = root + scaleNotes[scaleIndex] + 12;
+                        measureNotes.push({ pitch, duration: 4, type: 'quarter' });
+                    }
+                } else if (complexity === 'moderate') {
+                    // Mix of quarters and eighths
+                    const pattern = Math.random() > 0.5 ? 
+                        [4, 4, 2, 2, 2, 2] : // Quarter, quarter, four eighths
+                        [2, 2, 4, 2, 2, 4]; // Syncopated
+                    
+                    pattern.forEach(duration => {
+                        const scaleIndex = Math.floor(Math.random() * scaleNotes.length);
+                        const pitch = root + scaleNotes[scaleIndex] + 12;
+                        measureNotes.push({ 
+                            pitch, 
+                            duration, 
+                            type: duration === 4 ? 'quarter' : 'eighth' 
+                        });
+                    });
+                } else {
+                    // Complex with sixteenths
+                    for (let i = 0; i < 8; i++) {
+                        if (Math.random() > 0.3) {
+                            const scaleIndex = Math.floor(Math.random() * scaleNotes.length);
+                            const pitch = root + scaleNotes[scaleIndex] + 
+                                         (Math.random() > 0.5 ? 12 : 24);
+                            measureNotes.push({ pitch, duration: 2, type: 'eighth' });
+                        } else {
+                            // Sixteenth note run
+                            for (let j = 0; j < 2; j++) {
+                                const scaleIndex = (m * 4 + i * 2 + j) % scaleNotes.length;
+                                const pitch = root + scaleNotes[scaleIndex] + 12;
+                                measureNotes.push({ pitch, duration: 1, type: '16th' });
+                            }
+                        }
+                    }
+                }
+                
+                melody.push(measureNotes);
+            }
+            
+            return melody;
+        }
+        
+        // ============================================
+        // COMPOSITION GENERATION
+        // ============================================
+        function generateComposition() {
+            const key = document.getElementById('key').value;
+            const measures = parseInt(document.getElementById('measures').value);
+            const complexity = document.getElementById('complexity').value;
+            const keyData = keyMappings[key];
+            
+            // Generate chord progression
+            generatedProgression = generateProgression(selectedComposer, key, measures);
+            
+            // Generate parts
+            generatedNotes = {};
+            
+            Object.keys(instruments).forEach(instName => {
+                const inst = instruments[instName];
+                generatedNotes[instName] = [];
+                
+                if (inst.role === 'melody') {
+                    // Generate melody line
+                    const scale = selectedComposer.characteristics.scale || 
+                                 (keyData.type === 'major' ? 'major' : 'minor');
+                    generatedNotes[instName] = generateMelody(scale, keyData.root, measures, complexity);
+                } else {
+                    // Generate harmony/accompaniment based on progression
+                    for (let m = 0; m < measures; m++) {
+                        const chord = generatedProgression[m];
+                        const measureNotes = generateHarmonyPart(inst, chord, selectedComposer.characteristics.rhythm);
+                        generatedNotes[instName].push(measureNotes);
+                    }
+                }
+            });
+            
+            return generatedNotes;
+        }
+        
+        function generateHarmonyPart(instrument, chord, rhythmStyle) {
+            const notes = [];
+            
+            if (instrument.role === 'bass') {
+                // Bass line
+                notes.push({ pitch: chord[0] - 12, duration: 8, type: 'half' });
+                notes.push({ pitch: chord[0] - 17, duration: 8, type: 'half' });
+            } else if (instrument.role === 'accompaniment') {
+                // Guitar patterns
+                if (rhythmStyle === 'alberti') {
+                    // Alberti bass pattern
+                    const pattern = [0, 2, 1, 2, 0, 2, 1, 2];
+                    pattern.forEach(idx => {
+                        const pitch = chord[idx % chord.length];
+                        notes.push({ pitch, duration: 2, type: 'eighth' });
+                    });
+                } else if (rhythmStyle === 'constant_motion') {
+                    // Constant eighth notes
+                    for (let i = 0; i < 8; i++) {
+                        const pitch = chord[i % chord.length];
+                        notes.push({ pitch, duration: 2, type: 'eighth' });
+                    }
+                } else {
+                    // Simple chords
+                    notes.push({ pitch: chord[0], duration: 8, type: 'half' });
+                    notes.push({ pitch: chord[1], duration: 8, type: 'half' });
+                }
+            } else {
+                // Inner voices
+                notes.push({ pitch: chord[1], duration: 16, type: 'whole' });
+            }
+            
+            // Ensure notes are in range
+            notes.forEach(note => {
+                while (note.pitch < instrument.range.min) note.pitch += 12;
+                while (note.pitch > instrument.range.max) note.pitch -= 12;
+            });
+            
+            return notes;
+        }
+        
+        // ============================================
+        // UI FUNCTIONS
+        // ============================================
+        function updateHarmonyDisplay(harmonyInfo) {
+            const display = document.getElementById('harmonyDisplay');
+            let html = 'Chord Progression:\n';
+            
+            harmonyInfo.forEach((chord, i) => {
+                if (i % 4 === 0 && i > 0) html += '\n';
+                html += `[${chord.symbol}] `;
+                const noteStr = chord.notes.map(midiToNoteName).join('-');
+                html += `(${noteStr}) `;
+                if (chord.inversion > 0) {
+                    html += `inv:${chord.inversion} `;
+                }
+            });
+            
+            display.textContent = html;
+        }
+        
+        // ============================================
+        // EXPORT FUNCTIONS
+        // ============================================
+        function exportMusicXML() {
+            updateStatus('Generating MusicXML...');
+            generateComposition();
+            
+            const tempo = document.getElementById('tempo').value;
+            const measures = parseInt(document.getElementById('measures').value);
+            
+            let xml = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n';
+            xml += '<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">\n';
+            xml += '<score-partwise version="3.1">\n';
+            
+            xml += '  <work>\n';
+            xml += `    <work-title>${selectedComposer.name} Style Quintet (v42)</work-title>\n`;
+            xml += '  </work>\n';
+            
+            xml += '  <identification>\n';
+            xml += '    <encoding>\n';
+            xml += '      <software>Quintet Composer v42 with TriadGen</software>\n';
+            xml += `      <encoding-date>${new Date().toISOString().split('T')[0]}</encoding-date>\n`;
+            xml += '    </encoding>\n';
+            xml += '  </identification>\n';
+            
+            // Part list
+            xml += '  <part-list>\n';
+            Object.keys(instruments).forEach((inst, idx) => {
+                xml += `    <score-part id="P${idx + 1}">\n`;
+                xml += `      <part-name>${inst}</part-name>\n`;
+                xml += '    </score-part>\n';
+            });
+            xml += '  </part-list>\n';
+            
+            // Generate parts
+            Object.keys(instruments).forEach((instName, partIdx) => {
+                xml += `  <part id="P${partIdx + 1}">\n`;
+                const inst = instruments[instName];
+                
+                for (let m = 0; m < measures; m++) {
+                    xml += `    <measure number="${m + 1}">\n`;
+                    
+                    if (m === 0) {
+                        xml += '      <attributes>\n';
+                        xml += '        <divisions>4</divisions>\n';
+                        xml += '        <key><fifths>0</fifths></key>\n';
+                        xml += '        <time><beats>4</beats><beat-type>4</beat-type></time>\n';
+                        xml += `        <clef>\n`;
+                        xml += `          <sign>${inst.clef.sign}</sign>\n`;
+                        xml += `          <line>${inst.clef.line}</line>\n`;
+                        xml += '        </clef>\n';
+                        xml += '      </attributes>\n';
+                        
+                        if (partIdx === 0) {
+                            xml += '      <direction placement="above">\n';
+                            xml += '        <direction-type>\n';
+                            xml += '          <metronome>\n';
+                            xml += '            <beat-unit>quarter</beat-unit>\n';
+                            xml += `            <per-minute>${tempo}</per-minute>\n`;
+                            xml += '          </metronome>\n';
+                            xml += '        </direction-type>\n';
+                            xml += '      </direction>\n';
+                        }
+                    }
+                    
+                    // Add notes
+                    const measureNotes = generatedNotes[instName][m];
+                    measureNotes.forEach(note => {
+                        xml += '      <note>\n';
+                        const pitchInfo = midiToPitch(note.pitch);
+                        xml += '        <pitch>\n';
+                        xml += `          <step>${pitchInfo.step}</step>\n`;
+                        if (pitchInfo.alter) {
+                            xml += `          <alter>${pitchInfo.alter}</alter>\n`;
+                        }
+                        xml += `          <octave>${pitchInfo.octave}</octave>\n`;
+                        xml += '        </pitch>\n';
+                        xml += `        <duration>${note.duration}</duration>\n`;
+                        xml += '        <voice>1</voice>\n';
+                        xml += `        <type>${note.type}</type>\n`;
+                        xml += '      </note>\n';
+                    });
+                    
+                    xml += '    </measure>\n';
+                }
+                
+                xml += '  </part>\n';
+            });
+            
+            xml += '</score-partwise>\n';
+            
+            downloadFile(xml, `${selectedComposer.name.toLowerCase()}_quintet_v42.musicxml`, 'application/vnd.recordare.musicxml+xml');
+            updateStatus('MusicXML exported!');
+        }
+        
+        function exportMIDI() {
+            updateStatus('Generating MIDI...');
+            generateComposition();
+            
+            const tempo = parseInt(document.getElementById('tempo').value);
+            const ppq = 480;
+            
+            const midiData = [];
+            
+            // Header
+            midiData.push(...stringToBytes('MThd'));
+            midiData.push(...int32ToBytes(6));
+            midiData.push(...int16ToBytes(1));
+            midiData.push(...int16ToBytes(6));
+            midiData.push(...int16ToBytes(ppq));
+            
+            // Tempo track
+            const tempoTrack = [];
+            tempoTrack.push(...[0x00, 0xFF, 0x51, 0x03]);
+            const microsPerQuarter = Math.round(60000000 / tempo);
+            tempoTrack.push(...int24ToBytes(microsPerQuarter));
+            tempoTrack.push(...[0x00, 0xFF, 0x2F, 0x00]);
+            
+            midiData.push(...stringToBytes('MTrk'));
+            midiData.push(...int32ToBytes(tempoTrack.length));
+            midiData.push(...tempoTrack);
+            
+            // Instrument tracks
+            Object.keys(instruments).forEach((instName, channel) => {
+                const track = [];
+                
+                const instrumentMap = {
+                    'Guitar': 24,
+                    'Violin I': 40,
+                    'Violin II': 40,
+                    'Viola': 41,
+                    'Cello': 42
+                };
+                
+                track.push(...[0x00, 0xC0 + channel, instrumentMap[instName] || 0]);
+                
+                generatedNotes[instName].forEach(measure => {
+                    measure.forEach(note => {
+                        const velocity = 80;
+                        const duration = note.duration * (ppq / 4);
+                        
+                        track.push(...variableLengthValue(0));
+                        track.push(...[0x90 + channel, note.pitch, velocity]);
+                        
+                        track.push(...variableLengthValue(duration));
+                        track.push(...[0x80 + channel, note.pitch, 0]);
+                    });
+                });
+                
+                track.push(...[0x00, 0xFF, 0x2F, 0x00]);
+                
+                midiData.push(...stringToBytes('MTrk'));
+                midiData.push(...int32ToBytes(track.length));
+                midiData.push(...track);
+            });
+            
+            const blob = new Blob([new Uint8Array(midiData)], { type: 'audio/midi' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${selectedComposer.name.toLowerCase()}_quintet_v42.mid`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            updateStatus('MIDI exported!');
+        }
+        
+        // ============================================
+        // HELPER FUNCTIONS
+        // ============================================
+        function midiToPitch(midi) {
+            const noteMap = [
+                { step: 'C', alter: 0 },
+                { step: 'C', alter: 1 },
+                { step: 'D', alter: 0 },
+                { step: 'D', alter: 1 },
+                { step: 'E', alter: 0 },
+                { step: 'F', alter: 0 },
+                { step: 'F', alter: 1 },
+                { step: 'G', alter: 0 },
+                { step: 'G', alter: 1 },
+                { step: 'A', alter: 0 },
+                { step: 'A', alter: 1 },
+                { step: 'B', alter: 0 }
+            ];
+            
+            const pitchClass = midi % 12;
+            const octave = Math.floor(midi / 12) - 1;
+            
+            return {
+                step: noteMap[pitchClass].step,
+                alter: noteMap[pitchClass].alter,
+                octave
+            };
+        }
+        
+        // MIDI helpers
+        function stringToBytes(str) {
+            return Array.from(str).map(c => c.charCodeAt(0));
+        }
+        
+        function int32ToBytes(value) {
+            return [(value >> 24) & 0xFF, (value >> 16) & 0xFF, (value >> 8) & 0xFF, value & 0xFF];
+        }
+        
+        function int24ToBytes(value) {
+            return [(value >> 16) & 0xFF, (value >> 8) & 0xFF, value & 0xFF];
+        }
+        
+        function int16ToBytes(value) {
+            return [(value >> 8) & 0xFF, value & 0xFF];
+        }
+        
+        function variableLengthValue(value) {
+            const bytes = [];
+            if (value === 0) return [0];
+            
+            while (value > 0) {
+                bytes.unshift(value & 0x7F);
+                value >>= 7;
+            }
+            
+            for (let i = 0; i < bytes.length - 1; i++) {
+                bytes[i] |= 0x80;
+            }
+            
+            return bytes;
+        }
+        
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+        
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        function init() {
+            const grid = document.getElementById('profileGrid');
+            composers.forEach((comp, idx) => {
+                const card = document.createElement('div');
+                card.className = 'profile-card';
+                if (idx === 0) {
+                    card.classList.add('selected');
+                    selectedComposer = comp;
+                }
+                card.style.borderColor = comp.color;
+                card.innerHTML = `
+                    <h4 style="color:${comp.color}">${comp.name}</h4>
+                    <p>${comp.era}</p>
+                `;
+                card.onclick = () => selectComposer(comp, card);
+                grid.appendChild(card);
+            });
+            
+            document.getElementById('tempo').addEventListener('input', e => {
+                document.getElementById('tempoValue').textContent = e.target.value;
+            });
+            
+            document.getElementById('measures').addEventListener('input', e => {
+                document.getElementById('measuresValue').textContent = e.target.value;
+            });
+            
+            document.getElementById('generateMusicXML').addEventListener('click', exportMusicXML);
+            document.getElementById('generateMIDI').addEventListener('click', exportMIDI);
+        }
+        
+        function selectComposer(comp, card) {
+            selectedComposer = comp;
+            document.querySelectorAll('.profile-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            document.getElementById('tempo').value = comp.tempo;
+            document.getElementById('tempoValue').textContent = comp.tempo;
+        }
+        
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
