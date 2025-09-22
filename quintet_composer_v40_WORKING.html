@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quintet Composer v40 - Real MusicXML</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .version-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+        
+        .status-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .main-content {
+            padding: 30px;
+        }
+        
+        .composer-profiles {
+            margin-bottom: 30px;
+        }
+        
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .profile-card {
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .profile-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .profile-card.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .control-group {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .range-display {
+            font-weight: bold;
+            color: #4a5568;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎼 Quintet Composer <span class="version-badge">v40 REAL MusicXML</span></h1>
+            <p>Generates ACTUAL MusicXML that works in Sibelius/Finale/MuseScore</p>
+            <div class="status-indicator" id="status">Ready</div>
+        </div>
+        
+        <div class="main-content">
+            <div class="composer-profiles">
+                <h3>Select Composer Style:</h3>
+                <div class="profile-grid" id="profileGrid"></div>
+            </div>
+            
+            <div class="control-group">
+                <h3>Settings</h3>
+                <div class="controls">
+                    <div>
+                        <label>Key: 
+                            <select id="key">
+                                <option value="0">C Major</option>
+                                <option value="1">G Major</option>
+                                <option value="2">D Major</option>
+                                <option value="-1">F Major</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div>
+                        <label>Tempo: <span id="tempoValue" class="range-display">120</span> BPM
+                            <input type="range" id="tempo" min="60" max="180" value="120" style="width:100%">
+                        </label>
+                    </div>
+                    <div>
+                        <label>Measures: <span id="measuresValue" class="range-display">8</span>
+                            <input type="range" id="measures" min="4" max="32" value="8" step="4" style="width:100%">
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="generateBtn" style="width:100%; margin-top:20px;">
+                🎵 Generate MusicXML File
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        // Composer profiles
+        const composers = [
+            { name: 'Bach', color: '#8B4513', tempo: 120, pattern: 'baroque' },
+            { name: 'Mozart', color: '#FFD700', tempo: 120, pattern: 'classical' },
+            { name: 'Beethoven', color: '#4B0082', tempo: 100, pattern: 'dramatic' },
+            { name: 'Debussy', color: '#E6E6FA', tempo: 80, pattern: 'impressionist' },
+            { name: 'Glass', color: '#00CED1', tempo: 144, pattern: 'minimalist' },
+            { name: 'Pop/Rock', color: '#FF69B4', tempo: 120, pattern: 'pop' },
+            { name: 'Jazz', color: '#4169E1', tempo: 120, pattern: 'jazz' }
+        ];
+        
+        let selectedComposer = composers[0];
+        
+        // Initialize UI
+        function init() {
+            const grid = document.getElementById('profileGrid');
+            composers.forEach((comp, idx) => {
+                const card = document.createElement('div');
+                card.className = 'profile-card';
+                if (idx === 0) card.classList.add('selected');
+                card.style.borderColor = comp.color;
+                card.innerHTML = `<h4 style="color:${comp.color}">${comp.name}</h4>`;
+                card.onclick = () => selectComposer(comp, card);
+                grid.appendChild(card);
+            });
+            
+            document.getElementById('tempo').addEventListener('input', e => {
+                document.getElementById('tempoValue').textContent = e.target.value;
+            });
+            
+            document.getElementById('measures').addEventListener('input', e => {
+                document.getElementById('measuresValue').textContent = e.target.value;
+            });
+            
+            document.getElementById('generateBtn').addEventListener('click', generateMusicXML);
+        }
+        
+        function selectComposer(comp, card) {
+            selectedComposer = comp;
+            document.querySelectorAll('.profile-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            document.getElementById('tempo').value = comp.tempo;
+            document.getElementById('tempoValue').textContent = comp.tempo;
+        }
+        
+        // PROPER MUSICXML GENERATION
+        function generateMusicXML() {
+            const fifths = document.getElementById('key').value;
+            const tempo = document.getElementById('tempo').value;
+            const numMeasures = parseInt(document.getElementById('measures').value);
+            
+            // Build REAL MusicXML
+            let xml = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n';
+            xml += '<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">\n';
+            xml += '<score-partwise version="3.1">\n';
+            
+            // Work info
+            xml += '  <work>\n';
+            xml += `    <work-title>Quintet in ${selectedComposer.name} Style</work-title>\n`;
+            xml += '  </work>\n';
+            
+            xml += '  <identification>\n';
+            xml += '    <encoding>\n';
+            xml += '      <software>Quintet Composer v40</software>\n';
+            xml += `      <encoding-date>${new Date().toISOString().split('T')[0]}</encoding-date>\n`;
+            xml += '    </encoding>\n';
+            xml += '  </identification>\n';
+            
+            // Part list
+            xml += '  <part-list>\n';
+            const parts = [
+                { id: 'P1', name: 'Violin I' },
+                { id: 'P2', name: 'Violin II' },
+                { id: 'P3', name: 'Viola' },
+                { id: 'P4', name: 'Cello' },
+                { id: 'P5', name: 'Classical Guitar' }
+            ];
+            
+            parts.forEach(part => {
+                xml += `    <score-part id="${part.id}">\n`;
+                xml += `      <part-name>${part.name}</part-name>\n`;
+                xml += '    </score-part>\n';
+            });
+            xml += '  </part-list>\n';
+            
+            // Generate each part
+            parts.forEach((part, partIdx) => {
+                xml += `  <part id="${part.id}">\n`;
+                
+                for (let m = 1; m <= numMeasures; m++) {
+                    xml += `    <measure number="${m}">\n`;
+                    
+                    // First measure needs attributes
+                    if (m === 1) {
+                        xml += '      <attributes>\n';
+                        xml += '        <divisions>4</divisions>\n'; // 4 divisions per quarter note
+                        xml += '        <key>\n';
+                        xml += `          <fifths>${fifths}</fifths>\n`;
+                        xml += '        </key>\n';
+                        xml += '        <time>\n';
+                        xml += '          <beats>4</beats>\n';
+                        xml += '          <beat-type>4</beat-type>\n';
+                        xml += '        </time>\n';
+                        
+                        // Set clef based on instrument
+                        if (part.name === 'Viola') {
+                            xml += '        <clef>\n';
+                            xml += '          <sign>C</sign>\n';
+                            xml += '          <line>3</line>\n';
+                            xml += '        </clef>\n';
+                        } else if (part.name === 'Cello') {
+                            xml += '        <clef>\n';
+                            xml += '          <sign>F</sign>\n';
+                            xml += '          <line>4</line>\n';
+                            xml += '        </clef>\n';
+                        } else {
+                            xml += '        <clef>\n';
+                            xml += '          <sign>G</sign>\n';
+                            xml += '          <line>2</line>\n';
+                            xml += '        </clef>\n';
+                        }
+                        xml += '      </attributes>\n';
+                        
+                        // Add tempo to first measure
+                        if (partIdx === 0) {
+                            xml += '      <direction placement="above">\n';
+                            xml += '        <direction-type>\n';
+                            xml += '          <metronome>\n';
+                            xml += '            <beat-unit>quarter</beat-unit>\n';
+                            xml += `            <per-minute>${tempo}</per-minute>\n`;
+                            xml += '          </metronome>\n';
+                            xml += '        </direction-type>\n';
+                            xml += '        <sound tempo="' + tempo + '"/>\n';
+                            xml += '      </direction>\n';
+                        }
+                    }
+                    
+                    // Generate notes based on composer style
+                    const notes = generateNotesForStyle(part.name, m);
+                    
+                    notes.forEach(note => {
+                        xml += '      <note>\n';
+                        xml += '        <pitch>\n';
+                        xml += `          <step>${note.step}</step>\n`;
+                        if (note.alter) {
+                            xml += `          <alter>${note.alter}</alter>\n`;
+                        }
+                        xml += `          <octave>${note.octave}</octave>\n`;
+                        xml += '        </pitch>\n';
+                        xml += `        <duration>${note.duration}</duration>\n`; // Duration in divisions
+                        xml += '        <voice>1</voice>\n';
+                        xml += `        <type>${note.type}</type>\n`;
+                        if (note.dot) {
+                            xml += '        <dot/>\n';
+                        }
+                        xml += '      </note>\n';
+                    });
+                    
+                    xml += '    </measure>\n';
+                }
+                
+                xml += '  </part>\n';
+            });
+            
+            xml += '</score-partwise>\n';
+            
+            // Download the file
+            const blob = new Blob([xml], { type: 'application/vnd.recordare.musicxml+xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `quintet_${selectedComposer.name.toLowerCase()}.musicxml`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            document.getElementById('status').textContent = '✓ MusicXML Generated!';
+            setTimeout(() => {
+                document.getElementById('status').textContent = 'Ready';
+            }, 3000);
+        }
+        
+        // Generate notes for each instrument and measure
+        function generateNotesForStyle(instrument, measureNum) {
+            const notes = [];
+            
+            // Set octave based on instrument
+            let baseOctave = 4;
+            if (instrument === 'Violin I' || instrument === 'Violin II') baseOctave = 5;
+            if (instrument === 'Viola') baseOctave = 4;
+            if (instrument === 'Cello') baseOctave = 3;
+            if (instrument === 'Classical Guitar') baseOctave = 4;
+            
+            // Simple patterns based on composer
+            if (selectedComposer.pattern === 'baroque') {
+                // Bach-style: running eighth notes
+                const pitches = ['C', 'D', 'E', 'F', 'G', 'F', 'E', 'D'];
+                for (let i = 0; i < 8; i++) {
+                    notes.push({
+                        step: pitches[i],
+                        octave: baseOctave,
+                        duration: 2, // eighth note = 2 divisions
+                        type: 'eighth'
+                    });
+                }
+            } else if (selectedComposer.pattern === 'classical') {
+                // Mozart-style: alberti bass pattern
+                notes.push({ step: 'C', octave: baseOctave, duration: 4, type: 'quarter' });
+                notes.push({ step: 'E', octave: baseOctave, duration: 4, type: 'quarter' });
+                notes.push({ step: 'G', octave: baseOctave, duration: 4, type: 'quarter' });
+                notes.push({ step: 'E', octave: baseOctave, duration: 4, type: 'quarter' });
+            } else if (selectedComposer.pattern === 'dramatic') {
+                // Beethoven-style: dramatic rhythms
+                notes.push({ step: 'C', octave: baseOctave, duration: 8, type: 'half' });
+                notes.push({ step: 'G', octave: baseOctave, duration: 4, type: 'quarter' });
+                notes.push({ step: 'C', octave: baseOctave + 1, duration: 4, type: 'quarter' });
+            } else if (selectedComposer.pattern === 'impressionist') {
+                // Debussy-style: flowing
+                notes.push({ step: 'E', octave: baseOctave, duration: 6, type: 'quarter', dot: true });
+                notes.push({ step: 'F', octave: baseOctave, duration: 2, type: 'eighth' });
+                notes.push({ step: 'G', octave: baseOctave, duration: 4, type: 'quarter' });
+                notes.push({ step: 'A', octave: baseOctave, duration: 4, type: 'quarter' });
+            } else if (selectedComposer.pattern === 'minimalist') {
+                // Glass-style: repetitive
+                for (let i = 0; i < 4; i++) {
+                    notes.push({ step: 'C', octave: baseOctave, duration: 2, type: 'eighth' });
+                    notes.push({ step: 'E', octave: baseOctave, duration: 2, type: 'eighth' });
+                }
+            } else if (selectedComposer.pattern === 'pop') {
+                // Pop: simple chords
+                notes.push({ step: 'C', octave: baseOctave, duration: 16, type: 'whole' });
+            } else {
+                // Jazz: syncopated
+                notes.push({ step: 'C', octave: baseOctave, duration: 2, type: 'eighth' });
+                notes.push({ step: 'E', octave: baseOctave, duration: 4, type: 'quarter' });
+                notes.push({ step: 'G', octave: baseOctave, duration: 2, type: 'eighth' });
+                notes.push({ step: 'B', octave: baseOctave, duration: 8, type: 'half' });
+            }
+            
+            return notes;
+        }
+        
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
