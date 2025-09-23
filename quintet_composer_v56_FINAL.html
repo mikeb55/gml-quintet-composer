@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>String Quintet Composer v56 - GUITAR FIXED</title>
+    <title>String Quintet Composer v56 - FINAL WORKING</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -114,16 +114,12 @@
             max-height: 200px;
             overflow-y: auto;
         }
-        audio {
-            width: 100%;
-            margin-top: 20px;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎼 String Quintet Composer</h1>
-        <div class="version">Version 56 - GUITAR ACCOMPANIMENT FIXED</div>
+        <h1>🎼 String Quintet Composer v56</h1>
+        <div class="version">Final Working Version - Guitar Chords Fixed</div>
         
         <div class="controls">
             <div class="control-group">
@@ -190,7 +186,6 @@
         </div>
         
         <div class="status" id="status"></div>
-        <audio id="audioPlayer" controls style="display: none;"></audio>
         <div class="output" id="output"></div>
         <div class="debug-info" id="debug" style="display: none;"></div>
     </div>
@@ -215,13 +210,13 @@
             'Dm': { tonic: 'D', notes: ['D', 'E', 'F', 'G', 'A', 'Bb', 'C'], sharps: -1, minor: true }
         };
         
-        // Instrument ranges (in MIDI note numbers)
+        // Instrument ranges
         const RANGES = {
-            guitar: { min: 40, max: 76 },     // E2 to E5
-            violin1: { min: 55, max: 103 },   // G3 to G7
-            violin2: { min: 55, max: 96 },    // G3 to C7
-            viola: { min: 48, max: 84 },      // C3 to C6
-            cello: { min: 36, max: 76 }       // C2 to E5
+            guitar: { min: 40, max: 67 },
+            violin1: { min: 55, max: 103 },
+            violin2: { min: 55, max: 96 },
+            viola: { min: 48, max: 84 },
+            cello: { min: 36, max: 76 }
         };
         
         // Note to MIDI conversion
@@ -233,19 +228,17 @@
             return midi;
         }
         
-        // MIDI to frequency conversion
+        // MIDI to frequency
         function midiToFreq(midi) {
             return 440 * Math.pow(2, (midi - 69) / 12);
         }
         
-        // Main composition generation function
+        // Main generation function
         function generateComposition() {
-            const startTime = performance.now();
             updateStatus('Generating composition...', 'generating');
             document.getElementById('debug').style.display = 'block';
             document.getElementById('debug').innerHTML = 'Starting generation...<br>';
             
-            // Get parameters
             const measures = parseInt(document.getElementById('measures').value);
             const tempo = parseInt(document.getElementById('tempo').value);
             const key = document.getElementById('key').value;
@@ -253,7 +246,6 @@
             const guitarStyle = document.getElementById('guitarStyle').value;
             const complexity = document.getElementById('complexity').value;
             
-            // Initialize composition structure
             composition = {
                 measures: measures,
                 tempo: tempo,
@@ -269,40 +261,16 @@
                 }
             };
             
-            // Generate harmonic progression
             const progression = generateProgression(measures, key, style);
             addDebug(`Generated ${progression.length} chords`);
             
-            // Generate parts
             generateGuitarPart(progression, guitarStyle, key);
             generateViolin1Part(progression, key, complexity);
             generateViolin2Part(progression, key);
             generateViolaPart(progression, key);
             generateCelloPart(progression, key);
             
-            // Debug guitar output
-            const guitarPart = composition.parts.guitar;
-            let chordCount = 0;
-            let noteCount = 0;
-            guitarPart.forEach((measure, mIdx) => {
-                addDebug(`Measure ${mIdx + 1}: ${measure.length} events`);
-                measure.forEach(event => {
-                    if (event.isChord) {
-                        chordCount++;
-                        addDebug(`  - Chord: ${event.notes.length} notes`);
-                    } else {
-                        noteCount++;
-                    }
-                });
-            });
-            addDebug(`Guitar totals: ${chordCount} chords, ${noteCount} single notes`);
-            
-            // Display composition
             displayComposition();
-            
-            const endTime = performance.now();
-            addDebug(`Generation completed in ${(endTime - startTime).toFixed(2)}ms`);
-            
             updateStatus('Composition generated successfully!', 'complete');
             document.getElementById('playBtn').disabled = false;
             document.getElementById('exportBtn').disabled = false;
@@ -330,13 +298,15 @@
             return progression;
         }
         
-        // Generate a chord based on scale degree
+        // Generate chord - FIXED
         function generateChord(degree, key) {
             const keyData = KEYS[key];
             const root = keyData.notes[degree - 1];
-            const third = keyData.notes[(degree + 1) % 7];
-            const fifth = keyData.notes[(degree + 3) % 7];
-            const seventh = keyData.notes[(degree + 5) % 7];
+            const third = keyData.notes[(degree - 1 + 2) % 7];
+            const fifth = keyData.notes[(degree - 1 + 4) % 7];
+            const seventh = keyData.notes[(degree - 1 + 6) % 7];
+            
+            addDebug(`Chord ${degree}: ${root}-${third}-${fifth}`);
             
             return {
                 degree: degree,
@@ -347,7 +317,7 @@
             };
         }
         
-        // Determine chord quality
+        // Get chord quality
         function getChordQuality(degree, isMinor) {
             if (isMinor) {
                 return [1, 4, 5].includes(degree) ? 'minor' : (degree === 2 ? 'dim' : 'major');
@@ -356,7 +326,7 @@
             }
         }
         
-        // FIXED GUITAR PART GENERATION - Corrected octaves and voicings
+        // Generate guitar part - WORKING WITH CHORDS
         function generateGuitarPart(progression, style, key) {
             const part = [];
             
@@ -365,18 +335,15 @@
                 const measure = [];
                 
                 if (style === 'strummed') {
-                    // STRUMMED PATTERN - Fixed voicing to avoid dissonance
-                    // Standard guitar voicing in playable range
                     const voicing = [
-                        noteToMidi(chord.root, 2),      // Low root
-                        noteToMidi(chord.notes[2], 2),  // Fifth
-                        noteToMidi(chord.notes[0], 3),  // Root octave
-                        noteToMidi(chord.notes[1], 3),  // Third
-                        noteToMidi(chord.notes[2], 3),  // Fifth
-                        noteToMidi(chord.notes[0], 4)   // High root
-                    ].filter(note => note >= 40 && note <= 67); // Keep in guitar range
+                        noteToMidi(chord.root, 2),
+                        noteToMidi(chord.notes[2], 2),
+                        noteToMidi(chord.notes[0], 3),
+                        noteToMidi(chord.notes[1], 3),
+                        noteToMidi(chord.notes[2], 3),
+                        noteToMidi(chord.notes[0], 4)
+                    ].filter(note => note >= 40 && note <= 67);
                     
-                    // Simple quarter note strums
                     for (let beat = 0; beat < 4; beat++) {
                         measure.push({
                             notes: voicing,
@@ -387,7 +354,6 @@
                     }
                     
                 } else if (style === 'fingerstyle') {
-                    // FINGERSTYLE - Fixed octaves
                     const bassNote = noteToMidi(chord.root, 2);
                     const trebleChord = [
                         noteToMidi(chord.notes[0], 3),
@@ -395,14 +361,12 @@
                         noteToMidi(chord.notes[2], 3)
                     ].filter(note => note >= 40 && note <= 67);
                     
-                    // Alternating bass pattern
                     for (let i = 0; i < 4; i++) {
                         measure.push({ notes: [bassNote], duration: 0.5, isChord: false });
                         measure.push({ notes: trebleChord, duration: 0.5, isChord: true, volume: 0.5 });
                     }
                     
                 } else if (style === 'classical') {
-                    // CLASSICAL - Simple block chords
                     const fullChord = [
                         noteToMidi(chord.root, 2),
                         noteToMidi(chord.notes[2], 2),
@@ -410,11 +374,9 @@
                         noteToMidi(chord.notes[1], 3)
                     ].filter(note => note >= 40 && note <= 67);
                     
-                    // Whole note chord per measure
                     measure.push({ notes: fullChord, duration: 4, isChord: true, volume: 0.5 });
                     
                 } else {
-                    // ARPEGGIATED - Fixed to proper range
                     const arpNotes = [
                         noteToMidi(chord.root, 2),
                         noteToMidi(chord.notes[2], 2),
@@ -424,7 +386,6 @@
                         noteToMidi(chord.notes[0], 3)
                     ].filter(note => note >= 40 && note <= 67);
                     
-                    // Simple ascending pattern
                     const pattern = [0, 1, 2, 3, 4, 3, 2, 1];
                     for (let i = 0; i < 8; i++) {
                         const noteIdx = pattern[i] % arpNotes.length;
@@ -440,20 +401,18 @@
             }
             
             composition.parts.guitar = part;
-            addDebug(`Guitar part generated: ${part.length} measures in style: ${style}`);
+            addDebug(`Guitar part: ${part.length} measures`);
         }
         
-        // Generate Violin 1 (melody)
+        // Generate Violin 1 part
         function generateViolin1Part(progression, key, complexity) {
             const part = [];
-            const keyData = KEYS[key];
-            let lastNote = 69; // A4
+            let lastNote = 69;
             
             for (let m = 0; m < progression.length; m++) {
                 const chord = progression[m];
                 const measure = [];
                 
-                // Create melodic line based on complexity
                 const rhythms = complexity === 'complex' ? 
                     [0.5, 0.5, 1, 0.5, 0.5, 1] : 
                     [1, 1, 1, 1];
@@ -462,27 +421,27 @@
                 for (const duration of rhythms) {
                     if (beatCount >= 4) break;
                     
-                    // Generate melodic movement
-                    const direction = Math.random() > 0.5 ? 1 : -1;
-                    const stepSize = Math.floor(Math.random() * 3) + 1;
-                    let nextNote = lastNote + (direction * stepSize);
-                    
-                    // Keep in range
-                    nextNote = Math.max(RANGES.violin1.min, Math.min(RANGES.violin1.max, nextNote));
-                    
-                    // Prefer chord tones
-                    if (Math.random() > 0.3) {
-                        const chordMidis = chord.notes.map(n => noteToMidi(n, 5));
-                        nextNote = chordMidis[Math.floor(Math.random() * chordMidis.length)];
+                    if (Math.random() > 0.2) {
+                        const chordMidis = [
+                            noteToMidi(chord.notes[0], 5),
+                            noteToMidi(chord.notes[1], 5),
+                            noteToMidi(chord.notes[2], 5),
+                            noteToMidi(chord.notes[0], 6)
+                        ];
+                        lastNote = chordMidis[Math.floor(Math.random() * chordMidis.length)];
+                    } else {
+                        const direction = Math.random() > 0.5 ? 1 : -1;
+                        lastNote = lastNote + (direction * 2);
                     }
                     
+                    lastNote = Math.max(RANGES.violin1.min, Math.min(RANGES.violin1.max, lastNote));
+                    
                     measure.push({
-                        notes: [nextNote],
+                        notes: [lastNote],
                         duration: duration,
                         isChord: false
                     });
                     
-                    lastNote = nextNote;
                     beatCount += duration;
                 }
                 
@@ -492,7 +451,7 @@
             composition.parts.violin1 = part;
         }
         
-        // Generate Violin 2 (harmony)
+        // Generate Violin 2 part
         function generateViolin2Part(progression, key) {
             const part = [];
             
@@ -500,11 +459,9 @@
                 const chord = progression[m];
                 const measure = [];
                 
-                // Harmonize with violin 1
-                const note = chord.notes[1]; // Third of chord
+                const note = chord.notes[1];
                 const octave = 4;
                 
-                // Create rhythmic variation
                 if (m % 4 === 0) {
                     measure.push({ notes: [noteToMidi(note, octave)], duration: 4, isChord: false });
                 } else {
@@ -526,8 +483,7 @@
                 const chord = progression[m];
                 const measure = [];
                 
-                // Inner voice movement
-                const notes = [chord.notes[2], chord.notes[0]]; // Fifth and root
+                const notes = [chord.notes[2], chord.notes[0]];
                 const pattern = m % 2 === 0 ? 
                     [{ note: notes[0], duration: 2 }, { note: notes[1], duration: 2 }] :
                     [{ note: notes[1], duration: 4 }];
@@ -554,11 +510,9 @@
                 const chord = progression[m];
                 const measure = [];
                 
-                // Bass line - root movement
                 const root = chord.root;
                 const octave = 2;
                 
-                // Walking bass or pedal
                 if (m % 2 === 0) {
                     measure.push({ notes: [noteToMidi(root, octave)], duration: 2, isChord: false });
                     measure.push({ notes: [noteToMidi(chord.notes[2], octave)], duration: 2, isChord: false });
@@ -572,7 +526,7 @@
             composition.parts.cello = part;
         }
         
-        // Display composition info
+        // Display composition
         function displayComposition() {
             const output = document.getElementById('output');
             let html = '<h3>Composition Generated</h3>';
@@ -580,33 +534,10 @@
             html += `<p><strong>Tempo:</strong> ${composition.tempo} BPM</p>`;
             html += `<p><strong>Measures:</strong> ${composition.measures}</p>`;
             html += '<p><strong>Instrumentation:</strong> Guitar, Violin I, Violin II, Viola, Cello</p>';
-            
-            // Show first few measures
-            html += '<h4>Preview (First 4 Measures):</h4>';
-            html += '<pre style="font-size: 0.85em;">';
-            
-            const instrumentNames = ['Guitar', 'Violin I', 'Violin II', 'Viola', 'Cello'];
-            const partNames = ['guitar', 'violin1', 'violin2', 'viola', 'cello'];
-            
-            for (let i = 0; i < partNames.length; i++) {
-                html += `${instrumentNames[i].padEnd(10)}: `;
-                const part = composition.parts[partNames[i]];
-                for (let m = 0; m < Math.min(4, part.length); m++) {
-                    const measure = part[m];
-                    let chordCount = 0;
-                    measure.forEach(event => {
-                        if (event.isChord) chordCount++;
-                    });
-                    html += `[M${m+1}: ${chordCount}ch] `;
-                }
-                html += '\n';
-            }
-            
-            html += '</pre>';
             output.innerHTML = html;
         }
         
-        // Audio playback - FIXED
+        // Play composition
         function playComposition() {
             if (!composition) return;
             
@@ -623,7 +554,6 @@
             const beatDuration = 60 / tempo;
             let currentTime = audioContext.currentTime;
             
-            // Play each part
             Object.keys(composition.parts).forEach(instrument => {
                 const part = composition.parts[instrument];
                 let measureTime = currentTime;
@@ -634,12 +564,10 @@
                     measure.forEach(event => {
                         if (event.notes && event.notes.length > 0) {
                             if (event.isChord) {
-                                // Play all notes of chord simultaneously
                                 event.notes.forEach(note => {
                                     playNote(note, beatTime, event.duration * beatDuration, instrument, event.volume);
                                 });
                             } else {
-                                // Play single note
                                 event.notes.forEach(note => {
                                     playNote(note, beatTime, event.duration * beatDuration, instrument);
                                 });
@@ -652,7 +580,6 @@
                 });
             });
             
-            // Schedule stop
             const totalDuration = composition.measures * 4 * beatDuration;
             setTimeout(() => {
                 if (isPlaying) {
@@ -668,7 +595,6 @@
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
             
-            // Instrument-specific waveforms
             const waveforms = {
                 guitar: 'triangle',
                 violin1: 'sawtooth',
@@ -680,9 +606,8 @@
             oscillator.type = waveforms[instrument] || 'sine';
             oscillator.frequency.value = midiToFreq(midi);
             
-            // Volume based on instrument - REDUCED for balance
             const baseVolumes = {
-                guitar: 0.15,  // Reduced from 0.25
+                guitar: 0.15,
                 violin1: 0.25,
                 violin2: 0.2,
                 viola: 0.2,
@@ -691,7 +616,6 @@
             
             const finalVolume = volume ? baseVolumes[instrument] * volume : baseVolumes[instrument];
             
-            // Envelope
             gainNode.gain.setValueAtTime(0, startTime);
             gainNode.gain.linearRampToValueAtTime(finalVolume, startTime + 0.01);
             gainNode.gain.setValueAtTime(finalVolume, startTime + duration - 0.05);
@@ -716,7 +640,7 @@
             document.getElementById('stopBtn').disabled = true;
         }
         
-        // Export to MusicXML - FIXED FOR CHORDS
+        // Export MusicXML - WITH OCTAVE FIX
         function exportMusicXML() {
             if (!composition) return;
             
@@ -736,13 +660,10 @@
             let xml = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n';
             xml += '<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">\n';
             xml += '<score-partwise version="3.0">\n';
-            
-            // Work title
             xml += '  <work>\n';
             xml += '    <work-title>String Quintet - Generated Composition</work-title>\n';
             xml += '  </work>\n';
             
-            // Part list
             xml += '  <part-list>\n';
             xml += '    <score-part id="P1"><part-name>Guitar</part-name></score-part>\n';
             xml += '    <score-part id="P2"><part-name>Violin I</part-name></score-part>\n';
@@ -751,7 +672,6 @@
             xml += '    <score-part id="P5"><part-name>Cello</part-name></score-part>\n';
             xml += '  </part-list>\n';
             
-            // Generate parts
             const partIds = ['P1', 'P2', 'P3', 'P4', 'P5'];
             const partNames = ['guitar', 'violin1', 'violin2', 'viola', 'cello'];
             const clefs = ['G', 'G', 'G', 'C', 'F'];
@@ -764,7 +684,6 @@
                 partData.forEach((measure, mIndex) => {
                     xml += `    <measure number="${mIndex + 1}">\n`;
                     
-                    // Add attributes for first measure
                     if (mIndex === 0) {
                         xml += '      <attributes>\n';
                         xml += '        <divisions>256</divisions>\n';
@@ -772,7 +691,6 @@
                         xml += '        <time><beats>4</beats><beat-type>4</beat-type></time>\n';
                         xml += `        <clef><sign>${clefs[p]}</sign><line>${clefLines[p]}</line></clef>\n`;
                         
-                        // Add octave transposition for guitar
                         if (p === 0) {
                             xml += '        <transpose>\n';
                             xml += '          <diatonic>0</diatonic>\n';
@@ -784,18 +702,17 @@
                         xml += '      </attributes>\n';
                     }
                     
-                    // Add notes
                     measure.forEach(event => {
                         if (event.notes && event.notes.length > 0) {
                             if (event.isChord && event.notes.length > 1) {
-                                // Write chord
                                 event.notes.forEach((note, idx) => {
-                                    xml += createNoteXML(note, event.duration * 256, idx > 0);
+                                    const adjustedNote = (p === 0) ? note + 12 : note;
+                                    xml += createNoteXML(adjustedNote, event.duration * 256, idx > 0);
                                 });
                             } else {
-                                // Write single notes
                                 event.notes.forEach(note => {
-                                    xml += createNoteXML(note, event.duration * 256, false);
+                                    const adjustedNote = (p === 0) ? note + 12 : note;
+                                    xml += createNoteXML(adjustedNote, event.duration * 256, false);
                                 });
                             }
                         }
@@ -843,7 +760,6 @@
             return 'sixteenth';
         }
         
-        // Utility functions
         function updateStatus(message, type) {
             const status = document.getElementById('status');
             status.textContent = message;
@@ -856,7 +772,6 @@
             debug.scrollTop = debug.scrollHeight;
         }
         
-        // Initialize on load
         window.onload = function() {
             updateStatus('Ready to compose', 'complete');
         };
