@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>String Quintet Composer v57 - Multiple Stops Restored</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        .version {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        .feature-badge {
+            display: inline-block;
+            background: #27ae60;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #555;
+            font-size: 0.95em;
+        }
+        input, select {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        input[type="range"] {
+            padding: 0;
+        }
+        .range-value {
+            text-align: center;
+            color: #667eea;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 10px 5px;
+        }
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .output {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .status {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.1em;
+        }
+        .status.generating { color: #f39c12; }
+        .status.complete { color: #27ae60; }
+        .status.error { color: #e74c3c; }
+        .debug-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.9em;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .feature-list {
+            background: #e8f5e9;
+            border-left: 4px solid #27ae60;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎼 String Quintet Composer v57</h1>
+        <div class="version">Multiple Stops Restored <span class="feature-badge">NEW</span></div>
+        
+        <div class="feature-list">
+            <strong>New in v57:</strong> Double and triple stops for strings • Realistic bow changes • Idiomatic string writing
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="measures">Number of Measures:</label>
+                <input type="number" id="measures" min="8" max="64" value="16">
+            </div>
+            
+            <div class="control-group">
+                <label for="tempo">Tempo (BPM):</label>
+                <input type="number" id="tempo" min="40" max="200" value="120">
+            </div>
+            
+            <div class="control-group">
+                <label for="key">Key:</label>
+                <select id="key">
+                    <option value="C">C Major</option>
+                    <option value="G">G Major</option>
+                    <option value="D" selected>D Major</option>
+                    <option value="A">A Major</option>
+                    <option value="F">F Major</option>
+                    <option value="Bb">B♭ Major</option>
+                    <option value="Am">A Minor</option>
+                    <option value="Em">E Minor</option>
+                    <option value="Dm">D Minor</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="style">Compositional Style:</label>
+                <select id="style">
+                    <option value="classical">Classical (Haydn/Mozart)</option>
+                    <option value="romantic">Romantic (Brahms/Schumann)</option>
+                    <option value="modern">Modern (Bartók/Shostakovich)</option>
+                    <option value="minimalist">Minimalist (Glass/Reich)</option>
+                    <option value="folk">Folk-Inspired</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="guitarStyle">Guitar Style:</label>
+                <select id="guitarStyle">
+                    <option value="arpeggiated">Arpeggiated</option>
+                    <option value="strummed">Strummed Chords</option>
+                    <option value="fingerstyle">Fingerstyle</option>
+                    <option value="classical">Classical Pattern</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="multipleStops">Multiple Stops Density:</label>
+                <input type="range" id="multipleStops" min="0" max="100" value="30">
+                <div class="range-value"><span id="stopsValue">30</span>%</div>
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button onclick="generateComposition()">🎵 Generate Composition</button>
+            <button onclick="playComposition()" id="playBtn" disabled>▶️ Play Audio</button>
+            <button onclick="stopPlayback()" id="stopBtn" disabled>⏹️ Stop</button>
+            <button onclick="exportMusicXML()" id="exportBtn" disabled>📄 Export MusicXML</button>
+        </div>
+        
+        <div class="status" id="status"></div>
+        <div class="output" id="output"></div>
+        <div class="debug-info" id="debug" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Global variables
+        let composition = null;
+        let audioContext = null;
+        let isPlaying = false;
+        let currentSources = [];
+        
+        // Update range display
+        document.getElementById('multipleStops').addEventListener('input', function(e) {
+            document.getElementById('stopsValue').textContent = e.target.value;
+        });
+        
+        // Musical constants
+        const KEYS = {
+            'C': { tonic: 'C', notes: ['C', 'D', 'E', 'F', 'G', 'A', 'B'], sharps: 0 },
+            'G': { tonic: 'G', notes: ['G', 'A', 'B', 'C', 'D', 'E', 'F#'], sharps: 1 },
+            'D': { tonic: 'D', notes: ['D', 'E', 'F#', 'G', 'A', 'B', 'C#'], sharps: 2 },
+            'A': { tonic: 'A', notes: ['A', 'B', 'C#', 'D', 'E', 'F#', 'G#'], sharps: 3 },
+            'F': { tonic: 'F', notes: ['F', 'G', 'A', 'Bb', 'C', 'D', 'E'], sharps: -1 },
+            'Bb': { tonic: 'Bb', notes: ['Bb', 'C', 'D', 'Eb', 'F', 'G', 'A'], sharps: -2 },
+            'Am': { tonic: 'A', notes: ['A', 'B', 'C', 'D', 'E', 'F', 'G'], sharps: 0, minor: true },
+            'Em': { tonic: 'E', notes: ['E', 'F#', 'G', 'A', 'B', 'C', 'D'], sharps: 1, minor: true },
+            'Dm': { tonic: 'D', notes: ['D', 'E', 'F', 'G', 'A', 'Bb', 'C'], sharps: -1, minor: true }
+        };
+        
+        // Instrument ranges and string tunings
+        const RANGES = {
+            guitar: { min: 40, max: 67 },
+            violin1: { min: 55, max: 103, strings: [55, 62, 69, 76] }, // G3, D4, A4, E5
+            violin2: { min: 55, max: 96, strings: [55, 62, 69, 76] },
+            viola: { min: 48, max: 84, strings: [48, 55, 62, 69] }, // C3, G3, D4, A4
+            cello: { min: 36, max: 76, strings: [36, 43, 50, 57] } // C2, G2, D3, A3
+        };
+        
+        // Note to MIDI conversion
+        function noteToMidi(note, octave) {
+            const noteMap = { 'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11 };
+            let midi = 12 + (octave * 12) + noteMap[note[0]];
+            if (note.includes('#')) midi++;
+            if (note.includes('b')) midi--;
+            return midi;
+        }
+        
+        // MIDI to frequency
+        function midiToFreq(midi) {
+            return 440 * Math.pow(2, (midi - 69) / 12);
+        }
+        
+        // Check if multiple stop is playable on string instrument
+        function isPlayableMultipleStop(notes, instrument) {
+            if (!RANGES[instrument].strings) return false;
+            const strings = RANGES[instrument].strings;
+            
+            // Check if notes can be played on adjacent strings
+            let stringAssignments = [];
+            for (let note of notes) {
+                let possibleStrings = [];
+                for (let i = 0; i < strings.length; i++) {
+                    if (note >= strings[i] && note <= strings[i] + 7) { // Within reach on this string
+                        possibleStrings.push(i);
+                    }
+                }
+                if (possibleStrings.length === 0) return false;
+                stringAssignments.push(possibleStrings);
+            }
+            
+            // Check if we can assign each note to a different string
+            if (notes.length === 2) {
+                for (let s1 of stringAssignments[0]) {
+                    for (let s2 of stringAssignments[1]) {
+                        if (Math.abs(s1 - s2) === 1) return true; // Adjacent strings
+                    }
+                }
+            }
+            
+            return true;
+        }
+        
+        // Generate multiple stop intervals
+        function generateMultipleStop(baseNote, chord, instrument) {
+            const stopDensity = parseInt(document.getElementById('multipleStops').value) / 100;
+            if (Math.random() > stopDensity) return null;
+            
+            const intervals = {
+                violin1: [3, 4, 5, 6, 7, 8], // Thirds through sixths
+                violin2: [3, 4, 5, 6, 7, 8],
+                viola: [3, 4, 5, 7, 8], // Avoid minor seconds
+                cello: [3, 4, 5, 7, 8, 12] // Include octaves
+            };
+            
+            if (!intervals[instrument]) return null;
+            
+            const possibleIntervals = intervals[instrument];
+            const interval = possibleIntervals[Math.floor(Math.random() * possibleIntervals.length)];
+            const secondNote = baseNote + interval;
+            
+            // Check if in range
+            if (secondNote > RANGES[instrument].max) return null;
+            
+            // For triple stops (rare, only on strong beats)
+            let notes = [baseNote, secondNote];
+            if (Math.random() < 0.1 && (instrument === 'viola' || instrument === 'cello')) {
+                const thirdNote = baseNote + 12; // Octave above
+                if (thirdNote <= RANGES[instrument].max) {
+                    notes.push(thirdNote);
+                }
+            }
+            
+            // Verify playability
+            if (isPlayableMultipleStop(notes, instrument)) {
+                return notes;
+            }
+            
+            return null;
+        }
+        
+        // Main generation function
+        function generateComposition() {
+            updateStatus('Generating composition...', 'generating');
+            document.getElementById('debug').style.display = 'block';
+            document.getElementById('debug').innerHTML = 'Starting generation...<br>';
+            
+            const measures = parseInt(document.getElementById('measures').value);
+            const tempo = parseInt(document.getElementById('tempo').value);
+            const key = document.getElementById('key').value;
+            const style = document.getElementById('style').value;
+            const guitarStyle = document.getElementById('guitarStyle').value;
+            
+            composition = {
+                measures: measures,
+                tempo: tempo,
+                key: key,
+                style: style,
+                timeSignature: { beats: 4, beatType: 4 },
+                parts: {
+                    guitar: [],
+                    violin1: [],
+                    violin2: [],
+                    viola: [],
+                    cello: []
+                }
+            };
+            
+            const progression = generateProgression(measures, key, style);
+            addDebug(`Generated ${progression.length} chords`);
+            
+            generateGuitarPart(progression, guitarStyle, key);
+            generateViolin1Part(progression, key);
+            generateViolin2Part(progression, key);
+            generateViolaPart(progression, key);
+            generateCelloPart(progression, key);
+            
+            // Count multiple stops
+            let stopCount = 0;
+            ['violin1', 'violin2', 'viola', 'cello'].forEach(inst => {
+                composition.parts[inst].forEach(measure => {
+                    measure.forEach(event => {
+                        if (event.isMultipleStop) stopCount++;
+                    });
+                });
+            });
+            addDebug(`Generated ${stopCount} multiple stops`);
+            
+            displayComposition();
+            updateStatus('Composition generated successfully!', 'complete');
+            document.getElementById('playBtn').disabled = false;
+            document.getElementById('exportBtn').disabled = false;
+        }
+        
+        // Generate chord progression
+        function generateProgression(measures, key, style) {
+            const progressions = {
+                classical: [1, 4, 5, 1, 1, 5, 5, 1, 4, 1, 5, 1],
+                romantic: [1, 6, 4, 5, 1, 4, 2, 5, 1],
+                modern: [1, 2, 5, 1, 6, 4, 5, 1, 3, 6, 2, 5, 1],
+                minimalist: [1, 1, 1, 1, 5, 5, 1, 1],
+                folk: [1, 4, 1, 5, 1, 4, 5, 1]
+            };
+            
+            const pattern = progressions[style] || progressions.classical;
+            const progression = [];
+            
+            for (let m = 0; m < measures; m++) {
+                const chordNum = pattern[m % pattern.length];
+                progression.push(generateChord(chordNum, key));
+            }
+            
+            return progression;
+        }
+        
+        // Generate chord
+        function generateChord(degree, key) {
+            const keyData = KEYS[key];
+            const root = keyData.notes[degree - 1];
+            const third = keyData.notes[(degree - 1 + 2) % 7];
+            const fifth = keyData.notes[(degree - 1 + 4) % 7];
+            
+            return {
+                degree: degree,
+                root: root,
+                notes: [root, third, fifth]
+            };
+        }
+        
+        // Generate guitar part (unchanged from v56)
+        function generateGuitarPart(progression, style, key) {
+            const part = [];
+            
+            for (let m = 0; m < progression.length; m++) {
+                const chord = progression[m];
+                const measure = [];
+                
+                if (style === 'strummed') {
+                    const voicing = [
+                        noteToMidi(chord.root, 2),
+                        noteToMidi(chord.notes[2], 2),
+                        noteToMidi(chord.notes[0], 3),
+                        noteToMidi(chord.notes[1], 3),
+                        noteToMidi(chord.notes[2], 3),
+                        noteToMidi(chord.notes[0], 4)
+                    ].filter(note => note >= 40 && note <= 67);
+                    
+                    for (let beat = 0; beat < 4; beat++) {
+                        measure.push({
+                            notes: voicing,
+                            duration: 1,
+                            isChord: true,
+                            volume: 0.6,
+                            beat: beat + 1
+                        });
+                    }
+                } else if (style === 'fingerstyle') {
+                    const bassNote = noteToMidi(chord.root, 2);
+                    const trebleChord = [
+                        noteToMidi(chord.notes[0], 3),
+                        noteToMidi(chord.notes[1], 3),
+                        noteToMidi(chord.notes[2], 3)
+                    ].filter(note => note >= 40 && note <= 67);
+                    
+                    for (let i = 0; i < 4; i++) {
+                        measure.push({ notes: [bassNote], duration: 0.5, isChord: false });
+                        measure.push({ notes: trebleChord, duration: 0.5, isChord: true, volume: 0.5 });
+                    }
+                } else if (style === 'classical') {
+                    const fullChord = [
+                        noteToMidi(chord.root, 2),
+                        noteToMidi(chord.notes[2], 2),
+                        noteToMidi(chord.notes[0], 3),
+                        noteToMidi(chord.notes[1], 3)
+                    ].filter(note => note >= 40 && note <= 67);
+                    
+                    measure.push({ notes: fullChord, duration: 4, isChord: true, volume: 0.5 });
+                } else {
+                    const arpNotes = [
+                        noteToMidi(chord.root, 2),
+                        noteToMidi(chord.notes[2], 2),
+                        noteToMidi(chord.notes[0], 3),
+                        noteToMidi(chord.notes[1], 3)
+                    ].filter(note => note >= 40 && note <= 67);
+                    
+                    const pattern = [0, 1, 2, 3, 2, 1];
+                    for (let i = 0; i < pattern.length; i++) {
+                        measure.push({
+                            notes: [arpNotes[pattern[i] % arpNotes.length]],
+                            duration: i < 4 ? 0.5 : 1,
+                            isChord: false
+                        });
+                    }
+                }
+                
+                part.push(measure);
+            }
+            
+            composition.parts.guitar = part;
+        }
+        
+        // Generate Violin 1 part with multiple stops
+        function generateViolin1Part(progression, key) {
+            const part = [];
+            let lastNote = 69;
+            
+            for (let m = 0; m < progression.length; m++) {
+                const chord = progression[m];
+                const measure = [];
+                
+                let beatCount = 0;
+                while (beatCount < 4) {
+                    const duration = Math.random() > 0.7 ? 2 : 1;
+                    
+                    // Generate base note
+                    const chordMidis = [
+                        noteToMidi(chord.notes[0], 5),
+                        noteToMidi(chord.notes[1], 5),
+                        noteToMidi(chord.notes[2], 5)
+                    ];
+                    const baseNote = chordMidis[Math.floor(Math.random() * chordMidis.length)];
+                    
+                    // Check for multiple stop opportunity
+                    const multipleStop = generateMultipleStop(baseNote, chord, 'violin1');
+                    
+                    if (multipleStop) {
+                        measure.push({
+                            notes: multipleStop,
+                            duration: duration,
+                            isChord: false,
+                            isMultipleStop: true,
+                            beat: beatCount + 1
+                        });
+                    } else {
+                        measure.push({
+                            notes: [baseNote],
+                            duration: duration,
+                            isChord: false,
+                            beat: beatCount + 1
+                        });
+                    }
+                    
+                    beatCount += duration;
+                    if (beatCount >= 4) break;
+                }
+                
+                part.push(measure);
+            }
+            
+            composition.parts.violin1 = part;
+        }
+        
+        // Generate Violin 2 part with multiple stops
+        function generateViolin2Part(progression, key) {
+            const part = [];
+            
+            for (let m = 0; m < progression.length; m++) {
+                const chord = progression[m];
+                const measure = [];
+                
+                const note = chord.notes[1];
+                const baseNote = noteToMidi(note, 4);
+                
+                // Strong beat multiple stop
+                const multipleStop = generateMultipleStop(baseNote, chord, 'violin2');
+                
+                if (m % 4 === 0 && multipleStop) {
+                    measure.push({ 
+                        notes: multipleStop, 
+                        duration: 4, 
+                        isMultipleStop: true,
+                        beat: 1 
+                    });
+                } else {
+                    measure.push({ notes: [baseNote], duration: 2, beat: 1 });
+                    
+                    // Check for second half multiple stop
+                    const secondNote = noteToMidi(chord.notes[2], 4);
+                    const secondStop = generateMultipleStop(secondNote, chord, 'violin2');
+                    
+                    if (secondStop) {
+                        measure.push({ 
+                            notes: secondStop, 
+                            duration: 2, 
+                            isMultipleStop: true,
+                            beat: 3 
+                        });
+                    } else {
+                        measure.push({ notes: [secondNote], duration: 2, beat: 3 });
+                    }
+                }
+                
+                part.push(measure);
+            }
+            
+            composition.parts.violin2 = part;
+        }
+        
+        // Generate Viola part with multiple stops
+        function generateViolaPart(progression, key) {
+            const part = [];
+            
+            for (let m = 0; m < progression.length; m++) {
+                const chord = progression[m];
+                const measure = [];
+                
+                const notes = [chord.notes[2], chord.notes[0]];
+                
+                if (m % 2 === 0) {
+                    const note1 = noteToMidi(notes[0], 3);
+                    const stop1 = generateMultipleStop(note1, chord, 'viola');
+                    
+                    if (stop1) {
+                        measure.push({ notes: stop1, duration: 2, isMultipleStop: true, beat: 1 });
+                    } else {
+                        measure.push({ notes: [note1], duration: 2, beat: 1 });
+                    }
+                    
+                    measure.push({ notes: [noteToMidi(notes[1], 3)], duration: 2, beat: 3 });
+                } else {
+                    const baseNote = noteToMidi(notes[1], 3);
+                    const stop = generateMultipleStop(baseNote, chord, 'viola');
+                    
+                    if (stop && Math.random() > 0.5) {
+                        measure.push({ notes: stop, duration: 4, isMultipleStop: true, beat: 1 });
+                    } else {
+                        measure.push({ notes: [baseNote], duration: 4, beat: 1 });
+                    }
+                }
+                
+                part.push(measure);
+            }
+            
+            composition.parts.viola = part;
+        }
+        
+        // Generate Cello part with multiple stops
+        function generateCelloPart(progression, key) {
+            const part = [];
+            
+            for (let m = 0; m < progression.length; m++) {
+                const chord = progression[m];
+                const measure = [];
+                
+                const root = noteToMidi(chord.root, 2);
+                
+                if (m % 2 === 0) {
+                    // Potential double stop on downbeat
+                    const stop = generateMultipleStop(root, chord, 'cello');
+                    
+                    if (stop && m % 4 === 0) { // Less frequent for cello
+                        measure.push({ notes: stop, duration: 2, isMultipleStop: true, beat: 1 });
+                    } else {
+                        measure.push({ notes: [root], duration: 2, beat: 1 });
+                    }
+                    
+                    measure.push({ notes: [noteToMidi(chord.notes[2], 2)], duration: 2, beat: 3 });
+                } else {
+                    // Occasional powerful triple stop
+                    if (Math.random() < 0.1) {
+                        const tripleStop = [root, root + 7, root + 12]; // Root, fifth, octave
+                        if (tripleStop[2] <= RANGES.cello.max) {
+                            measure.push({ notes: tripleStop, duration: 4, isMultipleStop: true, beat: 1 });
+                        } else {
+                            measure.push({ notes: [root], duration: 4, beat: 1 });
+                        }
+                    } else {
+                        measure.push({ notes: [root], duration: 4, beat: 1 });
+                    }
+                }
+                
+                part.push(measure);
+            }
+            
+            composition.parts.cello = part;
+        }
+        
+        // Display composition
+        function displayComposition() {
+            const output = document.getElementById('output');
+            let html = '<h3>Composition Generated</h3>';
+            html += `<p><strong>Key:</strong> ${composition.key}</p>`;
+            html += `<p><strong>Tempo:</strong> ${composition.tempo} BPM</p>`;
+            html += `<p><strong>Measures:</strong> ${composition.measures}</p>`;
+            
+            // Count multiple stops
+            let stopStats = { violin1: 0, violin2: 0, viola: 0, cello: 0 };
+            ['violin1', 'violin2', 'viola', 'cello'].forEach(inst => {
+                composition.parts[inst].forEach(measure => {
+                    measure.forEach(event => {
+                        if (event.isMultipleStop) stopStats[inst]++;
+                    });
+                });
+            });
+            
+            html += '<p><strong>Multiple Stops Generated:</strong></p>';
+            html += '<ul>';
+            html += `<li>Violin I: ${stopStats.violin1} stops</li>`;
+            html += `<li>Violin II: ${stopStats.violin2} stops</li>`;
+            html += `<li>Viola: ${stopStats.viola} stops</li>`;
+            html += `<li>Cello: ${stopStats.cello} stops</li>`;
+            html += '</ul>';
+            
+            output.innerHTML = html;
+        }
+        
+        // Play composition (enhanced for multiple stops)
+        function playComposition() {
+            if (!composition) return;
+            
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            stopPlayback();
+            isPlaying = true;
+            document.getElementById('playBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = false;
+            
+            const tempo = composition.tempo;
+            const beatDuration = 60 / tempo;
+            let currentTime = audioContext.currentTime;
+            
+            Object.keys(composition.parts).forEach(instrument => {
+                const part = composition.parts[instrument];
+                let measureTime = currentTime;
+                
+                part.forEach((measure, mIndex) => {
+                    let beatTime = measureTime;
+                    
+                    measure.forEach(event => {
+                        if (event.notes && event.notes.length > 0) {
+                            event.notes.forEach(note => {
+                                // Slightly detune multiple stops for realism
+                                const detune = event.isMultipleStop ? (Math.random() - 0.5) * 10 : 0;
+                                playNote(note, beatTime, event.duration * beatDuration, instrument, event.volume, detune);
+                            });
+                        }
+                        beatTime += event.duration * beatDuration;
+                    });
+                    
+                    measureTime += 4 * beatDuration;
+                });
+            });
+            
+            const totalDuration = composition.measures * 4 * beatDuration;
+            setTimeout(() => {
+                if (isPlaying) {
+                    stopPlayback();
+                    updateStatus('Playback complete', 'complete');
+                }
+            }, totalDuration * 1000);
+            
+            updateStatus('Playing...', 'generating');
+        }
+        
+        function playNote(midi, startTime, duration, instrument, volume, detune = 0) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            const waveforms = {
+                guitar: 'triangle',
+                violin1: 'sawtooth',
+                violin2: 'sawtooth',
+                viola: 'sawtooth',
+                cello: 'sawtooth'
+            };
+            
+            oscillator.type = waveforms[instrument] || 'sine';
+            oscillator.frequency.value = midiToFreq(midi);
+            oscillator.detune.value = detune;
+            
+            const baseVolumes = {
+                guitar: 0.15,
+                violin1: 0.25,
+                violin2: 0.2,
+                viola: 0.2,
+                cello: 0.25
+            };
+            
+            const finalVolume = volume ? baseVolumes[instrument] * volume : baseVolumes[instrument];
+            
+            // ADSR envelope
+            gainNode.gain.setValueAtTime(0, startTime);
+            gainNode.gain.linearRampToValueAtTime(finalVolume, startTime + 0.02);
+            gainNode.gain.setValueAtTime(finalVolume, startTime + duration - 0.1);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start(startTime);
+            oscillator.stop(startTime + duration);
+            
+            currentSources.push(oscillator);
+        }
+        
+        function stopPlayback() {
+            isPlaying = false;
+            currentSources.forEach(source => {
+                try { source.stop(); } catch(e) {}
+            });
+            currentSources = [];
+            document.getElementById('playBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+        }
+        
+        // Export MusicXML with multiple stops notation
+        function exportMusicXML() {
+            if (!composition) return;
+            
+            const xml = generateMusicXML(composition);
+            const blob = new Blob([xml], { type: 'application/xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `quintet_v57_${Date.now()}.musicxml`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            updateStatus('MusicXML exported with multiple stops!', 'complete');
+        }
+        
+        function generateMusicXML(comp) {
+            let xml = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n';
+            xml += '<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">\n';
+            xml += '<score-partwise version="3.0">\n';
+            xml += '  <work>\n';
+            xml += '    <work-title>String Quintet v57 - With Multiple Stops</work-title>\n';
+            xml += '  </work>\n';
+            
+            xml += '  <part-list>\n';
+            xml += '    <score-part id="P1"><part-name>Guitar</part-name></score-part>\n';
+            xml += '    <score-part id="P2"><part-name>Violin I</part-name></score-part>\n';
+            xml += '    <score-part id="P3"><part-name>Violin II</part-name></score-part>\n';
+            xml += '    <score-part id="P4"><part-name>Viola</part-name></score-part>\n';
+            xml += '    <score-part id="P5"><part-name>Cello</part-name></score-part>\n';
+            xml += '  </part-list>\n';
+            
+            const partIds = ['P1', 'P2', 'P3', 'P4', 'P5'];
+            const partNames = ['guitar', 'violin1', 'violin2', 'viola', 'cello'];
+            const clefs = ['G', 'G', 'G', 'C', 'F'];
+            const clefLines = [2, 2, 2, 3, 4];
+            
+            for (let p = 0; p < partIds.length; p++) {
+                xml += `  <part id="${partIds[p]}">\n`;
+                const partData = comp.parts[partNames[p]];
+                
+                partData.forEach((measure, mIndex) => {
+                    xml += `    <measure number="${mIndex + 1}">\n`;
+                    
+                    if (mIndex === 0) {
+                        xml += '      <attributes>\n';
+                        xml += '        <divisions>256</divisions>\n';
+                        xml += `        <key><fifths>${KEYS[comp.key].sharps || 0}</fifths></key>\n`;
+                        xml += '        <time><beats>4</beats><beat-type>4</beat-type></time>\n';
+                        xml += `        <clef><sign>${clefs[p]}</sign><line>${clefLines[p]}</line></clef>\n`;
+                        
+                        if (p === 0) {
+                            xml += '        <transpose>\n';
+                            xml += '          <diatonic>0</diatonic>\n';
+                            xml += '          <chromatic>0</chromatic>\n';
+                            xml += '          <octave-change>-1</octave-change>\n';
+                            xml += '        </transpose>\n';
+                        }
+                        
+                        xml += '      </attributes>\n';
+                    }
+                    
+                    measure.forEach(event => {
+                        if (event.notes && event.notes.length > 0) {
+                            // Handle multiple stops properly
+                            if (event.isMultipleStop || event.notes.length > 1) {
+                                event.notes.forEach((note, idx) => {
+                                    const adjustedNote = (p === 0) ? note + 12 : note;
+                                    xml += createNoteXML(adjustedNote, event.duration * 256, idx > 0);
+                                });
+                            } else {
+                                event.notes.forEach(note => {
+                                    const adjustedNote = (p === 0) ? note + 12 : note;
+                                    xml += createNoteXML(adjustedNote, event.duration * 256, false);
+                                });
+                            }
+                        }
+                    });
+                    
+                    xml += '    </measure>\n';
+                });
+                
+                xml += '  </part>\n';
+            }
+            
+            xml += '</score-partwise>\n';
+            return xml;
+        }
+        
+        function createNoteXML(midi, duration, isChordNote) {
+            const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+            const octave = Math.floor(midi / 12) - 1;
+            const noteIndex = midi % 12;
+            const noteName = noteNames[noteIndex];
+            
+            let xml = '      <note>\n';
+            if (isChordNote) {
+                xml += '        <chord/>\n';
+            }
+            xml += '        <pitch>\n';
+            xml += `          <step>${noteName.replace('#', '')}</step>\n`;
+            if (noteName.includes('#')) {
+                xml += '          <alter>1</alter>\n';
+            }
+            xml += `          <octave>${octave}</octave>\n`;
+            xml += '        </pitch>\n';
+            xml += `        <duration>${Math.floor(duration)}</duration>\n';
+            xml += '        <type>' + getDurationType(duration) + '</type>\n';
+            xml += '      </note>\n';
+            
+            return xml;
+        }
+        
+        function getDurationType(duration) {
+            if (duration >= 1024) return 'whole';
+            if (duration >= 512) return 'half';
+            if (duration >= 256) return 'quarter';
+            if (duration >= 128) return 'eighth';
+            return 'sixteenth';
+        }
+        
+        function updateStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + type;
+        }
+        
+        function addDebug(message) {
+            const debug = document.getElementById('debug');
+            debug.innerHTML += message + '<br>';
+            debug.scrollTop = debug.scrollHeight;
+        }
+        
+        window.onload = function() {
+            updateStatus('Ready to compose - v57 with Multiple Stops', 'complete');
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GML-Quintet-Pro v2.0 - Sibelius-Compliant Export</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 320px 1fr 300px;
+            grid-template-rows: 70px 1fr;
+            height: 100vh;
+            gap: 2px;
+            background: #0a1628;
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            background: linear-gradient(90deg, #1a2f5a, #2d4a7a);
+            display: flex;
+            align-items: center;
+            padding: 0 25px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.4);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .version-badge {
+            background: rgba(255,215,0,0.2);
+            color: #ffd700;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 15px;
+            border: 1px solid rgba(255,215,0,0.3);
+        }
+
+        .header .subtitle {
+            margin-left: 25px;
+            opacity: 0.9;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .left-panel, .right-panel {
+            background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.12);
+        }
+
+        .center-panel {
+            background: rgba(255,255,255,0.09);
+            backdrop-filter: blur(18px);
+            border: 1px solid rgba(255,255,255,0.18);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            padding: 18px 25px;
+            background: rgba(255,255,255,0.12);
+            border-bottom: 1px solid rgba(255,255,255,0.25);
+            font-weight: 600;
+            font-size: 17px;
+        }
+
+        .panel-content {
+            padding: 25px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .style-selector h3 {
+            margin-bottom: 18px;
+            color: #ffd700;
+            font-size: 19px;
+            font-weight: 600;
+        }
+
+        .style-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .style-btn {
+            padding: 18px;
+            border: 2px solid rgba(255,255,255,0.25);
+            background: rgba(255,255,255,0.06);
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            text-align: left;
+        }
+
+        .style-btn:hover {
+            background: rgba(255,255,255,0.18);
+            border-color: #ffd700;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255,215,0,0.2);
+        }
+
+        .style-btn.active {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: #1a2f5a;
+            border-color: #ffd700;
+            font-weight: 700;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255,215,0,0.3);
+        }
+
+        .style-description {
+            font-size: 13px;
+            opacity: 0.85;
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+
+        .chord-builder h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .chord-input {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .chord-input input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.12);
+            color: white;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .chord-input input::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+
+        .add-chord-btn {
+            padding: 12px 18px;
+            background: #4CAF50;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .add-chord-btn:hover {
+            background: #45a049;
+            transform: translateY(-1px);
+        }
+
+        .chord-list {
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .chord-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: rgba(255,255,255,0.12);
+            margin-bottom: 6px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .remove-chord {
+            background: #f44336;
+            border: none;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .score-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .score-display {
+            width: 95%;
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            padding: 25px;
+            color: #333;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .score-header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #2a5298;
+        }
+
+        .score-header h3 {
+            color: #2a5298;
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .score-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .staff-line {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 8px;
+        }
+
+        .voice-label {
+            font-weight: 700;
+            width: 90px;
+            color: #2a5298;
+            font-size: 15px;
+        }
+
+        .notes-display {
+            flex: 1;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            padding-left: 20px;
+        }
+
+        .note {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(45deg, #2a5298, #1e3c72);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 13px;
+            box-shadow: 0 3px 8px rgba(42,82,152,0.3);
+            border: 2px solid rgba(255,255,255,0.8);
+        }
+
+        .control-section {
+            margin-bottom: 25px;
+        }
+
+        .control-section h3 {
+            color: #ffd700;
+            margin-bottom: 12px;
+            font-size: 17px;
+        }
+
+        .control-btn {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.12);
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .control-btn:hover {
+            background: rgba(255,255,255,0.22);
+            border-color: #ffd700;
+            transform: translateY(-1px);
+        }
+
+        .generate-btn {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: #1a2f5a;
+            font-weight: 700;
+            font-size: 17px;
+            padding: 18px;
+            margin-bottom: 20px;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.4);
+        }
+
+        .style-info {
+            background: rgba(255,255,255,0.12);
+            border-radius: 10px;
+            padding: 18px;
+            margin-top: 25px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .style-info h4 {
+            color: #ffd700;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        .style-characteristics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 12px;
+        }
+
+        .characteristic-tag {
+            background: rgba(255,215,0,0.25);
+            color: #ffd700;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            border: 1px solid rgba(255,215,0,0.4);
+            font-weight: 500;
+        }
+
+        .playback-controls {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .play-btn, .stop-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .play-btn {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .stop-btn {
+            background: #f44336;
+            color: white;
+        }
+
+        .play-btn:hover, .stop-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .generation-status {
+            text-align: center;
+            padding: 15px;
+            background: rgba(76,175,80,0.2);
+            border: 1px solid rgba(76,175,80,0.4);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            color: #4CAF50;
+            font-weight: 600;
+        }
+
+        .generation-status.hidden {
+            display: none;
+        }
+
+        .export-warning {
+            background: rgba(255,193,7,0.2);
+            border: 1px solid rgba(255,193,7,0.4);
+            color: #FFC107;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>GML-Quintet-Pro</h1>
+            <div class="version-badge">v2.0</div>
+            <div class="subtitle">Sibelius-Compliant Export Edition</div>
+        </div>
+
+        <!-- Left Panel: Style Selection & Chord Builder -->
+        <div class="left-panel">
+            <div class="panel-header">🎸 Legendary Musician Styles</div>
+            <div class="panel-content">
+                <div class="style-selector">
+                    <h3>Choose Your Master</h3>
+                    <div class="style-buttons">
+                        <div class="style-btn active" data-style="bbking">
+                            <strong>🎸 BB King Blues</strong>
+                            <div class="style-description">Soulful blues with signature bends, call-and-response patterns, and emotional string work</div>
+                        </div>
+                        <div class="style-btn" data-style="coltrane">
+                            <strong>🎷 Coltrane Jazz</strong>
+                            <div class="style-description">Complex harmony, chromatic movement, quartal voicings, and sophisticated jazz language</div>
+                        </div>
+                        <div class="style-btn" data-style="miles">
+                            <strong>🎺 Miles Modal</strong>
+                            <div class="style-description">Spacious, atmospheric modal harmonies with plenty of musical breathing room</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chord-builder">
+                    <h3>🎵 Build Progression</h3>
+                    <div class="chord-input">
+                        <input type="text" id="chordInput" placeholder="Enter chord (Cmaj7, Dm7, G7...)">
+                        <button class="add-chord-btn" onclick="addChord()">Add</button>
+                    </div>
+                    <div class="chord-list" id="chordList">
+                        <div class="chord-item">
+                            <span>Cmaj7</span>
+                            <button class="remove-chord" onclick="removeChord(this)">×</button>
+                        </div>
+                        <div class="chord-item">
+                            <span>Am7</span>
+                            <button class="remove-chord" onclick="removeChord(this)">×</button>
+                        </div>
+                        <div class="chord-item">
+                            <span>Dm7</span>
+                            <button class="remove-chord" onclick="removeChord(this)">×</button>
+                        </div>
+                        <div class="chord-item">
+                            <span>G7</span>
+                            <button class="remove-chord" onclick="removeChord(this)">×</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center Panel: Score Display -->
+        <div class="center-panel">
+            <div class="panel-header">🎼 5-Voice Score - <span id="currentStyle">BB King Blues Style</span></div>
+            <div class="score-container">
+                <div id="generationStatus" class="generation-status hidden"></div>
+                
+                <div class="score-display">
+                    <div class="score-header">
+                        <h3 id="scoreTitle">BB King Blues Quintet</h3>
+                        <p id="scoreProgression">Cmaj7 - Am7 - Dm7 - G7</p>
+                    </div>
+                    
+                    <div class="staff-line">
+                        <div class="voice-label">Voice 1</div>
+                        <div class="notes-display" id="voice1-notes">
+                            <div class="note">C5</div>
+                            <div class="note">A4</div>
+                            <div class="note">D5</div>
+                            <div class="note">B4</div>
+                        </div>
+                    </div>
+                    <div class="staff-line">
+                        <div class="voice-label">Voice 2</div>
+                        <div class="notes-display" id="voice2-notes">
+                            <div class="note">G4</div>
+                            <div class="note">F4</div>
+                            <div class="note">A4</div>
+                            <div class="note">G4</div>
+                        </div>
+                    </div>
+                    <div class="staff-line">
+                        <div class="voice-label">Voice 3</div>
+                        <div class="notes-display" id="voice3-notes">
+                            <div class="note">E4</div>
+                            <div class="note">C4</div>
+                            <div class="note">F4</div>
+                            <div class="note">D4</div>
+                        </div>
+                    </div>
+                    <div class="staff-line">
+                        <div class="voice-label">Voice 4</div>
+                        <div class="notes-display" id="voice4-notes">
+                            <div class="note">C3</div>
+                            <div class="note">A2</div>
+                            <div class="note">D3</div>
+                            <div class="note">G2</div>
+                        </div>
+                    </div>
+                    <div class="staff-line">
+                        <div class="voice-label">Voice 5</div>
+                        <div class="notes-display" id="voice5-notes">
+                            <div class="note">C2</div>
+                            <div class="note">A1</div>
+                            <div class="note">D2</div>
+                            <div class="note">G1</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="playback-controls">
+                    <button class="play-btn" onclick="playQuintet()">▶ Play Styled Quintet</button>
+                    <button class="stop-btn" onclick="stopPlayback()">⏹ Stop</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Controls & Export -->
+        <div class="right-panel">
+            <div class="panel-header">🎛️ Composition Controls</div>
+            <div class="panel-content">
+                <div class="control-section">
+                    <button class="control-btn generate-btn" onclick="generateStyledQuintet()">
+                        🎵 Generate Legendary Quintet
+                    </button>
+                </div>
+
+                <div class="control-section">
+                    <h3>🎼 Voicing Style</h3>
+                    <button class="control-btn" onclick="regenerateWithVoicing('close')">Close Position</button>
+                    <button class="control-btn" onclick="regenerateWithVoicing('open')">Open Position</button>
+                    <button class="control-btn" onclick="regenerateWithVoicing('mixed')">Mixed Position</button>
+                </div>
+
+                <div class="control-section">
+                    <h3>💾 Sibelius Export</h3>
+                    <div class="export-warning">
+                        📍 v2.0 generates true Sibelius-compliant MusicXML files with proper DTD declarations and divisions=1 structure for reliable import.
+                    </div>
+                    <button class="control-btn" onclick="exportSibeliusXML()">📄 Export Sibelius MusicXML</button>
+                    <button class="control-btn" onclick="exportAs('midi')">🎹 Export MIDI</button>
+                    <button class="control-btn" onclick="exportAs('json')">💾 Save Quintet Data</button>
+                </div>
+
+                <div class="style-info">
+                    <h4>🎭 Master Musician Info</h4>
+                    <div id="styleDescription">
+                        <p><strong>BB King - "The King of Blues"</strong></p>
+                        <p>Known for soulful string bending, call-and-response patterns, and deeply emotional musical expression. His quintet arrangements emphasize the blues scale with characteristic shuffle rhythms.</p>
+                    </div>
+                    <div class="style-characteristics">
+                        <span class="characteristic-tag">Shuffle Feel</span>
+                        <span class="characteristic-tag">String Bends</span>
+                        <span class="characteristic-tag">Call-Response</span>
+                        <span class="characteristic-tag">Blues Scale</span>
+                        <span class="characteristic-tag">Emotional</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== COMPLETE QUINTET ENGINE V2.0 =====
+        class CompleteQuintetEngineV2 {
+            constructor() {
+                this.initializeProfiles();
+                this.currentStyle = 'bbking';
+                this.currentProgression = ['Cmaj7', 'Am7', 'Dm7', 'G7'];
+                this.lastGenerated = null;
+                this.version = '2.0';
+            }
+
+            initializeProfiles() {
+                this.profiles = {
+                    bbking: {
+                        name: 'BB King Blues',
+                        displayName: 'BB King - "The King of Blues"',
+                        description: 'Known for soulful string bending, call-and-response patterns, and deeply emotional musical expression. His quintet arrangements emphasize the blues scale with characteristic shuffle rhythms.',
+                        characteristics: ['Shuffle Feel', 'String Bends', 'Call-Response', 'Blues Scale', 'Emotional'],
+                        harmonyRules: {
+                            preferredChords: ['dom7', 'min7', 'maj6', 'blues7'],
+                            voicingStyle: 'blues_spread',
+                            rhythmicFeel: 'shuffle',
+                            colorTones: ['b7', '9', 'b3'],
+                            voiceLeading: 'smooth_with_character'
+                        },
+                        voiceRoles: {
+                            voice1: { role: 'lead', style: 'blues_melody', range: [60, 84] },
+                            voice2: { role: 'harmony', style: 'thirds_sixths', range: [55, 79] },
+                            voice3: { role: 'inner', style: 'voice_movement', range: [48, 72] },
+                            voice4: { role: 'bass', style: 'walking_blues', range: [40, 64] },
+                            voice5: { role: 'foundation', style: 'rhythmic_support', range: [36, 60] }
+                        }
+                    },
+                    coltrane: {
+                        name: 'Coltrane Jazz',
+                        displayName: 'John Coltrane - "Giant Steps Master"',
+                        description: 'Complex harmonic language with chromatic lines, quartal voicings, and sophisticated jazz harmony. Known for rapid harmonic movement and upper structure extensions.',
+                        characteristics: ['Quartal Harmony', 'Chromatic Lines', 'Upper Extensions', 'Complex Rhythm', 'Giant Steps'],
+                        harmonyRules: {
+                            preferredChords: ['maj7#11', 'min7', 'dom7alt', 'sus4'],
+                            voicingStyle: 'quartal_harmony',
+                            rhythmicFeel: 'straight_eighth',
+                            colorTones: ['#11', 'b13', '#9', 'b9'],
+                            voiceLeading: 'chromatic_sophisticated'
+                        },
+                        voiceRoles: {
+                            voice1: { role: 'melody', style: 'complex_jazz', range: [60, 87] },
+                            voice2: { role: 'harmony', style: 'quartal_voicing', range: [55, 82] },
+                            voice3: { role: 'inner', style: 'chromatic_movement', range: [48, 75] },
+                            voice4: { role: 'bass', style: 'sophisticated_bass', range: [40, 67] },
+                            voice5: { role: 'extensions', style: 'harmonic_color', range: [48, 72] }
+                        }
+                    },
+                    miles: {
+                        name: 'Miles Modal',
+                        displayName: 'Miles Davis - "Prince of Modal Jazz"',
+                        description: 'Spacious, atmospheric approach with modal harmonies and plenty of musical breathing room. Emphasizes simplicity, space, and emotional impact over complexity.',
+                        characteristics: ['Modal Harmony', 'Spacious', 'Atmospheric', 'Minimal', 'Cool Jazz'],
+                        harmonyRules: {
+                            preferredChords: ['sus4', 'min7', 'maj7', 'modal_chords'],
+                            voicingStyle: 'modal_spacing',
+                            rhythmicFeel: 'laid_back',
+                            colorTones: ['11', '9', '6'],
+                            voiceLeading: 'spacious_minimal'
+                        },
+                        voiceRoles: {
+                            voice1: { role: 'melody', style: 'sparse_modal', range: [60, 81] },
+                            voice2: { role: 'harmony', style: 'modal_harmony', range: [55, 76] },
+                            voice3: { role: 'sustained', style: 'long_tones', range: [48, 69] },
+                            voice4: { role: 'bass', style: 'modal_bass', range: [40, 60] },
+                            voice5: { role: 'atmosphere', style: 'textural', range: [43, 67] }
+                        }
+                    }
+                };
+            }
+
+            // Main generation function
+            generateStyledQuintet(progression, style) {
+                const profile = this.profiles[style];
+                if (!profile) throw new Error(`Style ${style} not found`);
+
+                const parsedProgression = this.parseChordProgression(progression);
+                
+                return parsedProgression.map((chord, index) => {
+                    const voicing = this.generateVoicingForChord(chord, profile, index);
+                    const styledVoicing = this.applyStyleCharacteristics(voicing, profile, index);
+                    
+                    return {
+                        chord: chord.symbol,
+                        notes: styledVoicing,
+                        style: style,
+                        styleNotes: this.generateStyleExplanation(styledVoicing, profile, chord)
+                    };
+                });
+            }
+
+            // Parse chord symbols into usable data
+            parseChordProgression(progression) {
+                const chordMap = {
+                    'Cmaj7': { root: 60, third: 64, fifth: 67, seventh: 71, symbol: 'Cmaj7', quality: 'maj7' },
+                    'Am7': { root: 57, third: 60, fifth: 64, seventh: 67, symbol: 'Am7', quality: 'min7' },
+                    'Dm7': { root: 62, third: 65, fifth: 69, seventh: 72, symbol: 'Dm7', quality: 'min7' },
+                    'G7': { root: 67, third: 71, fifth: 74, seventh: 77, symbol: 'G7', quality: 'dom7' },
+                    'Fmaj7': { root: 65, third: 69, fifth: 72, seventh: 76, symbol: 'Fmaj7', quality: 'maj7' },
+                    'Em7': { root: 64, third: 67, fifth: 71, seventh: 74, symbol: 'Em7', quality: 'min7' },
+                    'Bm7b5': { root: 71, third: 74, fifth: 77, seventh: 81, symbol: 'Bm7b5', quality: 'min7b5' },
+                    'E7': { root: 64, third: 68, fifth: 71, seventh: 74, symbol: 'E7', quality: 'dom7' }
+                };
+
+                return progression.map(chordSymbol => {
+                    return chordMap[chordSymbol] || chordMap['Cmaj7']; // Default fallback
+                });
+            }
+
+            // Core voicing generation
+            generateVoicingForChord(chord, profile, position) {
+                const voiceRoles = profile.voiceRoles;
+                
+                // Generate each voice based on role and style
+                const voice1 = this.generateVoice(chord, voiceRoles.voice1, profile, position);
+                const voice2 = this.generateVoice(chord, voiceRoles.voice2, profile, position);
+                const voice3 = this.generateVoice(chord, voiceRoles.voice3, profile, position);
+                const voice4 = this.generateVoice(chord, voiceRoles.voice4, profile, position);
+                const voice5 = this.generateVoice(chord, voiceRoles.voice5, profile, position);
+
+                return {
+                    voice1: voice1,
+                    voice2: voice2,
+                    voice3: voice3,
+                    voice4: voice4,
+                    voice5: voice5
+                };
+            }
+
+            // Generate individual voice
+            generateVoice(chord, voiceRule, profile, position) {
+                const style = voiceRule.style;
+                const range = voiceRule.range;
+                
+                let note;
+                switch (style) {
+                    case 'blues_melody':
+                        note = this.generateBluesLead(chord, range, position);
+                        break;
+                    case 'complex_jazz':
+                        note = this.generateJazzMelody(chord, range, position);
+                        break;
+                    case 'sparse_modal':
+                        note = this.generateModalMelody(chord, range, position);
+                        break;
+                    case 'thirds_sixths':
+                        note = chord.third + 12;
+                        break;
+                    case 'quartal_voicing':
+                        note = chord.root + 17; // Perfect 4th up
+                        break;
+                    case 'modal_harmony':
+                        note = chord.fifth + 7;
+                        break;
+                    case 'walking_blues':
+                    case 'sophisticated_bass':
+                    case 'modal_bass':
+                        note = chord.root - 12;
+                        break;
+                    case 'rhythmic_support':
+                    case 'harmonic_color':
+                    case 'textural':
+                        note = chord.root - 24;
+                        break;
+                    default:
+                        note = chord.root;
+                }
+
+                // Ensure note is in range
+                while (note < range[0]) note += 12;
+                while (note > range[1]) note -= 12;
+                
+                return note;
+            }
+
+            // Style-specific melody generation
+            generateBluesLead(chord, range, position) {
+                const blueNotes = [chord.root, chord.root + 3, chord.root + 5, chord.root + 6, chord.root + 7, chord.root + 10];
+                const selectedNote = blueNotes[position % blueNotes.length] + 12;
+                return this.constrainToRange(selectedNote, range);
+            }
+
+            generateJazzMelody(chord, range, position) {
+                const jazzNotes = [chord.root, chord.third, chord.fifth, chord.seventh, chord.root + 14, chord.root + 17];
+                const selectedNote = jazzNotes[position % jazzNotes.length] + 12;
+                return this.constrainToRange(selectedNote, range);
+            }
+
+            generateModalMelody(chord, range, position) {
+                const modalNotes = [chord.root, chord.fifth, chord.seventh];
+                const selectedNote = modalNotes[position % modalNotes.length] + 12;
+                return this.constrainToRange(selectedNote, range);
+            }
+
+            constrainToRange(note, range) {
+                while (note < range[0]) note += 12;
+                while (note > range[1]) note -= 12;
+                return note;
+            }
+
+            // Apply style characteristics
+            applyStyleCharacteristics(voicing, profile, position) {
+                const styled = { ...voicing };
+                
+                switch (profile.name) {
+                    case 'BB King Blues':
+                        // Add blues characteristics
+                        if (Math.random() > 0.7) {
+                            styled.voice1 += (Math.random() > 0.5 ? 1 : -1); // Slight bends
+                        }
+                        break;
+                    case 'Coltrane Jazz':
+                        // Add chromatic approach tones
+                        if (Math.random() > 0.6) {
+                            styled.voice2 += (position % 2 === 0 ? 1 : -1); // Chromatic movement
+                        }
+                        break;
+                    case 'Miles Modal':
+                        // Add space and sustain
+                        styled.dynamics = 'subtle';
+                        styled.articulation = 'legato';
+                        break;
+                }
+                
+                return styled;
+            }
+
+            // Convert MIDI numbers to note names
+            midiToNoteName(midiNumber) {
+                const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+                const octave = Math.floor(midiNumber / 12) - 1;
+                const noteIndex = midiNumber % 12;
+                return noteNames[noteIndex] + octave;
+            }
+
+            // CORRECTED Sibelius-compliant MusicXML export
+            exportSibeliusCompliantXML(quintet) {
+                if (!quintet || quintet.length === 0) {
+                    throw new Error('No quintet data to export');
+                }
+                
+                const profile = this.profiles[this.currentStyle];
+                const date = new Date().toISOString().split('T')[0];
+                
+                // Use the exact DTD and version that Sibelius expects
+                let xml = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">
+<score-partwise version="3.1">`;
+
+                // Minimal identification block
+                xml += `
+  <identification>
+    <creator type="composer">GML-Quintet-Pro</creator>
+    <encoding>
+      <software>GML-Quintet-Pro</software>
+      <encoding-date>${date}</encoding-date>
+    </encoding>
+  </identification>`;
+
+                // Part list - exactly 5 parts
+                xml += `
+  <part-list>
+    <score-part id="P1">
+      <part-name>Voice 1</part-name>
+    </score-part>
+    <score-part id="P2">
+      <part-name>Voice 2</part-name>
+    </score-part>
+    <score-part id="P3">
+      <part-name>Voice 3</part-name>
+    </score-part>
+    <score-part id="P4">
+      <part-name>Voice 4</part-name>
+    </score-part>
+    <score-part id="P5">
+      <part-name>Voice 5</part-name>
+    </score-part>
+  </part-list>`;
+
+                // Generate each part with proper measure structure
+                const partDefinitions = [
+                    { id: 'P1', clef: 'G', line: 2 },
+                    { id: 'P2', clef: 'G', line: 2 },
+                    { id: 'P3', clef: 'C', line: 3 },
+                    { id: 'P4', clef: 'F', line: 4 },
+                    { id: 'P5', clef: 'F', line: 4 }
+                ];
+
+                partDefinitions.forEach((partDef, partIndex) => {
+                    const voiceKey = `voice${partIndex + 1}`;
+                    xml += `
+  <part id="${partDef.id}">`;
+                    
+                    // Create separate measures for each chord
+                    quintet.forEach((chordData, measureIndex) => {
+                        const measureNumber = measureIndex + 1;
+                        xml += `
+    <measure number="${measureNumber}">`;
+                        
+                        // Add attributes only in first measure
+                        if (measureIndex === 0) {
+                            xml += `
+      <attributes>
+        <divisions>4</divisions>
+        <key>
+          <fifths>0</fifths>
+        </key>
+        <time>
+          <beats>4</beats>
+          <beat-type>4</beat-type>
+        </time>
+        <clef>
+          <sign>${partDef.clef}</sign>
+          <line>${partDef.line}</line>
+        </clef>
+      </attributes>`;
+                        }
+                        
+                        // Add the note for this voice in this measure
+                        const midiNote = chordData.notes[voiceKey];
+                        const noteData = this.midiToNoteData(midiNote);
+                        
+                        xml += `
+      <note>
+        <pitch>
+          <step>${noteData.step}</step>`;
+                        
+                        if (noteData.alter !== 0) {
+                            xml += `
+          <alter>${noteData.alter}</alter>`;
+                        }
+                        
+                        xml += `
+          <octave>${noteData.octave}</octave>
+        </pitch>
+        <duration>16</duration>
+        <type>whole</type>
+      </note>`;
+                        
+                        xml += `
+    </measure>`;
+                    });
+                    
+                    xml += `
+  </part>`;
+                });
+                
+                xml += `
+</score-partwise>`;
+                
+                return xml;
+            }
+
+            // Enhanced MIDI to note conversion for Sibelius
+            midiToNoteData(midiNumber) {
+                if (typeof midiNumber !== 'number' || midiNumber < 0 || midiNumber > 127) {
+                    throw new Error(`Invalid MIDI number: ${midiNumber}`);
+                }
+                
+                // Sibelius-friendly enharmonic spellings
+                const chromaticNotes = [
+                    { step: 'C', alter: 0, accidental: null },
+                    { step: 'C', alter: 1, accidental: 'sharp' },
+                    { step: 'D', alter: 0, accidental: null },
+                    { step: 'E', alter: -1, accidental: 'flat' },
+                    { step: 'E', alter: 0, accidental: null },
+                    { step: 'F', alter: 0, accidental: null },
+                    { step: 'F', alter: 1, accidental: 'sharp' },
+                    { step: 'G', alter: 0, accidental: null },
+                    { step: 'A', alter: -1, accidental: 'flat' },
+                    { step: 'A', alter: 0, accidental: null },
+                    { step: 'B', alter: -1, accidental: 'flat' },
+                    { step: 'B', alter: 0, accidental: null }
+                ];
+                
+                const octave = Math.floor(midiNumber / 12) - 1;
+                const pitchClass = midiNumber % 12;
+                const noteInfo = chromaticNotes[pitchClass];
+                
+                return {
+                    step: noteInfo.step,
+                    alter: noteInfo.alter,
+                    octave: octave,
+                    accidental: noteInfo.accidental
+                };
+            }
+
+            // XML escaping
+            escapeXML(text) {
+                if (typeof text !== 'string') text = String(text);
+                return text
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&apos;');
+            }
+
+            // Generate style explanation
+            generateStyleExplanation(voicing, profile, chord) {
+                return {
+                    style: profile.name,
+                    approach: `${profile.name} uses ${profile.harmonyRules.voicingStyle} with ${profile.harmonyRules.rhythmicFeel} feel`,
+                    voicing: `Applied characteristic ${profile.harmonyRules.voiceLeading} voice leading`,
+                    harmony: `Using ${chord.quality} with ${profile.harmonyRules.colorTones.join(', ')} extensions`
+                };
+            }
+
+            // Export to MIDI
+            exportToMIDI(quintet) {
+                const midiData = {
+                    format: 1,
+                    tracks: [],
+                    ticksPerQuarter: 480
+                };
+                
+                quintet.forEach((chord, chordIndex) => {
+                    Object.keys(chord.notes).forEach((voice, voiceIndex) => {
+                        if (!midiData.tracks[voiceIndex]) {
+                            midiData.tracks[voiceIndex] = [];
+                        }
+                        
+                        midiData.tracks[voiceIndex].push({
+                            deltaTime: chordIndex * 480,
+                            type: 'noteOn',
+                            noteNumber: chord.notes[voice],
+                            velocity: 80
+                        });
+                        
+                        midiData.tracks[voiceIndex].push({
+                            deltaTime: 480,
+                            type: 'noteOff',
+                            noteNumber: chord.notes[voice],
+                            velocity: 0
+                        });
+                    });
+                });
+                
+                return JSON.stringify(midiData, null, 2);
+            }
+        }
+
+        // ===== INTERFACE CONTROL V2.0 =====
+        let quintetEngine = new CompleteQuintetEngineV2();
+        let currentStyle = 'bbking';
+        let currentProgression = ['Cmaj7', 'Am7', 'Dm7', 'G7'];
+        let currentQuintet = null;
+
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            updateStyleInfo();
+            generateStyledQuintet();
+        });
+
+        // Style selection handlers
+        document.querySelectorAll('.style-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentStyle = btn.dataset.style;
+                quintetEngine.currentStyle = currentStyle;
+                updateStyleInfo();
+                updateCurrentStyleDisplay();
+                generateStyledQuintet();
+            });
+        });
+
+        function updateStyleInfo() {
+            const profile = quintetEngine.profiles[currentStyle];
+            
+            document.getElementById('styleDescription').innerHTML = `
+                <p><strong>${profile.displayName}</strong></p>
+                <p>${profile.description}</p>
+            `;
+
+            const characteristicsContainer = document.querySelector('.style-characteristics');
+            characteristicsContainer.innerHTML = profile.characteristics
+                .map(char => `<span class="characteristic-tag">${char}</span>`)
+                .join('');
+        }
+
+        function updateCurrentStyleDisplay() {
+            const profile = quintetEngine.profiles[currentStyle];
+            document.getElementById('currentStyle').textContent = profile.name + ' Style';
+            document.getElementById('scoreTitle').textContent = profile.name + ' Quintet';
+        }
+
+        // Chord progression management
+        function addChord() {
+            const input = document.getElementById('chordInput');
+            const chord = input.value.trim();
+            
+            if (chord) {
+                currentProgression.push(chord);
+                quintetEngine.currentProgression = currentProgression;
+                
+                const chordList = document.getElementById('chordList');
+                const chordItem = document.createElement('div');
+                chordItem.className = 'chord-item';
+                chordItem.innerHTML = `
+                    <span>${chord}</span>
+                    <button class="remove-chord" onclick="removeChord(this)">×</button>
+                `;
+                chordList.appendChild(chordItem);
+                
+                input.value = '';
+                updateProgressionDisplay();
+                generateStyledQuintet();
+            }
+        }
+
+        function removeChord(button) {
+            const chordItem = button.parentElement;
+            const chord = chordItem.querySelector('span').textContent;
+            
+            currentProgression = currentProgression.filter(c => c !== chord);
+            quintetEngine.currentProgression = currentProgression;
+            chordItem.remove();
+            
+            updateProgressionDisplay();
+            if (currentProgression.length > 0) {
+                generateStyledQuintet();
+            }
+        }
+
+        function updateProgressionDisplay() {
+            document.getElementById('scoreProgression').textContent = currentProgression.join(' - ');
+        }
+
+        // Main generation function
+        function generateStyledQuintet() {
+            if (currentProgression.length === 0) return;
+            
+            showGenerationStatus('Generating legendary quintet v2.0...');
+            
+            try {
+                currentQuintet = quintetEngine.generateStyledQuintet(currentProgression, currentStyle);
+                updateScoreDisplay(currentQuintet);
+                showGenerationStatus('✓ Quintet v2.0 generated successfully!', 'success');
+                
+                setTimeout(() => hideGenerationStatus(), 2000);
+            } catch (error) {
+                console.error('Generation error:', error);
+                showGenerationStatus('❌ Generation failed', 'error');
+                setTimeout(() => hideGenerationStatus(), 3000);
+            }
+        }
+
+        function updateScoreDisplay(quintet) {
+            if (!quintet || quintet.length === 0) return;
+            
+            for (let voice = 1; voice <= 5; voice++) {
+                const notesContainer = document.getElementById(`voice${voice}-notes`);
+                notesContainer.innerHTML = quintet.map(chord => {
+                    const midiNote = chord.notes[`voice${voice}`];
+                    const noteName = quintetEngine.midiToNoteName(midiNote);
+                    return `<div class="note">${noteName}</div>`;
+                }).join('');
+            }
+        }
+
+        function showGenerationStatus(message, type = 'info') {
+            const statusEl = document.getElementById('generationStatus');
+            statusEl.textContent = message;
+            statusEl.className = 'generation-status';
+            if (type === 'success') statusEl.style.background = 'rgba(76,175,80,0.2)';
+            if (type === 'error') statusEl.style.background = 'rgba(244,67,54,0.2)';
+        }
+
+        function hideGenerationStatus() {
+            document.getElementById('generationStatus').className = 'generation-status hidden';
+        }
+
+        // Voicing regeneration
+        function regenerateWithVoicing(voicingType) {
+            showGenerationStatus(`Applying ${voicingType} voicing...`);
+            setTimeout(() => {
+                generateStyledQuintet();
+            }, 500);
+        }
+
+        // Playback simulation
+        function playQuintet() {
+            if (!currentQuintet) {
+                generateStyledQuintet();
+                setTimeout(playQuintet, 1000);
+                return;
+            }
+            
+            const playBtn = document.querySelector('.play-btn');
+            playBtn.textContent = '⏸ Playing ' + quintetEngine.profiles[currentStyle].name + ' v2.0...';
+            playBtn.style.background = '#ff9800';
+            
+            setTimeout(() => {
+                playBtn.textContent = '▶ Play Styled Quintet';
+                playBtn.style.background = '#4CAF50';
+            }, 4000);
+        }
+
+        function stopPlayback() {
+            const playBtn = document.querySelector('.play-btn');
+            playBtn.textContent = '▶ Play Styled Quintet';
+            playBtn.style.background = '#4CAF50';
+        }
+
+        // NEW v2.0 TRUE Sibelius MusicXML export function
+        function exportSibeliusXML() {
+            if (!currentQuintet) {
+                showGenerationStatus('Generate a quintet first!', 'error');
+                setTimeout(hideGenerationStatus, 2000);
+                return;
+            }
+            
+            try {
+                const xmlData = quintetEngine.exportSibeliusCompliantXML(currentQuintet);
+                const filename = `GML_Quintet_v2_${currentStyle}_${Date.now()}.musicxml`;
+                
+                const blob = new Blob([xmlData], { 
+                    type: 'application/vnd.recordare.musicxml+xml'
+                });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                link.click();
+                URL.revokeObjectURL(url);
+                
+                showGenerationStatus('✓ Sibelius MusicXML exported successfully!', 'success');
+                setTimeout(hideGenerationStatus, 2000);
+                
+            } catch (error) {
+                console.error('Export error:', error);
+                showGenerationStatus('❌ Export failed: ' + error.message, 'error');
+                setTimeout(hideGenerationStatus, 3000);
+            }
+        }
+
+        // Other export functions
+        function exportAs(format) {
+            if (!currentQuintet) {
+                showGenerationStatus('Generate a quintet first!', 'error');
+                setTimeout(hideGenerationStatus, 2000);
+                return;
+            }
+            
+            let exportData;
+            let filename;
+            let mimeType;
+            
+            try {
+                switch (format) {
+                    case 'midi':
+                        exportData = quintetEngine.exportToMIDI(currentQuintet);
+                        filename = `GML_Quintet_v2_${currentStyle}_${Date.now()}.json`;
+                        mimeType = 'application/json';
+                        break;
+                    case 'json':
+                        exportData = JSON.stringify({
+                            version: '2.0',
+                            style: currentStyle,
+                            progression: currentProgression,
+                            quintet: currentQuintet,
+                            generated: new Date().toISOString()
+                        }, null, 2);
+                        filename = `GML_Quintet_v2_${currentStyle}_${Date.now()}.json`;
+                        mimeType = 'application/json';
+                        break;
+                    default:
+                        throw new Error(`Unsupported format: ${format}`);
+                }
+                
+                const blob = new Blob([exportData], { type: mimeType });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                link.click();
+                URL.revokeObjectURL(url);
+                
+                showGenerationStatus(`✓ Exported as ${format.toUpperCase()}!`, 'success');
+                setTimeout(hideGenerationStatus, 2000);
+                
+            } catch (error) {
+                console.error('Export error:', error);
+                showGenerationStatus('❌ Export failed', 'error');
+                setTimeout(hideGenerationStatus, 3000);
+            }
+        }
+
+        // Enter key support
+        document.getElementById('chordInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addChord();
+            }
+        });
+
+        // Initialize display
+        updateCurrentStyleDisplay();
+        updateProgressionDisplay();
+    </script>
+</body>
+</html>

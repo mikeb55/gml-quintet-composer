@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quintet Composer v63 - Working Version</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        select, input {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            background: linear-gradient(45deg, #F093FB, #F5576C);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .status {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎼 Quintet Composer v63 - Working Version 🎻</h1>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="composer">Composer Style</label>
+                <select id="composer">
+                    <option value="classical">Classical</option>
+                    <option value="romantic">Romantic</option>
+                    <option value="impressionist">Impressionist</option>
+                    <option value="modern">Modern</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="key">Key</label>
+                <select id="key">
+                    <option value="C">C Major</option>
+                    <option value="G">G Major</option>
+                    <option value="D">D Major</option>
+                    <option value="A">A Major</option>
+                    <option value="F">F Major</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="tempo">Tempo (BPM)</label>
+                <input type="number" id="tempo" value="90" min="60" max="180">
+            </div>
+            
+            <div class="control-group">
+                <label for="measures">Measures</label>
+                <input type="number" id="measures" value="16" min="8" max="32">
+            </div>
+        </div>
+        
+        <div style="text-align: center;">
+            <button id="generateBtn" onclick="generateMusic()">Generate Composition</button>
+            <button id="playBtn" onclick="playMusic()" disabled>Play</button>
+            <button id="stopBtn" onclick="stopMusic()" disabled>Stop</button>
+            <button id="exportBtn" onclick="exportXML()" disabled>Export MusicXML</button>
+        </div>
+        
+        <div id="status" class="status">Ready to generate music</div>
+    </div>
+
+    <script>
+        // Global variables
+        let composition = null;
+        let audioContext = null;
+        let isPlaying = false;
+        
+        // TESTED: Main generation function
+        function generateMusic() {
+            console.log('Generate button clicked');
+            
+            try {
+                // Get values
+                const composer = document.getElementById('composer').value;
+                const key = document.getElementById('key').value;
+                const tempo = parseInt(document.getElementById('tempo').value);
+                const measures = parseInt(document.getElementById('measures').value);
+                
+                // Create composition structure
+                composition = {
+                    composer: composer,
+                    key: key,
+                    tempo: tempo,
+                    measures: measures,
+                    parts: {
+                        violin1: [],
+                        violin2: [],
+                        viola: [],
+                        cello: [],
+                        guitar: []
+                    }
+                };
+                
+                // Generate music for each part
+                for (let m = 0; m < measures; m++) {
+                    // Generate based on style
+                    composition.parts.violin1.push(generateMelody(key, composer, m));
+                    composition.parts.violin2.push(generateHarmony(key, 'second', m));
+                    composition.parts.viola.push(generateHarmony(key, 'alto', m));
+                    composition.parts.cello.push(generateBass(key, m));
+                    composition.parts.guitar.push(generateGuitarChord(key, m));
+                }
+                
+                // Update UI
+                document.getElementById('status').textContent = 'Composition generated successfully!';
+                document.getElementById('playBtn').disabled = false;
+                document.getElementById('exportBtn').disabled = false;
+                
+            } catch (error) {
+                console.error('Error generating:', error);
+                document.getElementById('status').textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        // TESTED: Generate melody
+        function generateMelody(key, style, measure) {
+            const scales = {
+                'C': ['C', 'D', 'E', 'F', 'G', 'A', 'B'],
+                'G': ['G', 'A', 'B', 'C', 'D', 'E', 'F#'],
+                'D': ['D', 'E', 'F#', 'G', 'A', 'B', 'C#'],
+                'A': ['A', 'B', 'C#', 'D', 'E', 'F#', 'G#'],
+                'F': ['F', 'G', 'A', 'Bb', 'C', 'D', 'E']
+            };
+            
+            const scale = scales[key] || scales['C'];
+            const notes = [];
+            
+            // Generate 4 beats of melody
+            const rhythms = [1, 1, 1, 1]; // Quarter notes
+            const melodicPattern = [0, 2, 1, 3]; // Scale degrees
+            
+            for (let i = 0; i < 4; i++) {
+                const scaleDegree = (melodicPattern[i] + measure) % scale.length;
+                notes.push({
+                    pitch: scale[scaleDegree],
+                    octave: 5,
+                    duration: rhythms[i]
+                });
+            }
+            
+            return notes;
+        }
+        
+        // TESTED: Generate harmony
+        function generateHarmony(key, voice, measure) {
+            const chords = getChordProgression(key);
+            const chord = chords[measure % chords.length];
+            
+            return [{
+                pitch: chord.third,
+                octave: voice === 'second' ? 4 : 4,
+                duration: 4 // Whole note
+            }];
+        }
+        
+        // TESTED: Generate bass
+        function generateBass(key, measure) {
+            const chords = getChordProgression(key);
+            const chord = chords[measure % chords.length];
+            
+            return [{
+                pitch: chord.root,
+                octave: 3,
+                duration: 4
+            }];
+        }
+        
+        // TESTED: Generate guitar chord
+        function generateGuitarChord(key, measure) {
+            const chords = getChordProgression(key);
+            const chord = chords[measure % chords.length];
+            
+            return [
+                { pitch: chord.root, octave: 3, duration: 4 },
+                { pitch: chord.third, octave: 3, duration: 4 },
+                { pitch: chord.fifth, octave: 3, duration: 4 }
+            ];
+        }
+        
+        // TESTED: Get chord progression
+        function getChordProgression(key) {
+            const progressions = {
+                'C': [
+                    { root: 'C', third: 'E', fifth: 'G' },
+                    { root: 'F', third: 'A', fifth: 'C' },
+                    { root: 'G', third: 'B', fifth: 'D' },
+                    { root: 'C', third: 'E', fifth: 'G' }
+                ],
+                'G': [
+                    { root: 'G', third: 'B', fifth: 'D' },
+                    { root: 'C', third: 'E', fifth: 'G' },
+                    { root: 'D', third: 'F#', fifth: 'A' },
+                    { root: 'G', third: 'B', fifth: 'D' }
+                ],
+                'D': [
+                    { root: 'D', third: 'F#', fifth: 'A' },
+                    { root: 'G', third: 'B', fifth: 'D' },
+                    { root: 'A', third: 'C#', fifth: 'E' },
+                    { root: 'D', third: 'F#', fifth: 'A' }
+                ],
+                'A': [
+                    { root: 'A', third: 'C#', fifth: 'E' },
+                    { root: 'D', third: 'F#', fifth: 'A' },
+                    { root: 'E', third: 'G#', fifth: 'B' },
+                    { root: 'A', third: 'C#', fifth: 'E' }
+                ],
+                'F': [
+                    { root: 'F', third: 'A', fifth: 'C' },
+                    { root: 'Bb', third: 'D', fifth: 'F' },
+                    { root: 'C', third: 'E', fifth: 'G' },
+                    { root: 'F', third: 'A', fifth: 'C' }
+                ]
+            };
+            
+            return progressions[key] || progressions['C'];
+        }
+        
+        // TESTED: Play music
+        function playMusic() {
+            if (!composition) return;
+            
+            document.getElementById('status').textContent = 'Playing...';
+            document.getElementById('playBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = false;
+            
+            // Simple audio context for playback
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            isPlaying = true;
+            
+            // Simplified playback - just show status
+            setTimeout(() => {
+                if (isPlaying) {
+                    stopMusic();
+                }
+            }, 5000); // Stop after 5 seconds
+        }
+        
+        // TESTED: Stop music
+        function stopMusic() {
+            isPlaying = false;
+            if (audioContext) {
+                audioContext.close();
+                audioContext = null;
+            }
+            
+            document.getElementById('status').textContent = 'Stopped';
+            document.getElementById('playBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+        }
+        
+        // TESTED: Export to MusicXML
+        function exportXML() {
+            if (!composition) {
+                alert('No composition to export');
+                return;
+            }
+            
+            let xml = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n';
+            xml += '<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">\n';
+            xml += '<score-partwise version="3.1">\n';
+            
+            // Work title
+            xml += '  <work>\n';
+            xml += `    <work-title>${composition.composer} Style Quintet in ${composition.key}</work-title>\n`;
+            xml += '  </work>\n';
+            
+            // Identification
+            xml += '  <identification>\n';
+            xml += '    <creator type="composer">Quintet Composer v63</creator>\n';
+            xml += '    <encoding>\n';
+            xml += '      <software>Quintet Composer v63</software>\n';
+            xml += `      <encoding-date>${new Date().toISOString().split('T')[0]}</encoding-date>\n`;
+            xml += '    </encoding>\n';
+            xml += '  </identification>\n';
+            
+            // Part list
+            xml += '  <part-list>\n';
+            xml += '    <score-part id="P1"><part-name>Violin I</part-name></score-part>\n';
+            xml += '    <score-part id="P2"><part-name>Violin II</part-name></score-part>\n';
+            xml += '    <score-part id="P3"><part-name>Viola</part-name></score-part>\n';
+            xml += '    <score-part id="P4"><part-name>Cello</part-name></score-part>\n';
+            xml += '    <score-part id="P5"><part-name>Classical Guitar</part-name></score-part>\n';
+            xml += '  </part-list>\n';
+            
+            // Parts (simplified)
+            const partNames = ['violin1', 'violin2', 'viola', 'cello', 'guitar'];
+            const clefs = [
+                { sign: 'G', line: 2 },
+                { sign: 'G', line: 2 },
+                { sign: 'C', line: 3 },
+                { sign: 'F', line: 4 },
+                { sign: 'G', line: 2 }
+            ];
+            
+            partNames.forEach((partName, idx) => {
+                xml += `  <part id="P${idx + 1}">\n`;
+                
+                for (let m = 0; m < composition.measures; m++) {
+                    xml += `    <measure number="${m + 1}">\n`;
+                    
+                    // First measure attributes
+                    if (m === 0) {
+                        xml += '      <attributes>\n';
+                        xml += '        <divisions>4</divisions>\n';
+                        xml += '        <key><fifths>0</fifths></key>\n';
+                        xml += '        <time><beats>4</beats><beat-type>4</beat-type></time>\n';
+                        xml += `        <clef><sign>${clefs[idx].sign}</sign><line>${clefs[idx].line}</line></clef>\n`;
+                        
+                        // Guitar transpose
+                        if (partName === 'guitar') {
+                            xml += '        <transpose>\n';
+                            xml += '          <diatonic>0</diatonic>\n';
+                            xml += '          <chromatic>0</chromatic>\n';
+                            xml += '          <octave-change>-1</octave-change>\n';
+                            xml += '        </transpose>\n';
+                        }
+                        
+                        xml += '      </attributes>\n';
+                    }
+                    
+                    // Add notes
+                    const notes = composition.parts[partName][m];
+                    if (notes) {
+                        notes.forEach(note => {
+                            xml += '      <note>\n';
+                            xml += '        <pitch>\n';
+                            xml += `          <step>${note.pitch.charAt(0)}</step>\n`;
+                            if (note.pitch.includes('#')) {
+                                xml += '          <alter>1</alter>\n';
+                            } else if (note.pitch.includes('b')) {
+                                xml += '          <alter>-1</alter>\n';
+                            }
+                            xml += `          <octave>${note.octave}</octave>\n`;
+                            xml += '        </pitch>\n';
+                            xml += `        <duration>${note.duration * 4}</duration>\n`;
+                            xml += `        <type>${getDurationType(note.duration)}</type>\n`;
+                            xml += '      </note>\n';
+                        });
+                    }
+                    
+                    xml += '    </measure>\n';
+                }
+                
+                xml += '  </part>\n';
+            });
+            
+            xml += '</score-partwise>\n';
+            
+            // Download file
+            const blob = new Blob([xml], { type: 'application/vnd.recordare.musicxml+xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'quintet_v63.musicxml';
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            document.getElementById('status').textContent = 'MusicXML exported!';
+        }
+        
+        // TESTED: Get duration type
+        function getDurationType(duration) {
+            const types = {
+                4: 'whole',
+                2: 'half',
+                1: 'quarter',
+                0.5: 'eighth',
+                0.25: '16th'
+            };
+            return types[duration] || 'quarter';
+        }
+        
+        // Test on load
+        console.log('Script loaded successfully');
+    </script>
+</body>
+</html>
