@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GML-Quintet-Pro v3.1 - Rhythmic Patterns</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 20px 20px 0 0;
+        }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .version { background: rgba(255,255,255,0.2); padding: 5px 15px; border-radius: 20px; display: inline-block; }
+        .main { padding: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .panel h2 { color: #667eea; margin-bottom: 20px; }
+        .control { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #555; font-weight: 500; }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px 10px 0 0;
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4); }
+        .output {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 300px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            max-height: 500px;
+        }
+        .rhythm-display {
+            display: flex;
+            gap: 5px;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+        }
+        .note-block {
+            padding: 5px 10px;
+            background: #667eea;
+            color: white;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+        .full-width { grid-column: 1 / -1; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎼 GML-Quintet-Pro</h1>
+            <span class="version">v3.1 - Rhythmic Patterns Edition</span>
+        </div>
+        
+        <div class="main">
+            <div class="panel">
+                <h2>🎵 Composition Settings</h2>
+                <div class="control">
+                    <label>Chord Progression</label>
+                    <input type="text" id="chords" placeholder="Cmaj7 Dm7 G7 Cmaj7" value="Dmaj7 Cmaj7 Cmaj7 Fmaj7 Amaj7">
+                </div>
+                <div class="control">
+                    <label>Style Profile</label>
+                    <select id="style">
+                        <optgroup label="Jazz">
+                            <option value="evans">Bill Evans - Rootless/Rubato</option>
+                            <option value="hancock">Herbie Hancock - Quartal/Funk</option>
+                            <option value="django">Django Reinhardt - Gypsy/La Pompe</option>
+                            <option value="montgomery">Wes Montgomery - Octaves/Swing</option>
+                            <option value="mehldau">Brad Mehldau - Polyrhythmic</option>
+                        </optgroup>
+                        <optgroup label="Classical">
+                            <option value="bach">J.S. Bach - Counterpoint/16ths</option>
+                            <option value="mozart">Mozart - Classical/Alberti</option>
+                            <option value="stravinsky">Stravinsky - 5/4 Displacement</option>
+                        </optgroup>
+                        <optgroup label="Pop/Film">
+                            <option value="bacharach">Burt Bacharach - 5/4 Chromatic</option>
+                            <option value="williams">John Williams - Cinematic/March</option>
+                            <option value="zimmer">Hans Zimmer - Electronic/Pulse</option>
+                        </optgroup>
+                        <optgroup label="Rebetiko">
+                            <option value="tsitsanis">Tsitsanis - 9/8 Zeimbekiko</option>
+                            <option value="vamvakaris">Vamvakaris - 2/4 Hasapiko</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="control">
+                    <label>Tempo (BPM)</label>
+                    <input type="number" id="tempo" value="120" min="40" max="240">
+                </div>
+                <div class="control">
+                    <label>Time Signature</label>
+                    <select id="timeSig">
+                        <option value="4/4">4/4</option>
+                        <option value="3/4">3/4 Waltz</option>
+                        <option value="5/4">5/4 (Bacharach)</option>
+                        <option value="7/8">7/8 (Balkan)</option>
+                        <option value="9/8">9/8 (Zeimbekiko)</option>
+                    </select>
+                </div>
+                <button onclick="generateQuintet()">Generate Quintet</button>
+                <button onclick="exportMusicXML()">Export MusicXML</button>
+            </div>
+            
+            <div class="panel">
+                <h2>🎹 Rhythm Pattern</h2>
+                <div id="rhythmDisplay"></div>
+                <div id="voiceDisplay" class="output">
+                    Rhythmic patterns will appear here...
+                </div>
+            </div>
+            
+            <div class="panel full-width">
+                <h2>📊 Generated Output</h2>
+                <div id="output" class="output">
+                    Ready to generate quintet with rhythmic patterns...
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+// Rhythmic Quintet Engine with TriadGen patterns
+class RhythmicQuintetEngine {
+    constructor() {
+        this.currentQuintet = null;
+        this.initializeAll();
+    }
+
+    initializeAll() {
+        // Chord library
+        this.chordLibrary = {
+            'maj': [0, 4, 7],
+            'maj7': [0, 4, 7, 11],
+            'maj9': [0, 4, 7, 11, 14],
+            'm': [0, 3, 7],
+            'm7': [0, 3, 7, 10],
+            'm9': [0, 3, 7, 10, 14],
+            '7': [0, 4, 7, 10],
+            '9': [0, 4, 7, 10, 14],
+            'dim': [0, 3, 6],
+            'dim7': [0, 3, 6, 9],
+            'aug': [0, 4, 8],
+            'sus2': [0, 2, 7],
+            'sus4': [0, 5, 7],
+            '6': [0, 4, 7, 9],
+            'm6': [0, 3, 7, 9]
+        };
+
+        // Rhythm patterns
+        this.rhythmPatterns = {
+            'whole': [{duration: 1024, type: 'whole', beats: 4}],
+            'quarters': [
+                {duration: 256, type: 'quarter', beats: 1},
+                {duration: 256, type: 'quarter', beats: 1},
+                {duration: 256, type: 'quarter', beats: 1},
+                {duration: 256, type: 'quarter', beats: 1}
+            ],
+            'eighths': [
+                {duration: 128, type: 'eighth', beats: 0.5},
+                {duration: 128, type: 'eighth', beats: 0.5},
+                {duration: 128, type: 'eighth', beats: 0.5},
+                {duration: 128, type: 'eighth', beats: 0.5},
+                {duration: 128, type: 'eighth', beats: 0.5},
+                {duration: 128, type: 'eighth', beats: 0.5},
+                {duration: 128, type: 'eighth', beats: 0.5},
+                {duration: 128, type: 'eighth', beats: 0.5}
+            ],
+            'swing': [
+                {duration: 341, type: 'quarter', beats: 1.33},
+                {duration: 171, type: 'eighth', beats: 0.67},
+                {duration: 341, type: 'quarter', beats: 1.33},
+                {duration: 171, type: 'eighth', beats: 0.67}
+            ],
+            'laPompe': [
+                {duration: 256, type: 'quarter', beats: 1},
+                {duration: 128, type: 'eighth', beats: 0.5},
+                {duration: 128, type: 'eighth', beats: 0.5},
+                {duration: 512, type: 'half', beats: 2}
+            ],
+            'alberti': [
+                {duration: 128, type: 'eighth', beats: 0.5},
+                {duration: 128, type: 'eighth', beats: 0.5},
+                {duration: 128, type: 'eighth', beats: 0.5},
+                {duration: 128, type: 'eighth', beats: 0.5},
+                {duration: 128, type: 'eighth', beats: 0.5},
+                {duration: 128, type: 'eighth', beats: 0.5},
+                {duration: 128, type: 'eighth', beats: 0.5},
+                {duration: 128, type: 'eighth', beats: 0.5}
+            ],
+            'cinematic': [
+                {duration: 512, type: 'half', beats: 2},
+                {duration: 256, type: 'quarter', beats: 1},
+                {duration: 256, type: 'quarter', beats: 1}
+            ],
+            'fiveEight': [
+                {duration: 307, type: 'dotted-quarter', beats: 1.5},
+                {duration: 205, type: 'quarter', beats: 1},
+                {duration: 307, type: 'dotted-quarter', beats: 1.5},
+                {duration: 205, type: 'quarter', beats: 1}
+            ],
+            'nineEight': [
+                {duration: 171, type: 'eighth', beats: 0.375},
+                {duration: 171, type: 'eighth', beats: 0.375},
+                {duration: 171, type: 'eighth', beats: 0.375},
+                {duration: 171, type: 'eighth', beats: 0.375},
+                {duration: 171, type: 'eighth', beats: 0.375},
+                {duration: 171, type: 'eighth', beats: 0.375},
+                {duration: 171, type: 'eighth', beats: 0.375},
+                {duration: 171, type: 'eighth', beats: 0.375},
+                {duration: 171, type: 'eighth', beats: 0.375}
+            ],
+            'hasapiko': [
+                {duration: 512, type: 'half', beats: 2},
+                {duration: 256, type: 'quarter', beats: 1},
+                {duration: 256, type: 'quarter', beats: 1}
+            ]
+        };
+
+        // Style profiles
+        this.styleProfiles = {
+            'evans': {name: 'Bill Evans', rhythm: 'swing', swing: 0.67},
+            'hancock': {name: 'Herbie Hancock', rhythm: 'quarters', swing: 0.5},
+            'django': {name: 'Django Reinhardt', rhythm: 'laPompe', swing: 0.7},
+            'montgomery': {name: 'Wes Montgomery', rhythm: 'swing', swing: 0.65},
+            'mehldau': {name: 'Brad Mehldau', rhythm: 'eighths', swing: 0.5},
+            'bach': {name: 'J.S. Bach', rhythm: 'eighths', swing: 0},
+            'mozart': {name: 'Mozart', rhythm: 'alberti', swing: 0},
+            'stravinsky': {name: 'Stravinsky', rhythm: 'fiveEight', swing: 0},
+            'bacharach': {name: 'Burt Bacharach', rhythm: 'fiveEight', swing: 0.6},
+            'williams': {name: 'John Williams', rhythm: 'cinematic', swing: 0},
+            'zimmer': {name: 'Hans Zimmer', rhythm: 'quarters', swing: 0},
+            'tsitsanis': {name: 'Vassilis Tsitsanis', rhythm: 'nineEight', swing: 0},
+            'vamvakaris': {name: 'Markos Vamvakaris', rhythm: 'hasapiko', swing: 0}
+        };
+    }
+
+    parseChord(chordSymbol) {
+        const noteMap = {'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11};
+        const sharpFlat = {'#': 1, 'b': -1};
+        
+        let root = 0;
+        let type = 'maj';
+        
+        if (chordSymbol.length > 0) {
+            root = noteMap[chordSymbol[0]] || 0;
+            let pos = 1;
+            
+            if (pos < chordSymbol.length && sharpFlat[chordSymbol[pos]]) {
+                root += sharpFlat[chordSymbol[pos]];
+                pos++;
+            }
+            
+            const remaining = chordSymbol.substring(pos);
+            if (remaining) {
+                const types = Object.keys(this.chordLibrary).sort((a, b) => b.length - a.length);
+                for (let t of types) {
+                    if (remaining === t) {
+                        type = t;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        return {root: root + 60, type: type};
+    }
+
+    distributeToFiveVoices(chord, styleId) {
+        const parsed = this.parseChord(chord);
+        const intervals = this.chordLibrary[parsed.type] || this.chordLibrary['maj'];
+        const notes = intervals.map(i => parsed.root + i);
+        
+        const ranges = [
+            {min: 55, max: 93}, // Violin I
+            {min: 55, max: 88}, // Violin II  
+            {min: 48, max: 84}, // Viola
+            {min: 36, max: 72}, // Cello
+            {min: 28, max: 60}  // Contrabass
+        ];
+        
+        const voices = [];
+        
+        // Style-specific voicing
+        if (styleId === 'evans') {
+            // Rootless voicing
+            voices[0] = notes[notes.length - 1] || parsed.root + 12;
+            voices[1] = notes[2] || parsed.root + 7;
+            voices[2] = notes[1] || parsed.root + 4;
+            voices[3] = notes[0] + 12;
+            voices[4] = parsed.root - 12;
+        } else {
+            // Standard voicing
+            voices[0] = notes[notes.length - 1] || parsed.root + 12;
+            voices[1] = notes[Math.min(2, notes.length - 1)] || parsed.root + 7;
+            voices[2] = notes[1] || parsed.root + 4;
+            voices[3] = parsed.root;
+            voices[4] = parsed.root - 12;
+        }
+        
+        // Adjust for ranges
+        for (let i = 0; i < 5; i++) {
+            while (voices[i] < ranges[i].min) voices[i] += 12;
+            while (voices[i] > ranges[i].max) voices[i] -= 12;
+        }
+        
+        return voices;
+    }
+
+    generateQuintet(chordsInput, styleId, tempo, timeSig) {
+        const chordList = chordsInput.trim().split(/\s+/);
+        const style = this.styleProfiles[styleId] || this.styleProfiles['evans'];
+        const rhythmPattern = this.rhythmPatterns[style.rhythm] || this.rhythmPatterns['whole'];
+        
+        const quintet = {
+            chords: chordList,
+            style: style.name,
+            styleId: styleId,
+            tempo: tempo,
+            timeSig: timeSig,
+            voices: [[], [], [], [], []],
+            measures: [],
+            rhythmPattern: rhythmPattern
+        };
+        
+        // Process each chord with rhythm
+        chordList.forEach((chord, chordIdx) => {
+            const voicing = this.distributeToFiveVoices(chord, styleId);
+            
+            // Apply rhythm pattern to each voice
+            for (let v = 0; v < 5; v++) {
+                // Different rhythm for bass
+                let voiceRhythm = (v === 4) ? 
+                    [{duration: 1024, type: 'whole', beats: 4}] : rhythmPattern;
+                
+                // Add rhythmic notes
+                voiceRhythm.forEach((rhythm, rIdx) => {
+                    quintet.voices[v].push({
+                        midi: voicing[v],
+                        pitch: this.midiToNote(voicing[v]),
+                        duration: rhythm.duration,
+                        type: rhythm.type,
+                        measure: chordIdx + 1,
+                        beat: rIdx + 1
+                    });
+                });
+            }
+            
+            quintet.measures.push(voicing);
+        });
+        
+        this.currentQuintet = quintet;
+        return quintet;
+    }
+
+    midiToNote(midi) {
+        const notes = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
+        return notes[midi % 12] + Math.floor(midi / 12 - 1);
+    }
+
+    midiToPitch(midi) {
+        const noteNames = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
+        const pitchClass = midi % 12;
+        const octave = Math.floor(midi / 12) - 1;
+        
+        let step = noteNames[pitchClass][0];
+        let alter = 0;
+        
+        if (noteNames[pitchClass].includes('#')) alter = 1;
+        if (noteNames[pitchClass].includes('b')) {
+            if (step === 'E') { step = 'E'; alter = -1; }
+            else if (step === 'A') { step = 'A'; alter = -1; }
+            else { step = String.fromCharCode(step.charCodeAt(0) - 1); alter = 1; }
+        }
+        
+        return {step, alter, octave};
+    }
+
+    exportMusicXML() {
+        if (!this.currentQuintet) return null;
+        
+        const q = this.currentQuintet;
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const filename = `GML_Quintet_v3.1_${q.style.replace(/\s+/g, '_')}_${timestamp}.musicxml`;
+        
+        const [beats, beatType] = q.timeSig.split('/').map(Number);
+        
+        let xml = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">
+<score-partwise version="3.0">
+  <work><work-title>Quintet - ${q.style} (${q.timeSig})</work-title></work>
+  <identification>
+    <creator type="composer">GML-Quintet-Pro v3.1 Rhythmic</creator>
+    <encoding>
+      <software>GML-Quintet-Pro v3.1</software>
+      <encoding-date>${new Date().toISOString().split('T')[0]}</encoding-date>
+    </encoding>
+  </identification>
+  <part-list>
+    <score-part id="P1"><part-name>Violin I</part-name></score-part>
+    <score-part id="P2"><part-name>Violin II</part-name></score-part>
+    <score-part id="P3"><part-name>Viola</part-name></score-part>
+    <score-part id="P4"><part-name>Cello</part-name></score-part>
+    <score-part id="P5"><part-name>Contrabass</part-name></score-part>
+  </part-list>`;
+
+        const clefs = [
+            {sign: 'G', line: 2},
+            {sign: 'G', line: 2},
+            {sign: 'C', line: 3},
+            {sign: 'F', line: 4},
+            {sign: 'F', line: 4}
+        ];
+        
+        for (let p = 0; p < 5; p++) {
+            xml += `\n  <part id="P${p+1}">`;
+            
+            let currentMeasure = 0;
+            q.voices[p].forEach(note => {
+                if (note.measure > currentMeasure) {
+                    if (currentMeasure > 0) xml += `\n    </measure>`;
+                    currentMeasure = note.measure;
+                    xml += `\n    <measure number="${currentMeasure}">`;
+                    
+                    if (currentMeasure === 1) {
+                        xml += `
+      <attributes>
+        <divisions>256</divisions>
+        <key><fifths>0</fifths></key>
+        <time><beats>${beats}</beats><beat-type>${beatType}</beat-type></time>
+        <clef><sign>${clefs[p].sign}</sign><line>${clefs[p].line}</line></clef>
+      </attributes>`;
+                    }
+                }
+                
+                const pitch = this.midiToPitch(note.midi);
+                xml += `
+      <note>
+        <pitch>
+          <step>${pitch.step}</step>
+          ${pitch.alter ? `<alter>${pitch.alter}</alter>` : ''}
+          <octave>${pitch.octave}</octave>
+        </pitch>
+        <duration>${note.duration}</duration>
+        <type>${note.type}</type>
+      </note>`;
+            });
+            
+            xml += `\n      <barline><bar-style>light-heavy</bar-style></barline>\n    </measure>\n  </part>`;
+        }
+        
+        xml += `\n</score-partwise>`;
+        
+        const blob = new Blob([xml], {type: 'application/vnd.recordare.musicxml+xml'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        return filename;
+    }
+}
+
+const engine = new RhythmicQuintetEngine();
+
+function generateQuintet() {
+    const chords = document.getElementById('chords').value;
+    const style = document.getElementById('style').value;
+    const tempo = document.getElementById('tempo').value;
+    const timeSig = document.getElementById('timeSig').value;
+    
+    if (!chords) {
+        alert('Enter chord progression');
+        return;
+    }
+    
+    const quintet = engine.generateQuintet(chords, style, tempo, timeSig);
+    
+    // Display rhythm pattern
+    const rhythmDiv = document.getElementById('rhythmDisplay');
+    rhythmDiv.innerHTML = '<div class="rhythm-display">';
+    quintet.rhythmPattern.forEach(r => {
+        rhythmDiv.innerHTML += `<span class="note-block">${r.type}</span>`;
+    });
+    rhythmDiv.innerHTML += '</div>';
+    
+    // Display voices
+    let voiceText = '';
+    const instruments = ['Violin I', 'Violin II', 'Viola', 'Cello', 'Contrabass'];
+    
+    instruments.forEach((inst, i) => {
+        voiceText += `${inst}:\n`;
+        let currentMeasure = 0;
+        quintet.voices[i].forEach(note => {
+            if (note.measure > currentMeasure) {
+                currentMeasure = note.measure;
+                voiceText += `  Measure ${currentMeasure}:\n`;
+            }
+            voiceText += `    ${note.pitch} (${note.type})\n`;
+        });
+        voiceText += '\n';
+    });
+    
+    document.getElementById('voiceDisplay').textContent = voiceText;
+    document.getElementById('output').textContent = 
+        `Generated: ${quintet.chords.length} measures
+Style: ${quintet.style}
+Time Signature: ${quintet.timeSig}
+Tempo: ${tempo} BPM
+Rhythm Pattern: ${engine.styleProfiles[style].rhythm}
+Progression: ${quintet.chords.join(' → ')}
+
+Click "Export MusicXML" for Sibelius import`;
+}
+
+function exportMusicXML() {
+    const filename = engine.exportMusicXML();
+    if (filename) {
+        document.getElementById('output').textContent += `\n\nExported: ${filename}`;
+    } else {
+        alert('Generate quintet first');
+    }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(generateQuintet, 100);
+});
+</script>
+</body>
+</html>

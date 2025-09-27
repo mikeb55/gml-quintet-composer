@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GML-Quintet-Pro v3.0 - TriadGen Integration</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 20px 20px 0 0;
+        }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .version { background: rgba(255,255,255,0.2); padding: 5px 15px; border-radius: 20px; display: inline-block; }
+        .main { padding: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .panel h2 { color: #667eea; margin-bottom: 20px; }
+        .control { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #555; font-weight: 500; }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px 10px 0 0;
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4); }
+        .output {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 300px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            max-height: 500px;
+        }
+        .full-width { grid-column: 1 / -1; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎼 GML-Quintet-Pro</h1>
+            <span class="version">v3.0 - TriadGen Engine Integration</span>
+        </div>
+        
+        <div class="main">
+            <div class="panel">
+                <h2>🎵 Composition Settings</h2>
+                <div class="control">
+                    <label>Chord Progression</label>
+                    <input type="text" id="chords" placeholder="Cmaj7 Dm7 G7 Cmaj7" value="Dmaj7 Cmaj7 Cmaj7 Fmaj7 Amaj7">
+                </div>
+                <div class="control">
+                    <label>Style Profile</label>
+                    <select id="style">
+                        <optgroup label="Jazz">
+                            <option value="evans">Bill Evans - Rootless Voicings</option>
+                            <option value="hancock">Herbie Hancock - Quartal</option>
+                            <option value="mehldau">Brad Mehldau - Contemporary</option>
+                        </optgroup>
+                        <optgroup label="Classical">
+                            <option value="bach">J.S. Bach - Counterpoint</option>
+                            <option value="mozart">Mozart - Classical</option>
+                        </optgroup>
+                        <optgroup label="Pop">
+                            <option value="bacharach">Burt Bacharach - Chromatic</option>
+                            <option value="steely">Steely Dan - Jazz-Pop</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="control">
+                    <label>Tempo (BPM)</label>
+                    <input type="number" id="tempo" value="120" min="40" max="240">
+                </div>
+                <button onclick="generateQuintet()">Generate Quintet</button>
+                <button onclick="exportMusicXML()">Export MusicXML</button>
+            </div>
+            
+            <div class="panel">
+                <h2>📊 Voice Distribution</h2>
+                <div id="voiceDisplay" class="output">
+                    Voices will appear here...
+                </div>
+            </div>
+            
+            <div class="panel full-width">
+                <h2>🎹 Generated Output</h2>
+                <div id="output" class="output">
+                    Ready to generate quintet...
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+// TriadGen Engine Integration - Proven chord parsing and MusicXML export
+class TriadGenQuintetEngine {
+    constructor() {
+        this.currentQuintet = null;
+        this.chordLibrary = this.initializeChordLibrary();
+    }
+
+    // From TriadGen v8.4 - Working chord definitions
+    initializeChordLibrary() {
+        return {
+            'maj': [0, 4, 7],
+            'maj7': [0, 4, 7, 11],
+            'maj9': [0, 4, 7, 11, 14],
+            'm': [0, 3, 7],
+            'm7': [0, 3, 7, 10],
+            'm9': [0, 3, 7, 10, 14],
+            '7': [0, 4, 7, 10],
+            '9': [0, 4, 7, 10, 14],
+            'dim': [0, 3, 6],
+            'dim7': [0, 3, 6, 9],
+            'aug': [0, 4, 8],
+            'sus2': [0, 2, 7],
+            'sus4': [0, 5, 7],
+            '6': [0, 4, 7, 9],
+            'm6': [0, 3, 7, 9],
+            'add9': [0, 4, 7, 14],
+            '11': [0, 4, 7, 10, 14, 17],
+            '13': [0, 4, 7, 10, 14, 17, 21],
+            'maj7#11': [0, 4, 7, 11, 18],
+            'm7b5': [0, 3, 6, 10],
+            '7#9': [0, 4, 7, 10, 15],
+            '7b9': [0, 4, 7, 10, 13],
+            '7#5': [0, 4, 8, 10],
+            'maj7#5': [0, 4, 8, 11],
+            'm/maj7': [0, 3, 7, 11],
+            '7sus4': [0, 5, 7, 10],
+            'maj6': [0, 4, 7, 9],
+            'm11': [0, 3, 7, 10, 14, 17],
+            'maj13': [0, 4, 7, 11, 14, 17, 21]
+        };
+    }
+
+    // Parse chord symbol into root and type
+    parseChord(chordSymbol) {
+        const noteMap = {'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11};
+        const sharpFlat = {'#': 1, 'b': -1};
+        
+        let root = 0;
+        let type = 'maj';
+        
+        // Parse root note
+        if (chordSymbol.length > 0) {
+            root = noteMap[chordSymbol[0]] || 0;
+            let pos = 1;
+            
+            // Handle sharp/flat
+            if (pos < chordSymbol.length && sharpFlat[chordSymbol[pos]]) {
+                root += sharpFlat[chordSymbol[pos]];
+                pos++;
+            }
+            
+            // Parse chord type
+            const remaining = chordSymbol.substring(pos);
+            if (remaining) {
+                // Try to match chord types from longest to shortest
+                const types = Object.keys(this.chordLibrary).sort((a, b) => b.length - a.length);
+                for (let t of types) {
+                    if (remaining === t) {
+                        type = t;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        return {root: root + 60, type: type}; // Middle C = 60
+    }
+
+    // Distribute chord to 5 voices with proper voicing
+    distributeToFiveVoices(chord, style) {
+        const parsed = this.parseChord(chord);
+        const intervals = this.chordLibrary[parsed.type] || this.chordLibrary['maj'];
+        const notes = intervals.map(i => parsed.root + i);
+        
+        // Voice ranges (MIDI note numbers)
+        const ranges = [
+            {min: 55, max: 93}, // Violin I
+            {min: 55, max: 88}, // Violin II  
+            {min: 48, max: 84}, // Viola
+            {min: 36, max: 72}, // Cello
+            {min: 28, max: 60}  // Contrabass
+        ];
+        
+        // Create 5-voice distribution
+        const voices = [];
+        
+        // Voice 1 (Violin I) - Melody/Top note
+        voices[0] = notes[notes.length - 1] || parsed.root + 12;
+        
+        // Voice 2 (Violin II) - Upper harmony
+        voices[1] = notes[Math.min(2, notes.length - 1)] || parsed.root + 7;
+        
+        // Voice 3 (Viola) - Middle voice
+        voices[2] = notes[1] || parsed.root + 4;
+        
+        // Voice 4 (Cello) - Tenor voice
+        voices[3] = parsed.root;
+        
+        // Voice 5 (Contrabass) - Bass
+        voices[4] = parsed.root - 12;
+        
+        // Adjust for ranges
+        for (let i = 0; i < 5; i++) {
+            while (voices[i] < ranges[i].min) voices[i] += 12;
+            while (voices[i] > ranges[i].max) voices[i] -= 12;
+        }
+        
+        return voices;
+    }
+
+    // Generate full quintet
+    generateQuintet(chordsInput, style, tempo) {
+        const chordList = chordsInput.trim().split(/\s+/);
+        const quintet = {
+            chords: chordList,
+            style: style,
+            tempo: tempo,
+            voices: [[], [], [], [], []],
+            measures: []
+        };
+        
+        // Process each chord
+        chordList.forEach(chord => {
+            const voicing = this.distributeToFiveVoices(chord, style);
+            for (let v = 0; v < 5; v++) {
+                quintet.voices[v].push({
+                    midi: voicing[v],
+                    pitch: this.midiToNote(voicing[v]),
+                    duration: 1024,
+                    type: 'whole'
+                });
+            }
+            quintet.measures.push(voicing);
+        });
+        
+        this.currentQuintet = quintet;
+        return quintet;
+    }
+
+    // Convert MIDI to note name
+    midiToNote(midi) {
+        const notes = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
+        return notes[midi % 12] + Math.floor(midi / 12 - 1);
+    }
+
+    // Working MusicXML export from TriadGen
+    exportMusicXML() {
+        if (!this.currentQuintet) return null;
+        
+        const q = this.currentQuintet;
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const filename = `GML_Quintet_v3_${timestamp}.musicxml`;
+        
+        let xml = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">
+<score-partwise version="3.0">
+  <work><work-title>Quintet - ${q.style}</work-title></work>
+  <identification>
+    <creator type="composer">GML-Quintet-Pro v3.0</creator>
+    <encoding>
+      <software>GML-Quintet-Pro v3.0 TriadGen Engine</software>
+      <encoding-date>${new Date().toISOString().split('T')[0]}</encoding-date>
+    </encoding>
+  </identification>
+  <defaults>
+    <scaling><millimeters>215.9</millimeters><tenths>1233</tenths></scaling>
+  </defaults>
+  <part-list>
+    <score-part id="P1"><part-name>Violin I</part-name></score-part>
+    <score-part id="P2"><part-name>Violin II</part-name></score-part>
+    <score-part id="P3"><part-name>Viola</part-name></score-part>
+    <score-part id="P4"><part-name>Cello</part-name></score-part>
+    <score-part id="P5"><part-name>Contrabass</part-name></score-part>
+  </part-list>`;
+
+        // Generate parts
+        const instruments = ['Violin I', 'Violin II', 'Viola', 'Cello', 'Contrabass'];
+        const clefs = [
+            {sign: 'G', line: 2},
+            {sign: 'G', line: 2},
+            {sign: 'C', line: 3},
+            {sign: 'F', line: 4},
+            {sign: 'F', line: 4}
+        ];
+        
+        for (let p = 0; p < 5; p++) {
+            xml += `\n  <part id="P${p+1}">`;
+            
+            q.voices[p].forEach((note, m) => {
+                xml += `\n    <measure number="${m+1}">`;
+                
+                if (m === 0) {
+                    xml += `
+      <attributes>
+        <divisions>256</divisions>
+        <key><fifths>0</fifths></key>
+        <time><beats>4</beats><beat-type>4</beat-type></time>
+        <clef>
+          <sign>${clefs[p].sign}</sign>
+          <line>${clefs[p].line}</line>
+        </clef>
+      </attributes>`;
+                }
+                
+                const pitch = this.midiToPitch(note.midi);
+                xml += `
+      <note>
+        <pitch>
+          <step>${pitch.step}</step>
+          ${pitch.alter ? `<alter>${pitch.alter}</alter>` : ''}
+          <octave>${pitch.octave}</octave>
+        </pitch>
+        <duration>1024</duration>
+        <type>whole</type>
+      </note>`;
+                
+                if (m === q.voices[p].length - 1) {
+                    xml += `\n      <barline><bar-style>light-heavy</bar-style></barline>`;
+                }
+                
+                xml += `\n    </measure>`;
+            });
+            
+            xml += `\n  </part>`;
+        }
+        
+        xml += `\n</score-partwise>`;
+        
+        // Download
+        const blob = new Blob([xml], {type: 'application/vnd.recordare.musicxml+xml'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        return filename;
+    }
+
+    midiToPitch(midi) {
+        const noteNames = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
+        const pitchClass = midi % 12;
+        const octave = Math.floor(midi / 12) - 1;
+        
+        let step = noteNames[pitchClass][0];
+        let alter = 0;
+        
+        if (noteNames[pitchClass].includes('#')) alter = 1;
+        if (noteNames[pitchClass].includes('b')) {
+            if (step === 'E') step = 'E', alter = -1;
+            else if (step === 'A') step = 'A', alter = -1;
+            else step = String.fromCharCode(step.charCodeAt(0) - 1), alter = 1;
+        }
+        
+        return {step, alter, octave};
+    }
+}
+
+// Initialize engine
+const engine = new TriadGenQuintetEngine();
+
+// UI Functions
+function generateQuintet() {
+    const chords = document.getElementById('chords').value;
+    const style = document.getElementById('style').value;
+    const tempo = document.getElementById('tempo').value;
+    
+    if (!chords) {
+        alert('Enter chord progression');
+        return;
+    }
+    
+    const quintet = engine.generateQuintet(chords, style, tempo);
+    
+    // Display voices
+    let voiceText = '';
+    const instruments = ['Violin I', 'Violin II', 'Viola', 'Cello', 'Contrabass'];
+    
+    quintet.voices.forEach((voice, i) => {
+        voiceText += `${instruments[i]}:\n`;
+        voice.forEach((note, m) => {
+            voiceText += `  Measure ${m+1}: ${note.pitch} (MIDI ${note.midi})\n`;
+        });
+        voiceText += '\n';
+    });
+    
+    document.getElementById('voiceDisplay').textContent = voiceText;
+    
+    // Display summary
+    document.getElementById('output').textContent = 
+        `Generated ${quintet.chords.length} measures
+Style: ${style}
+Tempo: ${tempo} BPM
+Progression: ${quintet.chords.join(' → ')}
+
+Click "Export MusicXML" to save for Sibelius`;
+}
+
+function exportMusicXML() {
+    const filename = engine.exportMusicXML();
+    if (filename) {
+        document.getElementById('output').textContent += `\n\nExported: ${filename}`;
+    } else {
+        alert('Generate quintet first');
+    }
+}
+
+// Auto-generate on load
+window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(generateQuintet, 100);
+});
+</script>
+</body>
+</html>
