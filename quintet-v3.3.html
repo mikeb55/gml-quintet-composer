@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quintet V3.3 - Enhanced Rhythm Options</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        .version-badge {
+            display: inline-block;
+            background: #ff6b6b;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        select, input, button {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 1em;
+        }
+        select, input {
+            background: white;
+        }
+        button {
+            background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: scale(1.05);
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        .measures-control {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            border: 2px solid #ffc107;
+        }
+        .measures-control strong {
+            color: #856404;
+        }
+        .instruments {
+            display: grid;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .instrument {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .instrument-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .instrument-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+        .rhythm-selector {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .measures-container {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+        .measure-wrapper {
+            min-width: 300px;
+            flex-shrink: 0;
+        }
+        .measure-number {
+            text-align: center;
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .pattern-display {
+            display: grid;
+            grid-template-columns: repeat(16, 1fr);
+            gap: 2px;
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            min-height: 60px;
+            position: relative;
+            border: 2px solid transparent;
+        }
+        .pattern-display.current-measure {
+            border-color: #ffd700;
+            background: #fffef0;
+        }
+        .note-block {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8787 100%);
+            border-radius: 3px;
+            position: absolute;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.75em;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .note-block.rest {
+            background: #ddd;
+            border: 2px dashed #999;
+            box-shadow: none;
+        }
+        .note-block.active {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            animation: pulse 0.5s;
+            transform: scale(1.05);
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1.05); }
+        }
+        .playback-controls {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        .playback-controls button {
+            padding: 15px 30px;
+            font-size: 1.1em;
+        }
+        #exportBtn {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        }
+        .status {
+            text-align: center;
+            padding: 10px;
+            background: #e8f5e9;
+            border-radius: 5px;
+            color: #2e7d32;
+            margin-top: 20px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b 0%, #4ecdc4 100%);
+            width: 0%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        .info-panel {
+            background: #f0f8ff;
+            border-left: 4px solid #4ecdc4;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎼 Quintet <span class="version-badge">V3.3</span> - Guitar + String Quartet 🎸🎻</h1>
+        <p class="subtitle">Enhanced Rhythm Options with Melodic Lead - By Mike Bryant</p>
+        
+        <div class="info-panel">
+            <strong>V3.3 Update:</strong> Added "Melodic Lead" option to all instruments for maximum flexibility. Each instrument can now lead melodically!
+        </div>
+        
+        <div class="measures-control">
+            <strong>📏 Number of Measures:</strong>
+            <input type="number" id="measuresInput" value="4" min="1" max="100" style="width: 80px;">
+            <button onclick="updateMeasures()">Update Measures</button>
+            <span id="measureInfo">Current: 4 measures</span>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>Key:</label>
+                <select id="keySelect">
+                    <option value="C">C Major</option>
+                    <option value="G">G Major</option>
+                    <option value="D">D Major</option>
+                    <option value="A">A Major</option>
+                    <option value="F">F Major</option>
+                    <option value="Bb">B♭ Major</option>
+                    <option value="Eb">E♭ Major</option>
+                    <option value="Am">A Minor</option>
+                    <option value="Em">E Minor</option>
+                    <option value="Dm">D Minor</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Tempo:</label>
+                <input type="number" id="tempoInput" value="120" min="40" max="200">
+            </div>
+            <div class="control-group">
+                <label>Time Signature:</label>
+                <select id="timeSignature">
+                    <option value="4/4">4/4</option>
+                    <option value="3/4">3/4</option>
+                    <option value="6/8">6/8</option>
+                    <option value="2/4">2/4</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Global Style:</label>
+                <select id="globalStyle">
+                    <option value="">Individual Settings</option>
+                    <option value="melodic_lead_all">All Melodic Lead</option>
+                    <option value="spanish">Spanish Classical</option>
+                    <option value="baroque">Baroque Suite</option>
+                    <option value="classical">Classical Concerto</option>
+                    <option value="romantic">Romantic Serenade</option>
+                    <option value="waltz">Viennese Waltz</option>
+                    <option value="tango">Argentine Tango</option>
+                    <option value="ballad">Slow Ballad</option>
+                    <option value="minimalist">Minimalist</option>
+                    <option value="modern">Modern/Contemporary</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressBar">0%</div>
+        </div>
+
+        <div class="instruments">
+            <div class="instrument" data-instrument="guitar">
+                <div class="instrument-header">
+                    <span class="instrument-name">🎸 Classical Guitar</span>
+                    <div class="rhythm-selector">
+                        <label>Rhythm Style:</label>
+                        <select class="rhythm-style" data-instrument="guitar">
+                            <option value="melodic_lead">Melodic Lead</option>
+                            <option value="guitar_melodic">Guitar Melodic</option>
+                            <option value="guitar_arpeggio">Arpeggiated</option>
+                            <option value="guitar_chordal">Chordal Strumming</option>
+                            <option value="guitar_spanish">Spanish Flamenco</option>
+                            <option value="guitar_fingerstyle">Fingerstyle Pattern</option>
+                            <option value="guitar_tremolo">Tremolo</option>
+                            <option value="guitar_waltz">Waltz Pattern</option>
+                            <option value="guitar_minimal">Minimal Plucking</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="measures-container" id="guitar-measures"></div>
+            </div>
+
+            <div class="instrument" data-instrument="violin1">
+                <div class="instrument-header">
+                    <span class="instrument-name">🎻 Violin I</span>
+                    <div class="rhythm-selector">
+                        <label>Rhythm Style:</label>
+                        <select class="rhythm-style" data-instrument="violin1">
+                            <option value="melodic_lead">Melodic Lead</option>
+                            <option value="violin1_melodic">Violin Melodic Support</option>
+                            <option value="violin1_baroque">Baroque Ornate</option>
+                            <option value="violin1_classical">Classical Theme</option>
+                            <option value="violin1_romantic">Romantic Expressive</option>
+                            <option value="violin1_spanish">Spanish Color</option>
+                            <option value="violin1_tango">Tango Passion</option>
+                            <option value="violin1_ballad">Ballad Lyrical</option>
+                            <option value="violin1_minimal">Minimal Sparse</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="measures-container" id="violin1-measures"></div>
+            </div>
+
+            <div class="instrument" data-instrument="violin2">
+                <div class="instrument-header">
+                    <span class="instrument-name">🎻 Violin II</span>
+                    <div class="rhythm-selector">
+                        <label>Rhythm Style:</label>
+                        <select class="rhythm-style" data-instrument="violin2">
+                            <option value="melodic_lead">Melodic Lead</option>
+                            <option value="violin2_harmonic">Harmonic Support</option>
+                            <option value="violin2_baroque">Baroque Counter</option>
+                            <option value="violin2_classical">Classical Harmony</option>
+                            <option value="violin2_romantic">Romantic Duet</option>
+                            <option value="violin2_spanish">Spanish Rhythm</option>
+                            <option value="violin2_tango">Tango Syncopation</option>
+                            <option value="violin2_ballad">Ballad Support</option>
+                            <option value="violin2_minimal">Minimal Echo</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="measures-container" id="violin2-measures"></div>
+            </div>
+
+            <div class="instrument" data-instrument="viola">
+                <div class="instrument-header">
+                    <span class="instrument-name">🎻 Viola</span>
+                    <div class="rhythm-selector">
+                        <label>Rhythm Style:</label>
+                        <select class="rhythm-style" data-instrument="viola">
+                            <option value="melodic_lead">Melodic Lead</option>
+                            <option value="viola_rhythmic">Rhythmic Pulse</option>
+                            <option value="viola_baroque">Baroque Continuo</option>
+                            <option value="viola_classical">Classical Inner</option>
+                            <option value="viola_romantic">Romantic Flowing</option>
+                            <option value="viola_spanish">Spanish Strum</option>
+                            <option value="viola_tango">Tango Rhythm</option>
+                            <option value="viola_ballad">Ballad Gentle</option>
+                            <option value="viola_minimal">Minimal Pattern</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="measures-container" id="viola-measures"></div>
+            </div>
+
+            <div class="instrument" data-instrument="cello">
+                <div class="instrument-header">
+                    <span class="instrument-name">🎻 Cello</span>
+                    <div class="rhythm-selector">
+                        <label>Rhythm Style:</label>
+                        <select class="rhythm-style" data-instrument="cello">
+                            <option value="melodic_lead">Melodic Lead</option>
+                            <option value="cello_bass">Bass Foundation</option>
+                            <option value="cello_baroque">Baroque Walking</option>
+                            <option value="cello_classical">Classical Bass</option>
+                            <option value="cello_romantic">Romantic Deep</option>
+                            <option value="cello_spanish">Spanish Bass</option>
+                            <option value="cello_tango">Tango Bass</option>
+                            <option value="cello_ballad">Ballad Whole</option>
+                            <option value="cello_minimal">Minimal Drone</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="measures-container" id="cello-measures"></div>
+            </div>
+        </div>
+
+        <div class="playback-controls">
+            <button id="generateBtn">🎲 Generate Patterns</button>
+            <button id="playBtn">▶️ Play</button>
+            <button id="stopBtn">⏹️ Stop</button>
+            <button id="exportBtn">📥 Export MusicXML</button>
+        </div>
+
+        <div id="status" class="status" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Complete rhythm patterns for all instruments including universal melodic_lead
+        const rhythmPatterns = {
+            // Universal melodic lead pattern (available to all instruments)
+            melodic_lead: [
+                { start: 0, duration: 4, type: 'note' },
+                { start: 4, duration: 2, type: 'note' },
+                { start: 6, duration: 2, type: 'note' },
+                { start: 8, duration: 8, type: 'note' },
+            ],
+            
+            // Guitar patterns
+            guitar_melodic: [
+                { start: 0, duration: 4, type: 'note' },
+                { start: 4, duration: 2, type: 'note' },
+                { start: 6, duration: 2, type: 'note' },
+                { start: 8, duration: 4, type: 'note' },
+                { start: 12, duration: 4, type: 'note' },
+            ],
+            guitar_arpeggio: [
+                { start: 0, duration: 2, type: 'note' },
+                { start: 2, duration: 2, type: 'note' },
+                { start: 4, duration: 2, type: 'note' },
+                { start: 6, duration: 2, type: 'note' },
+                { start: 8, duration: 2, type: 'note' },
+                { start: 10, duration: 2, type: 'note' },
+                { start: 12, duration: 2, type: 'note' },
+                { start: 14, duration: 2, type: 'note' },
+            ],
+            guitar_chordal: [
+                { start: 0, duration: 8, type: 'note' },
+                { start: 8, duration: 8, type: 'note' },
+            ],
+            guitar_spanish: [
+                { start: 0, duration: 4, type: 'note' },
+                { start: 4, duration: 2, type: 'note' },
+                { start: 6, duration: 2, type: 'note' },
+                { start: 8, duration: 2, type: 'note' },
+                { start: 10, duration: 2, type: 'note' },
+                { start: 12, duration: 4, type: 'note' },
+            ],
+            guitar_fingerstyle: [
+                { start: 0, duration: 4, type: 'note' },
+                { start: 4, duration: 4, type: 'note' },
+                { start: 8, duration: 4, type: 'note' },
+                { start: 12, duration: 4, type: 'note' },
+            ],
+            guitar_tremolo: [
+                { start: 0, duration: 1, type: 'note' },
+                { start: 1, duration: 1, type: 'note' },
+                { start: 2, duration: 1, type: 'note' },
+                { start: 3, duration: 1, type: 'note' },
+                { start: 4, duration: 4, type: 'note' },
+                { start: 8, duration: 8, type: 'rest' },
+            ],
+            guitar_waltz: [
+                { start: 0, duration: 8, type: 'note' },
+                { start: 8, duration: 4, type: 'note' },
+                { start: 12, duration: 4, type: 'rest' },
+            ],
+            guitar_minimal: [
+                { start: 0, duration: 4, type: 'note' },
+                { start: 4, duration: 12, type: 'rest' },
+            ],
+            
+            // Violin 1 patterns
+            violin1_melodic: [
+                { start: 0, duration: 4, type: 'rest' },
+                { start: 4, duration: 4, type: 'note' },
+                { start: 8, duration: 8, type: 'note' },
+            ],
+            violin1_baroque: [
+                { start: 0, duration: 2, type: 'note' },
+                { start: 2, duration: 2, type: 'note' },
+                { start: 4, duration: 4, type: 'note' },
+                { start: 8, duration: 4, type: 'rest' },
+                { start: 12, duration: 4, type: 'note' },
+            ],
+            violin1_classical: [
+                { start: 0, duration: 8, type: 'note' },
+                { start: 8, duration: 4, type: 'note' },
+                { start: 12, duration: 4, type: 'note' },
+            ],
+            violin1_romantic: [
+                { start: 0, duration: 12, type: 'note' },
+                { start: 12, duration: 4, type: 'rest' },
+            ],
+            violin1_spanish: [
+                { start: 0, duration: 4, type: 'rest' },
+                { start: 4, duration: 2, type: 'note' },
+                { start: 6, duration: 2, type: 'note' },
+                { start: 8, duration: 8, type: 'note' },
+            ],
+            violin1_tango: [
+                { start: 0, duration: 2, type: 'note' },
+                { start: 2, duration: 2, type: 'rest' },
+                { start: 4, duration: 4, type: 'note' },
+                { start: 8, duration: 8, type: 'note' },
+            ],
+            violin1_ballad: [
+                { start: 0, duration: 16, type: 'note' },
+            ],
+            violin1_minimal: [
+                { start: 0, duration: 8, type: 'rest' },
+                { start: 8, duration: 4, type: 'note' },
+                { start: 12, duration: 4, type: 'rest' },
+            ],
+            
+            // Violin 2 patterns
+            violin2_harmonic: [
+                { start: 0, duration: 8, type: 'rest' },
+                { start: 8, duration: 4, type: 'note' },
+                { start: 12, duration: 4, type: 'note' },
+            ],
+            violin2_baroque: [
+                { start: 0, duration: 4, type: 'rest' },
+                { start: 4, duration: 2, type: 'note' },
+                { start: 6, duration: 2, type: 'note' },
+                { start: 8, duration: 4, type: 'note' },
+                { start: 12, duration: 4, type: 'rest' },
+            ],
+            violin2_classical: [
+                { start: 0, duration: 4, type: 'rest' },
+                { start: 4, duration: 4, type: 'note' },
+                { start: 8, duration: 4, type: 'note' },
+                { start: 12, duration: 4, type: 'note' },
+            ],
+            violin2_romantic: [
+                { start: 0, duration: 8, type: 'rest' },
+                { start: 8, duration: 8, type: 'note' },
+            ],
+            violin2_spanish: [
+                { start: 0, duration: 8, type: 'rest' },
+                { start: 8, duration: 2, type: 'note' },
+                { start: 10, duration: 2, type: 'note' },
+                { start: 12, duration: 4, type: 'note' },
+            ],
+            violin2_tango: [
+                { start: 0, duration: 4, type: 'rest' },
+                { start: 4, duration: 2, type: 'note' },
+                { start: 6, duration: 2, type: 'rest' },
+                { start: 8, duration: 4, type: 'note' },
+                { start: 12, duration: 4, type: 'note' },
+            ],
+            violin2_ballad: [
+                { start: 0, duration: 8, type: 'rest' },
+                { start: 8, duration: 8, type: 'note' },
+            ],
+            violin2_minimal: [
+                { start: 0, duration: 12, type: 'rest' },
+                { start: 12, duration: 4, type: 'note' },
+            ],
+            
+            // Viola patterns
+            viola_rhythmic: [
+                { start: 0, duration: 4, type: 'rest' },
+                { start: 4, duration: 4, type: 'note' },
+                { start: 8, duration: 4, type: 'note' },
+                { start: 12, duration: 4, type: 'rest' },
+            ],
+            viola_baroque: [
+                { start: 0, duration: 4, type: 'note' },
+                { start: 4, duration: 4, type: 'note' },
+                { start: 8, duration: 4, type: 'rest' },
+                { start: 12, duration: 4, type: 'note' },
+            ],
+            viola_classical: [
+                { start: 0, duration: 2, type: 'note' },
+                { start: 2, duration: 2, type: 'note' },
+                { start: 4, duration: 2, type: 'note' },
+                { start: 6, duration: 2, type: 'note' },
+                { start: 8, duration: 8, type: 'rest' },
+            ],
+            viola_romantic: [
+                { start: 0, duration: 8, type: 'note' },
+                { start: 8, duration: 8, type: 'rest' },
+            ],
+            viola_spanish: [
+                { start: 0, duration: 4, type: 'note' },
+                { start: 4, duration: 4, type: 'rest' },
+                { start: 8, duration: 4, type: 'note' },
+                { start: 12, duration: 4, type: 'rest' },
+            ],
+            viola_tango: [
+                { start: 0, duration: 4, type: 'note' },
+                { start: 4, duration: 2, type: 'rest' },
+                { start: 6, duration: 2, type: 'note' },
+                { start: 8, duration: 4, type: 'rest' },
+                { start: 12, duration: 4, type: 'note' },
+            ],
+            viola_ballad: [
+                { start: 0, duration: 16, type: 'rest' },
+            ],
+            viola_minimal: [
+                { start: 0, duration: 8, type: 'note' },
+                { start: 8, duration: 8, type: 'rest' },
+            ],
+            
+            // Cello patterns
+            cello_bass: [
+                { start: 0, duration: 8, type: 'note' },
+                { start: 8, duration: 4, type: 'note' },
+                { start: 12, duration: 4, type: 'rest' },
+            ],
+            cello_baroque: [
+                { start: 0, duration: 4, type: 'note' },
+                { start: 4, duration: 4, type: 'note' },
+                { start: 8, duration: 4, type: 'note' },
+                { start: 12, duration: 4, type: 'note' },
+            ],
+            cello_classical: [
+                { start: 0, duration: 8, type: 'note' },
+                { start: 8, duration: 8, type: 'rest' },
+            ],
+            cello_romantic: [
+                { start: 0, duration: 12, type: 'note' },
+                { start: 12, duration: 4, type: 'rest' },
+            ],
+            cello_spanish: [
+                { start: 0, duration: 4, type: 'note' },
+                { start: 4, duration: 4, type: 'rest' },
+                { start: 8, duration: 4, type: 'note' },
+                { start: 12, duration: 4, type: 'rest' },
+            ],
+            cello_tango: [
+                { start: 0, duration: 4, type: 'note' },
+                { start: 4, duration: 4, type: 'rest' },
+                { start: 8, duration: 4, type: 'note' },
+                { start: 12, duration: 4, type: 'rest' },
+            ],
+            cello_ballad: [
+                { start: 0, duration: 16, type: 'note' },
+            ],
+            cello_minimal: [
+                { start: 0, duration: 16, type: 'note' },
+            ],
+        };
+
+        const scales = {
+            'C': ['C', 'D', 'E', 'F', 'G', 'A', 'B'],
+            'G': ['G', 'A', 'B', 'C', 'D', 'E', 'F#'],
+            'D': ['D', 'E', 'F#', 'G', 'A', 'B', 'C#'],
+            'A': ['A', 'B', 'C#', 'D', 'E', 'F#', 'G#'],
+            'F': ['F', 'G', 'A', 'Bb', 'C', 'D', 'E'],
+            'Bb': ['Bb', 'C', 'D', 'Eb', 'F', 'G', 'A'],
+            'Eb': ['Eb', 'F', 'G', 'Ab', 'Bb', 'C', 'D'],
+            'Am': ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
+            'Em': ['E', 'F#', 'G', 'A', 'B', 'C', 'D'],
+            'Dm': ['D', 'E', 'F', 'G', 'A', 'Bb', 'C'],
+        };
+
+        const instrumentRanges = {
+            guitar: { min: 'E2', max: 'B5', clef: 'treble' },
+            violin1: { min: 'G3', max: 'E7', clef: 'treble' },
+            violin2: { min: 'G3', max: 'E7', clef: 'treble' },
+            viola: { min: 'C3', max: 'C6', clef: 'alto' },
+            cello: { min: 'C2', max: 'A5', clef: 'bass' }
+        };
+
+        let patterns = {
+            guitar: [],
+            violin1: [],
+            violin2: [],
+            viola: [],
+            cello: []
+        };
+
+        let numMeasures = 4;
+        let isPlaying = false;
+        let currentMeasure = 0;
+        let currentBeat = 0;
+        let playbackInterval = null;
+
+        function updateMeasures() {
+            const newNum = parseInt(document.getElementById('measuresInput').value);
+            if (newNum >= 1 && newNum <= 100) {
+                numMeasures = newNum;
+                document.getElementById('measureInfo').textContent = `Current: ${numMeasures} measure${numMeasures > 1 ? 's' : ''}`;
+                initializeMeasureContainers();
+                generatePatterns();
+                showStatus(`✅ Updated to ${numMeasures} measures`);
+            }
+        }
+
+        function initializeMeasureContainers() {
+            ['guitar', 'violin1', 'violin2', 'viola', 'cello'].forEach(instrument => {
+                const container = document.getElementById(`${instrument}-measures`);
+                container.innerHTML = '';
+                
+                for (let m = 0; m < numMeasures; m++) {
+                    const measureWrapper = document.createElement('div');
+                    measureWrapper.className = 'measure-wrapper';
+                    
+                    const measureNumber = document.createElement('div');
+                    measureNumber.className = 'measure-number';
+                    measureNumber.textContent = `Measure ${m + 1}`;
+                    
+                    const patternDisplay = document.createElement('div');
+                    patternDisplay.className = 'pattern-display';
+                    patternDisplay.id = `${instrument}-pattern-${m}`;
+                    
+                    measureWrapper.appendChild(measureNumber);
+                    measureWrapper.appendChild(patternDisplay);
+                    container.appendChild(measureWrapper);
+                }
+            });
+        }
+
+        function generatePatterns() {
+            const key = document.getElementById('keySelect').value;
+            const scale = scales[key];
+            
+            ['guitar', 'violin1', 'violin2', 'viola', 'cello'].forEach(instrument => {
+                patterns[instrument] = [];
+                const styleSelect = document.querySelector(`.rhythm-style[data-instrument="${instrument}"]`);
+                const style = styleSelect.value;
+                const pattern = rhythmPatterns[style] || rhythmPatterns.melodic_lead;
+                
+                for (let m = 0; m < numMeasures; m++) {
+                    const measurePattern = pattern.map(note => {
+                        if (note.type === 'rest') {
+                            return { ...note, pitch: null };
+                        } else {
+                            const octave = instrument === 'cello' ? 2 : 
+                                         instrument === 'viola' ? 3 : 
+                                         instrument === 'guitar' ? 3 : 4;
+                            const noteIndex = Math.floor(Math.random() * scale.length);
+                            const pitch = scale[noteIndex] + octave;
+                            return { ...note, pitch };
+                        }
+                    });
+                    
+                    patterns[instrument].push(measurePattern);
+                    displayPattern(instrument, m, measurePattern);
+                }
+            });
+            
+            showStatus(`✅ Generated ${numMeasures} measures of patterns!`);
+        }
+
+        function displayPattern(instrument, measureNum, pattern) {
+            const container = document.getElementById(`${instrument}-pattern-${measureNum}`);
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            pattern.forEach(note => {
+                const block = document.createElement('div');
+                block.className = note.pitch ? 'note-block' : 'note-block rest';
+                block.style.left = `${(note.start / 16) * 100}%`;
+                block.style.width = `${(note.duration / 16) * 100}%`;
+                
+                const durationName = note.duration === 16 ? '𝅝' :
+                                   note.duration === 12 ? '𝅗𝅥.' :
+                                   note.duration === 8 ? '𝅗𝅥' :
+                                   note.duration === 4 ? '♩' :
+                                   note.duration === 2 ? '♪' : 
+                                   note.duration === 1 ? '♬' : '♩';
+                
+                block.textContent = note.pitch ? `${note.pitch} ${durationName}` : '𝄽';
+                container.appendChild(block);
+            });
+        }
+
+        function play() {
+            if (isPlaying) return;
+            
+            isPlaying = true;
+            currentMeasure = 0;
+            currentBeat = 0;
+            const tempo = parseInt(document.getElementById('tempoInput').value);
+            const beatDuration = 60000 / tempo / 4;
+            
+            playbackInterval = setInterval(() => {
+                updatePlaybackVisuals();
+                
+                currentBeat++;
+                if (currentBeat >= 16) {
+                    currentBeat = 0;
+                    currentMeasure++;
+                    if (currentMeasure >= numMeasures) {
+                        currentMeasure = 0;
+                    }
+                }
+                
+                updateProgressBar();
+            }, beatDuration);
+            
+            showStatus('▶️ Playing...');
+        }
+
+        function updatePlaybackVisuals() {
+            document.querySelectorAll('.pattern-display').forEach(el => {
+                el.classList.remove('current-measure');
+            });
+            
+            ['guitar', 'violin1', 'violin2', 'viola', 'cello'].forEach(instrument => {
+                const measureEl = document.getElementById(`${instrument}-pattern-${currentMeasure}`);
+                if (measureEl) {
+                    measureEl.classList.add('current-measure');
+                    
+                    const blocks = measureEl.querySelectorAll('.note-block');
+                    blocks.forEach(block => block.classList.remove('active'));
+                    
+                    if (patterns[instrument][currentMeasure]) {
+                        patterns[instrument][currentMeasure].forEach((note, i) => {
+                            if (currentBeat >= note.start && currentBeat < note.start + note.duration) {
+                                blocks[i]?.classList.add('active');
+                            }
+                        });
+                    }
+                }
+            });
+        }
+
+        function updateProgressBar() {
+            const totalBeats = numMeasures * 16;
+            const currentTotalBeat = currentMeasure * 16 + currentBeat;
+            const percentage = (currentTotalBeat / totalBeats) * 100;
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = percentage + '%';
+            progressBar.textContent = `${Math.floor(percentage)}%`;
+        }
+
+        function stop() {
+            isPlaying = false;
+            if (playbackInterval) {
+                clearInterval(playbackInterval);
+                playbackInterval = null;
+            }
+            
+            document.querySelectorAll('.note-block').forEach(block => {
+                block.classList.remove('active');
+            });
+            document.querySelectorAll('.pattern-display').forEach(el => {
+                el.classList.remove('current-measure');
+            });
+            
+            currentMeasure = 0;
+            currentBeat = 0;
+            document.getElementById('progressBar').style.width = '0%';
+            document.getElementById('progressBar').textContent = '0%';
+            
+            showStatus('⏹️ Stopped');
+        }
+
+        function exportMusicXML() {
+            const tempo = document.getElementById('tempoInput').value;
+            const timeSignature = document.getElementById('timeSignature').value;
+            const [beats, beatType] = timeSignature.split('/');
+            const key = document.getElementById('keySelect').value;
+            
+            const fifths = {
+                'C': 0, 'G': 1, 'D': 2, 'A': 3, 'F': -1, 'Bb': -2, 'Eb': -3,
+                'Am': 0, 'Em': 1, 'Dm': -1
+            };
+            
+            let musicXML = `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">
+<score-partwise version="3.1">
+    <identification>
+        <creator type="composer">Mike Bryant</creator>
+        <encoding>
+            <software>Quintet V3.3</software>
+            <encoding-date>${new Date().toISOString().split('T')[0]}</encoding-date>
+        </encoding>
+    </identification>
+    <part-list>
+        <score-part id="P1">
+            <part-name>Classical Guitar</part-name>
+        </score-part>
+        <score-part id="P2">
+            <part-name>Violin I</part-name>
+        </score-part>
+        <score-part id="P3">
+            <part-name>Violin II</part-name>
+        </score-part>
+        <score-part id="P4">
+            <part-name>Viola</part-name>
+        </score-part>
+        <score-part id="P5">
+            <part-name>Cello</part-name>
+        </score-part>
+    </part-list>`;
+            
+            ['guitar', 'violin1', 'violin2', 'viola', 'cello'].forEach((instrument, partIndex) => {
+                const partId = `P${partIndex + 1}`;
+                const clef = instrumentRanges[instrument].clef;
+                
+                musicXML += `
+    <part id="${partId}">`;
+                
+                for (let m = 0; m < numMeasures; m++) {
+                    musicXML += `
+        <measure number="${m + 1}">`;
+                    
+                    if (m === 0) {
+                        musicXML += `
+            <attributes>
+                <divisions>4</divisions>
+                <key>
+                    <fifths>${fifths[key] || 0}</fifths>
+                </key>
+                <time>
+                    <beats>${beats}</beats>
+                    <beat-type>${beatType}</beat-type>
+                </time>
+                <clef>
+                    <sign>${clef === 'treble' ? 'G' : clef === 'alto' ? 'C' : 'F'}</sign>
+                    <line>${clef === 'treble' ? '2' : clef === 'alto' ? '3' : '4'}</line>
+                </clef>
+            </attributes>
+            <direction placement="above">
+                <direction-type>
+                    <metronome>
+                        <beat-unit>quarter</beat-unit>
+                        <per-minute>${tempo}</per-minute>
+                    </metronome>
+                </direction-type>
+            </direction>`;
+                    }
+                    
+                    if (patterns[instrument] && patterns[instrument][m]) {
+                        patterns[instrument][m].forEach(note => {
+                            if (note.pitch) {
+                                const pitchName = note.pitch.slice(0, -1);
+                                const octave = note.pitch.slice(-1);
+                                const step = pitchName[0];
+                                const alter = pitchName.includes('#') ? '1' : pitchName.includes('b') ? '-1' : '';
+                                
+                                musicXML += `
+            <note>
+                <pitch>
+                    <step>${step}</step>
+                    ${alter ? `<alter>${alter}</alter>` : ''}
+                    <octave>${octave}</octave>
+                </pitch>
+                <duration>${note.duration}</duration>
+                <type>${getDurationType(note.duration)}</type>
+            </note>`;
+                            } else {
+                                musicXML += `
+            <note>
+                <rest/>
+                <duration>${note.duration}</duration>
+                <type>${getDurationType(note.duration)}</type>
+            </note>`;
+                            }
+                        });
+                    } else {
+                        musicXML += `
+            <note>
+                <rest/>
+                <duration>16</duration>
+                <type>whole</type>
+            </note>`;
+                    }
+                    
+                    musicXML += `
+        </measure>`;
+                }
+                
+                musicXML += `
+    </part>`;
+            });
+            
+            musicXML += `
+</score-partwise>`;
+            
+            const blob = new Blob([musicXML], { type: 'application/vnd.recordare.musicxml+xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `quintet_${key}_${numMeasures}measures_v33.musicxml`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showStatus(`✅ Exported ${numMeasures} measures to MusicXML (V3.3)`);
+        }
+
+        function getDurationType(duration) {
+            switch(duration) {
+                case 16: return 'whole';
+                case 12: return 'half';
+                case 8: return 'half';
+                case 4: return 'quarter';
+                case 2: return 'eighth';
+                case 1: return 'sixteenth';
+                default: return 'quarter';
+            }
+        }
+
+        function showStatus(message) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.style.display = 'block';
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 3000);
+        }
+
+        document.getElementById('globalStyle').addEventListener('change', (e) => {
+            if (e.target.value) {
+                const styleMap = {
+                    'melodic_lead_all': {
+                        guitar: 'melodic_lead',
+                        violin1: 'melodic_lead',
+                        violin2: 'melodic_lead',
+                        viola: 'melodic_lead',
+                        cello: 'melodic_lead'
+                    },
+                    'spanish': {
+                        guitar: 'guitar_spanish',
+                        violin1: 'violin1_spanish',
+                        violin2: 'violin2_spanish',
+                        viola: 'viola_spanish',
+                        cello: 'cello_spanish'
+                    },
+                    'baroque': {
+                        guitar: 'guitar_arpeggio',
+                        violin1: 'violin1_baroque',
+                        violin2: 'violin2_baroque',
+                        viola: 'viola_baroque',
+                        cello: 'cello_baroque'
+                    },
+                    'classical': {
+                        guitar: 'guitar_melodic',
+                        violin1: 'violin1_classical',
+                        violin2: 'violin2_classical',
+                        viola: 'viola_classical',
+                        cello: 'cello_classical'
+                    },
+                    'romantic': {
+                        guitar: 'guitar_melodic',
+                        violin1: 'violin1_romantic',
+                        violin2: 'violin2_romantic',
+                        viola: 'viola_romantic',
+                        cello: 'cello_romantic'
+                    },
+                    'waltz': {
+                        guitar: 'guitar_waltz',
+                        violin1: 'violin1_melodic',
+                        violin2: 'violin2_harmonic',
+                        viola: 'viola_rhythmic',
+                        cello: 'cello_bass'
+                    },
+                    'tango': {
+                        guitar: 'guitar_spanish',
+                        violin1: 'violin1_tango',
+                        violin2: 'violin2_tango',
+                        viola: 'viola_tango',
+                        cello: 'cello_tango'
+                    },
+                    'ballad': {
+                        guitar: 'guitar_fingerstyle',
+                        violin1: 'violin1_ballad',
+                        violin2: 'violin2_ballad',
+                        viola: 'viola_ballad',
+                        cello: 'cello_ballad'
+                    },
+                    'minimalist': {
+                        guitar: 'guitar_minimal',
+                        violin1: 'violin1_minimal',
+                        violin2: 'violin2_minimal',
+                        viola: 'viola_minimal',
+                        cello: 'cello_minimal'
+                    },
+                    'modern': {
+                        guitar: 'guitar_melodic',
+                        violin1: 'violin1_melodic',
+                        violin2: 'violin2_harmonic',
+                        viola: 'viola_rhythmic',
+                        cello: 'cello_bass'
+                    }
+                };
+                
+                const selectedStyle = styleMap[e.target.value];
+                if (selectedStyle) {
+                    Object.keys(selectedStyle).forEach(instrument => {
+                        const select = document.querySelector(`.rhythm-style[data-instrument="${instrument}"]`);
+                        if (select) {
+                            select.value = selectedStyle[instrument];
+                        }
+                    });
+                    generatePatterns();
+                }
+            }
+        });
+
+        document.getElementById('generateBtn').addEventListener('click', generatePatterns);
+        document.getElementById('playBtn').addEventListener('click', play);
+        document.getElementById('stopBtn').addEventListener('click', stop);
+        document.getElementById('exportBtn').addEventListener('click', exportMusicXML);
+        
+        initializeMeasureContainers();
+        generatePatterns();
+    </script>
+</body>
+</html>
