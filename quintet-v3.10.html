@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quintet Composer V3.10 - Section-Centric Interface</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .main-controls {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        .control-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        
+        .control-group {
+            flex: 1;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .sections-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(650px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .section-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        .section-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            font-size: 1.3em;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .section-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .instrument-section {
+            margin-bottom: 20px;
+        }
+        
+        .instrument-header {
+            background: #f5f5f5;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .instrument-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .generate-button {
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .output-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            display: none;
+        }
+        
+        #xmlOutput {
+            background: #f8f8f8;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .button-row {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .button-row button {
+            flex: 1;
+        }
+        
+        .copy-button {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        }
+        
+        .export-button {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+        }
+        
+        .midi-button {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        }
+        
+        .midi-status {
+            padding: 10px;
+            background: #e8f5e9;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎼 Quintet Composer V3.10</h1>
+            <p class="subtitle">Section-Centric Composition with Polyrhythmic Capabilities & MIDI Import</p>
+        </div>
+
+        <div class="main-controls">
+            <div class="control-row">
+                <div class="control-group">
+                    <label for="title">Title</label>
+                    <input type="text" id="title" value="Quintet in C">
+                </div>
+                <div class="control-group">
+                    <label for="composer">Composer</label>
+                    <input type="text" id="composer" value="Mike Bryant">
+                </div>
+            </div>
+            <div class="control-row">
+                <button class="midi-button" onclick="importMIDI()">Import MIDI File</button>
+                <input type="file" id="midiFile" accept=".mid,.midi" style="display: none;">
+                <div class="midi-status" id="midiStatus"></div>
+            </div>
+        </div>
+
+        <div class="sections-container">
+            <!-- Section A -->
+            <div class="section-card">
+                <div class="section-header">Section A (Measures 1-4)</div>
+                
+                <div class="section-grid">
+                    <div class="control-group">
+                        <label>Tempo (BPM)</label>
+                        <input type="number" id="tempoA" value="120" min="40" max="200">
+                    </div>
+                    <div class="control-group">
+                        <label>Time Signature</label>
+                        <select id="timeA">
+                            <option value="4/4" selected>4/4</option>
+                            <option value="3/4">3/4</option>
+                            <option value="6/8">6/8</option>
+                            <option value="5/4">5/4</option>
+                            <option value="7/8">7/8</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Key</label>
+                        <select id="keyA">
+                            <option value="C" selected>C</option>
+                            <option value="G">G</option>
+                            <option value="D">D</option>
+                            <option value="A">A</option>
+                            <option value="E">E</option>
+                            <option value="B">B</option>
+                            <option value="F">F</option>
+                            <option value="Bb">B♭</option>
+                            <option value="Eb">E♭</option>
+                            <option value="Ab">A♭</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Scale Type</label>
+                        <select id="scaleA">
+                            <option value="major" selected>Major</option>
+                            <option value="minor">Natural Minor</option>
+                            <option value="harmonic">Harmonic Minor</option>
+                            <option value="melodic">Melodic Minor</option>
+                            <option value="dorian">Dorian</option>
+                            <option value="mixolydian">Mixolydian</option>
+                            <option value="pentatonic">Pentatonic</option>
+                            <option value="blues">Blues</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Dynamics</label>
+                        <select id="dynamicsA">
+                            <option value="pp">pp (Very Soft)</option>
+                            <option value="p">p (Soft)</option>
+                            <option value="mp">mp (Medium Soft)</option>
+                            <option value="mf" selected>mf (Medium Loud)</option>
+                            <option value="f">f (Loud)</option>
+                            <option value="ff">ff (Very Loud)</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Style</label>
+                        <select id="styleA">
+                            <option value="classical" selected>Classical</option>
+                            <option value="romantic">Romantic</option>
+                            <option value="contemporary">Contemporary</option>
+                            <option value="jazz">Jazz-influenced</option>
+                            <option value="folk">Folk-inspired</option>
+                            <option value="minimalist">Minimalist</option>
+                        </select>
+                    </div>
+                    <div class="control-group full-width">
+                        <label>Chord Progression</label>
+                        <input type="text" id="chordsA" value="I-IV-V-I" placeholder="e.g., I-IV-V-I or C-F-G-C">
+                    </div>
+                    <div class="control-group full-width">
+                        <label>Polyrhythm (Optional)</label>
+                        <input type="text" id="polyrhythmA" placeholder="e.g., 3:2 or 5:4 (leave empty for none)">
+                    </div>
+                </div>
+                
+                <div class="instrument-section">
+                    <div class="instrument-header">🎸 Guitar</div>
+                    <div class="instrument-controls">
+                        <select id="guitarStyleA">
+                            <option value="strummed">Strummed</option>
+                            <option value="fingerpicked">Fingerpicked</option>
+                            <option value="power">Power Chords</option>
+                            <option value="arpeggiated">Arpeggiated</option>
+                        </select>
+                        <select id="guitarPatternA">
+                            <option value="whole">Whole Notes</option>
+                            <option value="half">Half Notes</option>
+                            <option value="quarter">Quarter Notes</option>
+                            <option value="eighth">Eighth Notes</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="instrument-section">
+                    <div class="instrument-header">🎻 Violin I</div>
+                    <div class="instrument-controls">
+                        <select id="violin1StyleA">
+                            <option value="melodic">Melodic Lead</option>
+                            <option value="harmonic">Harmonic Support</option>
+                            <option value="rhythmic">Rhythmic</option>
+                            <option value="tremolo">Tremolo</option>
+                        </select>
+                        <select id="violin1ArticulationA">
+                            <option value="legato">Legato</option>
+                            <option value="staccato">Staccato</option>
+                            <option value="pizzicato">Pizzicato</option>
+                            <option value="spiccato">Spiccato</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="instrument-section">
+                    <div class="instrument-header">🎻 Violin II</div>
+                    <div class="instrument-controls">
+                        <select id="violin2StyleA">
+                            <option value="harmonic">Harmonic Support</option>
+                            <option value="counter">Countermelody</option>
+                            <option value="rhythmic">Rhythmic</option>
+                            <option value="tremolo">Tremolo</option>
+                        </select>
+                        <select id="violin2ArticulationA">
+                            <option value="legato">Legato</option>
+                            <option value="staccato">Staccato</option>
+                            <option value="pizzicato">Pizzicato</option>
+                            <option value="spiccato">Spiccato</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="instrument-section">
+                    <div class="instrument-header">🎻 Viola</div>
+                    <div class="instrument-controls">
+                        <select id="violaStyleA">
+                            <option value="harmonic">Harmonic Fill</option>
+                            <option value="rhythmic">Rhythmic Pulse</option>
+                            <option value="melodic">Melodic</option>
+                            <option value="pedal">Pedal Tones</option>
+                        </select>
+                        <select id="violaArticulationA">
+                            <option value="legato">Legato</option>
+                            <option value="staccato">Staccato</option>
+                            <option value="pizzicato">Pizzicato</option>
+                            <option value="tremolo">Tremolo</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="instrument-section">
+                    <div class="instrument-header">🎻 Cello</div>
+                    <div class="instrument-controls">
+                        <select id="celloStyleA">
+                            <option value="bass">Bass Line</option>
+                            <option value="melodic">Melodic</option>
+                            <option value="rhythmic">Rhythmic</option>
+                            <option value="pedal">Pedal Tones</option>
+                        </select>
+                        <select id="celloArticulationA">
+                            <option value="legato">Legato</option>
+                            <option value="staccato">Staccato</option>
+                            <option value="pizzicato">Pizzicato</option>
+                            <option value="marcato">Marcato</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section B -->
+            <div class="section-card">
+                <div class="section-header">Section B (Measures 5-8)</div>
+                
+                <div class="section-grid">
+                    <div class="control-group">
+                        <label>Tempo (BPM)</label>
+                        <input type="number" id="tempoB" value="100" min="40" max="200">
+                    </div>
+                    <div class="control-group">
+                        <label>Time Signature</label>
+                        <select id="timeB">
+                            <option value="4/4">4/4</option>
+                            <option value="3/4" selected>3/4</option>
+                            <option value="6/8">6/8</option>
+                            <option value="5/4">5/4</option>
+                            <option value="7/8">7/8</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Key</label>
+                        <select id="keyB">
+                            <option value="C">C</option>
+                            <option value="G">G</option>
+                            <option value="D">D</option>
+                            <option value="A">A</option>
+                            <option value="E">E</option>
+                            <option value="B">B</option>
+                            <option value="F" selected>F</option>
+                            <option value="Bb">B♭</option>
+                            <option value="Eb">E♭</option>
+                            <option value="Ab">A♭</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Scale Type</label>
+                        <select id="scaleB">
+                            <option value="major" selected>Major</option>
+                            <option value="minor">Natural Minor</option>
+                            <option value="harmonic">Harmonic Minor</option>
+                            <option value="melodic">Melodic Minor</option>
+                            <option value="dorian">Dorian</option>
+                            <option value="mixolydian">Mixolydian</option>
+                            <option value="pentatonic">Pentatonic</option>
+                            <option value="blues">Blues</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Dynamics</label>
+                        <select id="dynamicsB">
+                            <option value="pp">pp (Very Soft)</option>
+                            <option value="p" selected>p (Soft)</option>
+                            <option value="mp">mp (Medium Soft)</option>
+                            <option value="mf">mf (Medium Loud)</option>
+                            <option value="f">f (Loud)</option>
+                            <option value="ff">ff (Very Loud)</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Style</label>
+                        <select id="styleB">
+                            <option value="classical">Classical</option>
+                            <option value="romantic" selected>Romantic</option>
+                            <option value="contemporary">Contemporary</option>
+                            <option value="jazz">Jazz-influenced</option>
+                            <option value="folk">Folk-inspired</option>
+                            <option value="minimalist">Minimalist</option>
+                        </select>
+                    </div>
+                    <div class="control-group full-width">
+                        <label>Chord Progression</label>
+                        <input type="text" id="chordsB" value="I-vi-IV-V" placeholder="e.g., I-vi-IV-V">
+                    </div>
+                    <div class="control-group full-width">
+                        <label>Polyrhythm (Optional)</label>
+                        <input type="text" id="polyrhythmB" placeholder="e.g., 3:2 or 5:4 (leave empty for none)">
+                    </div>
+                </div>
+                
+                <div class="instrument-section">
+                    <div class="instrument-header">🎸 Guitar</div>
+                    <div class="instrument-controls">
+                        <select id="guitarStyleB">
+                            <option value="strummed">Strummed</option>
+                            <option value="fingerpicked" selected>Fingerpicked</option>
+                            <option value="power">Power Chords</option>
+                            <option value="arpeggiated">Arpeggiated</option>
+                        </select>
+                        <select id="guitarPatternB">
+                            <option value="whole">Whole Notes</option>
+                            <option value="half">Half Notes</option>
+                            <option value="quarter" selected>Quarter Notes</option>
+                            <option value="eighth">Eighth Notes</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="instrument-section">
+                    <div class="instrument-header">🎻 Violin I</div>
+                    <div class="instrument-controls">
+                        <select id="violin1StyleB">
+                            <option value="melodic" selected>Melodic Lead</option>
+                            <option value="harmonic">Harmonic Support</option>
+                            <option value="rhythmic">Rhythmic</option>
+                            <option value="tremolo">Tremolo</option>
+                        </select>
+                        <select id="violin1ArticulationB">
+                            <option value="legato" selected>Legato</option>
+                            <option value="staccato">Staccato</option>
+                            <option value="pizzicato">Pizzicato</option>
+                            <option value="spiccato">Spiccato</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="instrument-section">
+                    <div class="instrument-header">🎻 Violin II</div>
+                    <div class="instrument-controls">
+                        <select id="violin2StyleB">
+                            <option value="harmonic" selected>Harmonic Support</option>
+                            <option value="counter">Countermelody</option>
+                            <option value="rhythmic">Rhythmic</option>
+                            <option value="tremolo">Tremolo</option>
+                        </select>
+                        <select id="violin2ArticulationB">
+                            <option value="legato" selected>Legato</option>
+                            <option value="staccato">Staccato</option>
+                            <option value="pizzicato">Pizzicato</option>
+                            <option value="spiccato">Spiccato</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="instrument-section">
+                    <div class="instrument-header">🎻 Viola</div>
+                    <div class="instrument-controls">
+                        <select id="violaStyleB">
+                            <option value="harmonic" selected>Harmonic Fill</option>
+                            <option value="rhythmic">Rhythmic Pulse</option>
+                            <option value="melodic">Melodic</option>
+                            <option value="pedal">Pedal Tones</option>
+                        </select>
+                        <select id="violaArticulationB">
+                            <option value="legato">Legato</option>
+                            <option value="staccato">Staccato</option>
+                            <option value="pizzicato" selected>Pizzicato</option>
+                            <option value="tremolo">Tremolo</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="instrument-section">
+                    <div class="instrument-header">🎻 Cello</div>
+                    <div class="instrument-controls">
+                        <select id="celloStyleB">
+                            <option value="bass" selected>Bass Line</option>
+                            <option value="melodic">Melodic</option>
+                            <option value="rhythmic">Rhythmic</option>
+                            <option value="pedal">Pedal Tones</option>
+                        </select>
+                        <select id="celloArticulationB">
+                            <option value="legato">Legato</option>
+                            <option value="staccato">Staccato</option>
+                            <option value="pizzicato" selected>Pizzicato</option>
+                            <option value="marcato">Marcato</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section C -->
+            <div class="section-card">
+                <div class="section-header">Section C (Measures 9-12)</div>
+                
+                <div class="section-grid">
+                    <div class="control-group">
+                        <label>Tempo (BPM)</label>
+                        <input type="number" id="tempoC" value="140" min="40" max="200">
+                    </div>
+                    <div class="control-group">
+                        <label>Time Signature</label>
+                        <select id="timeC">
+                            <option value="4/4">4/4</option>
+                            <option value="3/4">3/4</option>
+                            <option value="6/8" selected>6/8</option>
+                            <option value="5/4">5/4</option>
+                            <option value="7/8">7/8</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Key</label>
+                        <select id="keyC">
+                            <option value="C">C</option>
+                            <option value="G">G</option>
+                            <option value="D">D</option>
+                            <option value="A" selected>A</option>
+                            <option value="E">E</option>
+                            <option value="B">B</option>
+                            <option value="F">F</option>
+                            <option value="Bb">B♭</option>
+                            <option value="Eb">E♭</option>
+                            <option value="Ab">A♭</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Scale Type</label>
+                        <select id="scaleC">
+                            <option value="major">Major</option>
+                            <option value="minor" selected>Natural Minor</option>
+                            <option value="harmonic">Harmonic Minor</option>
+                            <option value="melodic">Melodic Minor</option>
+                            <option value="dorian">Dorian</option>
+                            <option value="mixolydian">Mixolydian</option>
+                            <option value="pentatonic">Pentatonic</option>
+                            <option value="blues">Blues</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Dynamics</label>
+                        <select id="dynamicsC">
+                            <option value="pp">pp (Very Soft)</option>
+                            <option value="p">p (Soft)</option>
+                            <option value="mp">mp (Medium Soft)</option>
+                            <option value="mf">mf (Medium Loud)</option>
+                            <option value="f" selected>f (Loud)</option>
+                            <option value="ff">ff (Very Loud)</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Style</label>
+                        <select id="styleC">
+                            <option value="classical">Classical</option>
+                            <option value="romantic">Romantic</option>
+                            <option value="contemporary" selected>Contemporary</option>
+                            <option value="jazz">Jazz-influenced</option>
+                            <option value="folk">Folk-inspired</option>
+                            <option value="minimalist">Minimalist</option>
+                        </select>
+                    </div>
+                    <div class="control-group full-width">
+                        <label>Chord Progression</label>
+                        <input type="text" id="chordsC" value="i-iv-V-i" placeholder="e.g., i-iv-V-i">
+                    </div>
+                    <div class="control-group full-width">
+                        <label>Polyrhythm (Optional)</label>
+                        <input type="text" id="polyrhythmC" value="3:2" placeholder="e.g., 3:2 or 5:4">
+                    </div>
+                </div>
+                
+                <div class="instrument-section">
+                    <div class="instrument-header">🎸 Guitar</div>
+                    <div class="instrument-controls">
+                        <select id="guitarStyleC">
+                            <option value="strummed" selected>Strummed</option>
+                            <option value="fingerpicked">Fingerpicked</option>
+                            <option value="power">Power Chords</option>
+                            <option value="arpeggiated">Arpeggiated</option>
+                        </select>
+                        <select id="guitarPatternC">
+                            <option value="whole">Whole Notes</option>
+                            <option value="half">Half Notes</option>
+                            <option value="quarter">Quarter Notes</option>
+                            <option value="eighth" selected>Eighth Notes</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="instrument-section">
+                    <div class="instrument-header">🎻 Violin I</div>
+                    <div class="instrument-controls">
+                        <select id="violin1StyleC">
+                            <option value="melodic">Melodic Lead</option>
+                            <option value="harmonic">Harmonic Support</option>
+                            <option value="rhythmic" selected>Rhythmic</option>
+                            <option value="tremolo">Tremolo</option>
+                        </select>
+                        <select id="violin1ArticulationC">
+                            <option value="legato">Legato</option>
+                            <option value="staccato" selected>Staccato</option>
+                            <option value="pizzicato">Pizzicato</option>
+                            <option value="spiccato">Spiccato</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="instrument-section">
+                    <div class="instrument-header">🎻 Violin II</div>
+                    <div class="instrument-controls">
+                        <select id="violin2StyleC">
+                            <option value="harmonic">Harmonic Support</option>
+                            <option value="counter" selected>Countermelody</option>
+                            <option value="rhythmic">Rhythmic</option>
+                            <option value="tremolo">Tremolo</option>
+                        </select>
+                        <select id="violin2ArticulationC">
+                            <option value="legato">Legato</option>
+                            <option value="staccato" selected>Staccato</option>
+                            <option value="pizzicato">Pizzicato</option>
+                            <option value="spiccato">Spiccato</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="instrument-section">
+                    <div class="instrument-header">🎻 Viola</div>
+                    <div class="instrument-controls">
+                        <select id="violaStyleC">
+                            <option value="harmonic">Harmonic Fill</option>
+                            <option value="rhythmic" selected>Rhythmic Pulse</option>
+                            <option value="melodic">Melodic</option>
+                            <option value="pedal">Pedal Tones</option>
+                        </select>
+                        <select id="violaArticulationC">
+                            <option value="legato">Legato</option>
+                            <option value="staccato" selected>Staccato</option>
+                            <option value="pizzicato">Pizzicato</option>
+                            <option value="tremolo">Tremolo</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="instrument-section">
+                    <div class="instrument-header">🎻 Cello</div>
+                    <div class="instrument-controls">
+                        <select id="celloStyleC">
+                            <option value="bass">Bass Line</option>
+                            <option value="melodic">Melodic</option>
+                            <option value="rhythmic" selected>Rhythmic</option>
+                            <option value="pedal">Pedal Tones</option>
+                        </select>
+                        <select id="celloArticulationC">
+                            <option value="legato">Legato</option>
+                            <option value="staccato">Staccato</option>
+                            <option value="pizzicato">Pizzicato</option>
+                            <option value="marcato" selected>Marcato</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section D -->
+            <div class="section-card">
+                <div class="section-header">Section D (Measures 13-16)</div>
+                
+                <div class="section-grid">
+                    <div class="control-group">
+                        <label>Tempo (BPM)</label>
+                        <input type="number" id="tempoD" value="160" min="40" max="200">
+                    </div>
+                    <div class="control-group">
+                        <label>Time Signature</label>
+                        <select id="timeD">
+                            <option value="4/4" selected>4/4</option>
+                            <option value="3/4">3/4</option>
+                            <option value="6/8">6/8</option>
+                            <option value="5/4">5/4</option>
+                            <option value="7/8">7/8</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Key</label>
+                        <select id="keyD">
+                            <option value="C" selected>C</option>
+                            <option value="G">G</option>
+                            <option value="D">D</option>
+                            <option value="A">A</option>
+                            <option value="E">E</option>
+                            <option value="B">B</option>
+                            <option value="F">F</option>
+                            <option value="Bb">B♭</option>
+                            <option value="Eb">E♭</option>
+                            <option value="Ab">A♭</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Scale Type</label>
+                        <select id="scaleD">
+                            <option value="major" selected>Major</option>
+                            <option value="minor">Natural Minor</option>
+                            <option value="harmonic">Harmonic Minor</option>
+                            <option value="melodic">Melodic Minor</option>
+                            <option value="dorian">Dorian</option>
+                            <option value="mixolydian">Mixolydian</option>
+                            <option value="pentatonic">Pentatonic</option>
+                            <option value="blues">Blues</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Dynamics</label>
+                        <select id="dynamicsD">
+                            <option value="pp">pp (Very Soft)</option>
+                            <option value="p">p (Soft)</option>
+                            <option value="mp">mp (Medium Soft)</option>
+                            <option value="mf">mf (Medium Loud)</option>
+                            <option value="f">f (Loud)</option>
+                            <option value="ff" selected>ff (Very Loud)</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Style</label>
+                        <select id="styleD">
+                            <option value="classical" selected>Classical</option>
+                            <option value="romantic">Romantic</option>
+                            <option value="contemporary">Contemporary</option>
+                            <option value="jazz">Jazz-influenced</option>
+                            <option value="folk">Folk-inspired</option>
+                            <option value="minimalist">Minimalist</option>
+                        </select>
+                    </div>
+                    <div class="control-group full-width">
+                        <label>Chord Progression</label>
+                        <input type="text" id="chordsD" value="I-V-vi-IV" placeholder="e.g., I-V-vi-IV">
+                    </div>
+                    <div class="control-group full-width">
+                        <label>Polyrhythm (Optional)</label>
+                        <input type="text" id="polyrhythmD" placeholder="e.g., 3:2 or 5:4 (leave empty for none)">
+                    </div>
+                </div>
+                
+                <div class="instrument-section">
+                    <div class="instrument-header">🎸 Guitar</div>
+                    <div class="instrument-controls">
+                        <select id="guitarStyleD">
+                            <option value="strummed" selected>Strummed</option>
+                            <option value="fingerpicked">Fingerpicked</option>
+                            <option value="power">Power Chords</option>
+                            <option value="arpeggiated">Arpeggiated</option>
+                        </select>
+                        <select id="guitarPatternD">
+                            <option value="whole">Whole Notes</option>
+                            <option value="half" selected>Half Notes</option>
+                            <option value="quarter">Quarter Notes</option>
+                            <option value="eighth">Eighth Notes</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="instrument-section">
+                    <div class="instrument-header">🎻 Violin I</div>
+                    <div class="instrument-controls">
+                        <select id="violin1StyleD">
+                            <option value="melodic" selected>Melodic Lead</option>
+                            <option value="harmonic">Harmonic Support</option>
+                            <option value="rhythmic">Rhythmic</option>
+                            <option value="tremolo">Tremolo</option>
+                        </select>
+                        <select id="violin1ArticulationD">
+                            <option value="legato">Legato</option>
+                            <option value="staccato">Staccato</option>
+                            <option value="pizzicato">Pizzicato</option>
+                            <option value="spiccato" selected>Spiccato</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="instrument-section">
+                    <div class="instrument-header">🎻 Violin II</div>
+                    <div class="instrument-controls">
+                        <select id="violin2StyleD">
+                            <option value="harmonic" selected>Harmonic Support</option>
+                            <option value="counter">Countermelody</option>
+                            <option value="rhythmic">Rhythmic</option>
+                            <option value="tremolo">Tremolo</option>
+                        </select>
+                        <select id="violin2ArticulationD">
+                            <option value="legato">Legato</option>
+                            <option value="staccato">Staccato</option>
+                            <option value="pizzicato">Pizzicato</option>
+                            <option value="spiccato" selected>Spiccato</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="instrument-section">
+                    <div class="instrument-header">🎻 Viola</div>
+                    <div class="instrument-controls">
+                        <select id="violaStyleD">
+                            <option value="harmonic" selected>Harmonic Fill</option>
+                            <option value="rhythmic">Rhythmic Pulse</option>
+                            <option value="melodic">Melodic</option>
+                            <option value="pedal">Pedal Tones</option>
+                        </select>
+                        <select id="violaArticulationD">
+                            <option value="legato">Legato</option>
+                            <option value="staccato">Staccato</option>
+                            <option value="pizzicato">Pizzicato</option>
+                            <option value="tremolo" selected>Tremolo</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="instrument-section">
+                    <div class="instrument-header">🎻 Cello</div>
+                    <div class="instrument-controls">
+                        <select id="celloStyleD">
+                            <option value="bass" selected>Bass Line</option>
+                            <option value="melodic">Melodic</option>
+                            <option value="rhythmic">Rhythmic</option>
+                            <option value="pedal">Pedal Tones</option>
+                        </select>
+                        <select id="celloArticulationD">
+                            <option value="legato">Legato</option>
+                            <option value="staccato">Staccato</option>
+                            <option value="pizzicato">Pizzicato</option>
+                            <option value="marcato" selected>Marcato</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="generate-button" onclick="generateQuintet()">🎵 Generate Quintet</button>
+
+        <div class="output-section" id="outputSection">
+            <h2>Generated MusicXML</h2>
+            <div id="xmlOutput"></div>
+            <div class="button-row">
+                <button class="copy-button" onclick="copyXML()">📋 Copy MusicXML</button>
+                <button class="export-button" onclick="exportXML()">💾 Export MusicXML</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let midiThemes = [];
+        let midiChords = [];
+        
+        function importMIDI() {
+            const fileInput = document.getElementById('midiFile');
+            fileInput.click();
+        }
+        
+        document.getElementById('midiFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    parseMIDI(event.target.result, file.name);
+                };
+                reader.readAsArrayBuffer(file);
+            }
+        });
+        
+        function parseMIDI(data, filename) {
+            // Simple MIDI parsing - extract basic chord progressions
+            const bytes = new Uint8Array(data);
+            const chords = [];
+            
+            // Basic chord detection from MIDI
+            const chordMap = {
+                '0,4,7': 'I',
+                '2,5,9': 'ii',
+                '4,7,11': 'iii',
+                '5,9,0': 'IV',
+                '7,11,2': 'V',
+                '9,0,4': 'vi',
+                '11,2,5': 'vii°'
+            };
+            
+            // Simplified: extract a basic progression
+            const progression = 'I-V-vi-IV'; // Default if can't parse
+            
+            // Update status
+            const status = document.getElementById('midiStatus');
+            status.style.display = 'block';
+            status.innerHTML = `✅ Loaded: ${filename}<br>Suggested progression: ${progression}`;
+            
+            // Ask if user wants to apply to sections
+            if (confirm(`Apply chord progression "${progression}" to all sections?`)) {
+                ['A', 'B', 'C', 'D'].forEach(section => {
+                    document.getElementById(`chords${section}`).value = progression;
+                });
+            }
+        }
+        
+        function generateQuintet() {
+            const title = document.getElementById('title').value;
+            const composer = document.getElementById('composer').value;
+            
+            // Collect all section data
+            const sections = ['A', 'B', 'C', 'D'].map(section => ({
+                letter: section,
+                tempo: document.getElementById(`tempo${section}`).value,
+                time: document.getElementById(`time${section}`).value,
+                key: document.getElementById(`key${section}`).value,
+                scale: document.getElementById(`scale${section}`).value,
+                dynamics: document.getElementById(`dynamics${section}`).value,
+                style: document.getElementById(`style${section}`).value,
+                chords: document.getElementById(`chords${section}`).value,
+                polyrhythm: document.getElementById(`polyrhythm${section}`).value,
+                guitar: {
+                    style: document.getElementById(`guitarStyle${section}`).value,
+                    pattern: document.getElementById(`guitarPattern${section}`).value
+                },
+                violin1: {
+                    style: document.getElementById(`violin1Style${section}`).value,
+                    articulation: document.getElementById(`violin1Articulation${section}`).value
+                },
+                violin2: {
+                    style: document.getElementById(`violin2Style${section}`).value,
+                    articulation: document.getElementById(`violin2Articulation${section}`).value
+                },
+                viola: {
+                    style: document.getElementById(`violaStyle${section}`).value,
+                    articulation: document.getElementById(`violaArticulation${section}`).value
+                },
+                cello: {
+                    style: document.getElementById(`celloStyle${section}`).value,
+                    articulation: document.getElementById(`celloArticulation${section}`).value
+                }
+            }));
+            
+            // Generate MusicXML
+            const xml = generateMusicXML(title, composer, sections);
+            
+            // Display output
+            document.getElementById('xmlOutput').textContent = xml;
+            document.getElementById('outputSection').style.display = 'block';
+            
+            // Scroll to output
+            document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function generateMusicXML(title, composer, sections) {
+            let xml = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">
+<score-partwise version="3.1">
+  <work>
+    <work-title>${title}</work-title>
+  </work>
+  <identification>
+    <creator type="composer">${composer}</creator>
+    <encoding>
+      <software>Quintet Composer V3.10</software>
+      <encoding-date>${new Date().toISOString().split('T')[0]}</encoding-date>
+    </encoding>
+  </identification>
+  <part-list>
+    <score-part id="P1">
+      <part-name>Classical Guitar</part-name>
+    </score-part>
+    <score-part id="P2">
+      <part-name>Violin I</part-name>
+    </score-part>
+    <score-part id="P3">
+      <part-name>Violin II</part-name>
+    </score-part>
+    <score-part id="P4">
+      <part-name>Viola</part-name>
+    </score-part>
+    <score-part id="P5">
+      <part-name>Violoncello</part-name>
+    </score-part>
+  </part-list>`;
+            
+            // Generate parts
+            for (let partNum = 1; partNum <= 5; partNum++) {
+                xml += `\n  <part id="P${partNum}">`;
+                
+                let measureNum = 1;
+                sections.forEach((section, sectionIndex) => {
+                    // Generate 4 measures per section
+                    for (let m = 0; m < 4; m++) {
+                        xml += generateMeasure(partNum, measureNum++, section, sectionIndex, m);
+                    }
+                });
+                
+                xml += '\n  </part>';
+            }
+            
+            xml += '\n</score-partwise>';
+            return xml;
+        }
+        
+        function generateMeasure(partNum, measureNum, section, sectionIndex, measureInSection) {
+            let xml = `\n    <measure number="${measureNum}">`;
+            
+            // Add attributes for first measure of each section
+            if (measureInSection === 0) {
+                xml += '\n      <attributes>';
+                xml += `\n        <divisions>4</divisions>`;
+                xml += `\n        <key>`;
+                xml += `\n          <fifths>${getKeySignature(section.key, section.scale)}</fifths>`;
+                xml += `\n        </key>`;
+                xml += `\n        <time>`;
+                const [beats, beatType] = section.time.split('/');
+                xml += `\n          <beats>${beats}</beats>`;
+                xml += `\n          <beat-type>${beatType}</beat-type>`;
+                xml += `\n        </time>`;
+                
+                // Add clef based on instrument
+                if (partNum === 1) {
+                    xml += `\n        <clef>`;
+                    xml += `\n          <sign>G</sign>`;
+                    xml += `\n          <line>2</line>`;
+                    xml += `\n        </clef>`;
+                } else if (partNum === 2 || partNum === 3) {
+                    xml += `\n        <clef>`;
+                    xml += `\n          <sign>G</sign>`;
+                    xml += `\n          <line>2</line>`;
+                    xml += `\n        </clef>`;
+                } else if (partNum === 4) {
+                    xml += `\n        <clef>`;
+                    xml += `\n          <sign>C</sign>`;
+                    xml += `\n          <line>3</line>`;
+                    xml += `\n        </clef>`;
+                } else if (partNum === 5) {
+                    xml += `\n        <clef>`;
+                    xml += `\n          <sign>F</sign>`;
+                    xml += `\n          <line>4</line>`;
+                    xml += `\n        </clef>`;
+                }
+                
+                xml += '\n      </attributes>';
+                
+                // Add tempo direction
+                xml += `\n      <direction placement="above">`;
+                xml += `\n        <direction-type>`;
+                xml += `\n          <metronome>`;
+                xml += `\n            <beat-unit>quarter</beat-unit>`;
+                xml += `\n            <per-minute>${section.tempo}</per-minute>`;
+                xml += `\n          </metronome>`;
+                xml += `\n        </direction-type>`;
+                xml += `\n        <sound tempo="${section.tempo}"/>`;
+                xml += `\n      </direction>`;
+                
+                // Add rehearsal mark
+                xml += `\n      <direction placement="above">`;
+                xml += `\n        <direction-type>`;
+                xml += `\n          <rehearsal>${section.letter}</rehearsal>`;
+                xml += `\n        </direction-type>`;
+                xml += `\n      </direction>`;
+            }
+            
+            // Generate notes based on instrument
+            if (partNum === 1) {
+                // Guitar - generate chords
+                xml += generateGuitarChords(section, measureInSection);
+            } else if (partNum === 2) {
+                // Violin I
+                xml += generateStringNotes(section, 'violin1', 'G4', measureInSection);
+            } else if (partNum === 3) {
+                // Violin II
+                xml += generateStringNotes(section, 'violin2', 'D4', measureInSection);
+            } else if (partNum === 4) {
+                // Viola
+                xml += generateStringNotes(section, 'viola', 'A3', measureInSection);
+            } else if (partNum === 5) {
+                // Cello
+                xml += generateStringNotes(section, 'cello', 'C2', measureInSection);
+            }
+            
+            xml += '\n    </measure>';
+            return xml;
+        }
+        
+        function generateGuitarChords(section, measureInSection) {
+            let xml = '';
+            const chordProgression = parseChordProgression(section.chords);
+            const chords = chordProgression.length > 0 ? chordProgression : ['I', 'IV', 'V', 'I'];
+            
+            // Get the chord for this measure
+            const chordIndex = measureInSection % chords.length;
+            const chord = chords[chordIndex];
+            
+            // Generate two chords per measure (half notes)
+            for (let beat = 0; beat < 2; beat++) {
+                const chordNotes = getChordNotes(chord, section.key, section.guitar.style === 'power');
+                
+                // Generate each note of the chord
+                chordNotes.forEach((note, index) => {
+                    xml += '\n      <note>';
+                    if (index > 0) {
+                        xml += '\n        <chord/>';
+                    }
+                    xml += `\n        <pitch>`;
+                    xml += `\n          <step>${note.step}</step>`;
+                    if (note.alter) {
+                        xml += `\n          <alter>${note.alter}</alter>`;
+                    }
+                    xml += `\n          <octave>${note.octave}</octave>`;
+                    xml += `\n        </pitch>`;
+                    xml += `\n        <duration>8</duration>`;
+                    xml += `\n        <type>half</type>`;
+                    xml += '\n      </note>';
+                });
+            }
+            
+            return xml;
+        }
+        
+        function generateStringNotes(section, instrument, baseNote, measureInSection) {
+            let xml = '';
+            const scale = getScale(section.key, section.scale);
+            const [beats, beatType] = section.time.split('/');
+            const totalDuration = parseInt(beats) * 4;
+            
+            // Generate notes based on instrument style
+            const style = section[instrument].style;
+            const articulation = section[instrument].articulation;
+            
+            let notesPerMeasure = 4;
+            if (style === 'melodic') notesPerMeasure = parseInt(beats);
+            if (style === 'rhythmic') notesPerMeasure = parseInt(beats) * 2;
+            if (style === 'pedal') notesPerMeasure = 1;
+            
+            const duration = Math.floor(totalDuration / notesPerMeasure);
+            
+            for (let i = 0; i < notesPerMeasure; i++) {
+                const noteIndex = Math.floor(Math.random() * scale.length);
+                const note = scale[noteIndex];
+                
+                xml += '\n      <note>';
+                xml += `\n        <pitch>`;
+                xml += `\n          <step>${note.step}</step>`;
+                if (note.alter) {
+                    xml += `\n          <alter>${note.alter}</alter>`;
+                }
+                xml += `\n          <octave>${getOctaveForInstrument(instrument, note.octave)}</octave>`;
+                xml += `\n        </pitch>`;
+                xml += `\n        <duration>${duration}</duration>`;
+                xml += `\n        <type>${getDurationType(duration)}</type>`;
+                
+                // Add dynamics
+                if (measureInSection === 0 && i === 0) {
+                    xml += `\n        <dynamics>`;
+                    xml += `\n          <${section.dynamics}/>`;
+                    xml += `\n        </dynamics>`;
+                }
+                
+                // Add articulation
+                if (articulation !== 'legato') {
+                    xml += `\n        <notations>`;
+                    if (articulation === 'staccato') {
+                        xml += `\n          <articulations>`;
+                        xml += `\n            <staccato/>`;
+                        xml += `\n          </articulations>`;
+                    } else if (articulation === 'pizzicato') {
+                        xml += `\n          <technical>`;
+                        xml += `\n            <pizzicato/>`;
+                        xml += `\n          </technical>`;
+                    }
+                    xml += `\n        </notations>`;
+                }
+                
+                xml += '\n      </note>';
+            }
+            
+            return xml;
+        }
+        
+        function getKeySignature(key, scale) {
+            const signatures = {
+                'C': 0, 'G': 1, 'D': 2, 'A': 3, 'E': 4, 'B': 5,
+                'F': -1, 'Bb': -2, 'Eb': -3, 'Ab': -4
+            };
+            let sig = signatures[key] || 0;
+            if (scale.includes('minor')) sig -= 3;
+            return sig;
+        }
+        
+        function parseChordProgression(progression) {
+            if (!progression) return [];
+            return progression.split('-').map(chord => chord.trim());
+        }
+        
+        function getChordNotes(chord, key, powerChord = false) {
+            const roots = {
+                'C': { step: 'C', octave: 3 },
+                'D': { step: 'D', octave: 3 },
+                'E': { step: 'E', octave: 3 },
+                'F': { step: 'F', octave: 3 },
+                'G': { step: 'G', octave: 3 },
+                'A': { step: 'A', octave: 3 },
+                'B': { step: 'B', octave: 3 }
+            };
+            
+            const root = roots[key] || roots['C'];
+            
+            if (powerChord) {
+                // Root, fifth, octave
+                return [
+                    root,
+                    { step: getStep(root.step, 7), octave: root.octave },
+                    { step: root.step, octave: root.octave + 1 }
+                ];
+            } else {
+                // Root, third, fifth, octave
+                return [
+                    root,
+                    { step: getStep(root.step, 4), octave: root.octave },
+                    { step: getStep(root.step, 7), octave: root.octave },
+                    { step: root.step, octave: root.octave + 1 }
+                ];
+            }
+        }
+        
+        function getStep(baseStep, interval) {
+            const steps = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+            const index = steps.indexOf(baseStep);
+            return steps[(index + Math.floor(interval / 2)) % 7];
+        }
+        
+        function getScale(key, scaleType) {
+            const notes = [];
+            const root = { step: key[0], alter: key.includes('b') ? -1 : (key.includes('#') ? 1 : 0), octave: 4 };
+            
+            // Simplified - just return a basic scale
+            const steps = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+            const startIndex = steps.indexOf(root.step);
+            
+            for (let i = 0; i < 7; i++) {
+                notes.push({
+                    step: steps[(startIndex + i) % 7],
+                    octave: 4 + Math.floor((startIndex + i) / 7)
+                });
+            }
+            
+            return notes;
+        }
+        
+        function getOctaveForInstrument(instrument, baseOctave) {
+            const octaveMap = {
+                'violin1': baseOctave + 1,
+                'violin2': baseOctave,
+                'viola': baseOctave - 1,
+                'cello': baseOctave - 2
+            };
+            return octaveMap[instrument] || baseOctave;
+        }
+        
+        function getDurationType(duration) {
+            const types = {
+                16: 'whole',
+                8: 'half',
+                4: 'quarter',
+                2: 'eighth',
+                1: 'sixteenth'
+            };
+            return types[duration] || 'quarter';
+        }
+        
+        function copyXML() {
+            const xmlText = document.getElementById('xmlOutput').textContent;
+            navigator.clipboard.writeText(xmlText).then(() => {
+                alert('MusicXML copied to clipboard!');
+            });
+        }
+        
+        function exportXML() {
+            const xmlText = document.getElementById('xmlOutput').textContent;
+            const blob = new Blob([xmlText], { type: 'application/xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'quintet-composition.musicxml';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
