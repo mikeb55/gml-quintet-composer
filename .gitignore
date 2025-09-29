@@ -1,4 +1,6 @@
+﻿.DS_Store
+Thumbs.db
 *.tmp
 *.bak
-.DS_Store
-Thumbs.db
+test-output/
+node_modules/
