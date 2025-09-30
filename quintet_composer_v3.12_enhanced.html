@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GML Quintet Composer V3.12 - Enhanced Sections</title>
+    <style>
+        /* Copy the CSS from your V7 */
+        /* Then add these new styles: */
+        .section-template-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .template-btn {
+            padding: 5px 10px;
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .template-btn:hover {
+            background: #2196f3;
+            color: white;
+        }
+        
+        .section-copy-btn {
+            float: right;
+            padding: 5px 10px;
+            background: #f0f0f0;
+            border: 1px solid #999;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎼 GML Quintet Composer V3.12</h1>
+            <div class="subtitle">Enhanced Section Management System</div>
+        </div>
+
+        <!-- Add Section Template Selector -->
+        <div class="main-controls">
+            <div class="section-template-buttons">
+                <button class="template-btn" onclick="addSectionWithTemplate('exposition')">+ Exposition</button>
+                <button class="template-btn" onclick="addSectionWithTemplate('development')">+ Development</button>
+                <button class="template-btn" onclick="addSectionWithTemplate('recapitulation')">+ Recapitulation</button>
+                <button class="template-btn" onclick="addSectionWithTemplate('coda')">+ Coda</button>
+                <button class="template-btn" onclick="addSectionWithTemplate('custom')">+ Custom Section</button>
+            </div>
+        </div>
+
+        <div class="sections-container" id="sectionsContainer">
+            <!-- Sections will be dynamically added here -->
+        </div>
+    </div>
+
+<script>
+// V3.12 ENHANCED SECTION MANAGEMENT
+
+// Section templates with musical defaults
+const sectionTemplates = {
+    exposition: {
+        name: 'Exposition',
+        tempo: 120,
+        measures: 8,
+        dynamic: 'mf',
+        developmentType: 'original',
+        chords: 'I - IV - V - I',
+        description: 'Main theme introduction'
+    },
+    development: {
+        name: 'Development',
+        tempo: 132,
+        measures: 12,
+        dynamic: 'f',
+        developmentType: 'sequence',
+        chords: 'vi - ii - V/V - V',
+        description: 'Theme exploration and modulation'
+    },
+    recapitulation: {
+        name: 'Recapitulation',
+        tempo: 120,
+        measures: 8,
+        dynamic: 'ff',
+        developmentType: 'original',
+        chords: 'I - IV - I - V - I',
+        description: 'Return of main theme'
+    },
+    coda: {
+        name: 'Coda',
+        tempo: 110,
+        measures: 4,
+        dynamic: 'p',
+        developmentType: 'fragmentation',
+        chords: 'I - V - I - I',
+        description: 'Ending section'
+    },
+    custom: {
+        name: 'Custom Section',
+        tempo: 120,
+        measures: 4,
+        dynamic: 'mf',
+        developmentType: 'original',
+        chords: 'I - V - vi - IV',
+        description: 'User-defined section'
+    }
+};
+
+// Section manager with enhanced features
+class SectionManager {
+    constructor() {
+        this.sections = [];
+        this.sectionCounter = 0;
+    }
+
+    addSection(templateType = 'custom') {
+        const template = sectionTemplates[templateType];
+        const sectionId = String.fromCharCode(65 + this.sectionCounter); // A, B, C...
+        const sectionHtml = this.createSectionHtml(sectionId, template);
+        
+        document.getElementById('sectionsContainer').insertAdjacentHTML('beforeend', sectionHtml);
+        this.sections.push({
+            id: sectionId,
+            template: templateType,
+            data: {...template}
+        });
+        
+        this.sectionCounter++;
+        this.updateSectionCount();
+    }
+
+    createSectionHtml(id, template) {
+        return `
+            <div class="section" data-section="${id}" id="section-${id}">
+                <div class="section-header">
+                    <div class="section-title">Section ${id} - ${template.name}</div>
+                    <button class="section-copy-btn" onclick="duplicateSection('${id}')">📋 Copy</button>
+                </div>
+                <div class="section-description">${template.description}</div>
+                
+                <div class="control-grid">
+                    <div class="control-group">
+                        <label>Tempo (BPM):</label>
+                        <input type="number" class="tempo" value="${template.tempo}" min="40" max="200">
+                    </div>
+                    <div class="control-group">
+                        <label>Measures:</label>
+                        <input type="number" class="measures" value="${template.measures}" min="1" max="32">
+                    </div>
+                    <div class="control-group">
+                        <label>Dynamic:</label>
+                        <select class="dynamic">
+                            <option value="pp" ${template.dynamic === 'pp' ? 'selected' : ''}>pp</option>
+                            <option value="p" ${template.dynamic === 'p' ? 'selected' : ''}>p</option>
+                            <option value="mp" ${template.dynamic === 'mp' ? 'selected' : ''}>mp</option>
+                            <option value="mf" ${template.dynamic === 'mf' ? 'selected' : ''}>mf</option>
+                            <option value="f" ${template.dynamic === 'f' ? 'selected' : ''}>f</option>
+                            <option value="ff" ${template.dynamic === 'ff' ? 'selected' : ''}>ff</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Development:</label>
+                        <select class="development-type">
+                            <option value="original" ${template.developmentType === 'original' ? 'selected' : ''}>Original</option>
+                            <option value="sequence" ${template.developmentType === 'sequence' ? 'selected' : ''}>Sequence</option>
+                            <option value="inversion" ${template.developmentType === 'inversion' ? 'selected' : ''}>Inversion</option>
+                            <option value="retrograde" ${template.developmentType === 'retrograde' ? 'selected' : ''}>Retrograde</option>
+                            <option value="augmentation" ${template.developmentType === 'augmentation' ? 'selected' : ''}>Augmentation</option>
+                            <option value="diminution" ${template.developmentType === 'diminution' ? 'selected' : ''}>Diminution</option>
+                            <option value="fragmentation" ${template.developmentType === 'fragmentation' ? 'selected' : ''}>Fragmentation</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label>Chord Progression:</label>
+                    <input type="text" class="chords" value="${template.chords}" style="width: 100%;">
+                </div>
+                
+                <div class="control-group">
+                    <label>Motif/Theme (Note Names):</label>
+                    <textarea class="motif" placeholder="e.g., C4 E4 G4 E4">C4 E4 G4 E4 F4 D4 B3 C4</textarea>
+                </div>
+            </div>
+        `;
+    }
+
+    duplicateSection(sectionId) {
+        const sourceSection = this.sections.find(s => s.id === sectionId);
+        if (sourceSection) {
+            this.addSection(sourceSection.template);
+            // Copy the current values from the form
+            this.copyFormValues(sectionId, String.fromCharCode(65 + this.sectionCounter - 1));
+        }
+    }
+
+    copyFormValues(sourceId, targetId) {
+        const source = document.getElementById(`section-${sourceId}`);
+        const target = document.getElementById(`section-${targetId}`);
+        
+        if (source && target) {
+            // Copy all input values
+            ['tempo', 'measures', 'dynamic', 'development-type', 'chords', 'motif'].forEach(className => {
+                const sourceEl = source.querySelector('.' + className);
+                const targetEl = target.querySelector('.' + className);
+                if (sourceEl && targetEl) {
+                    targetEl.value = sourceEl.value;
+                }
+            });
+        }
+    }
+
+    updateSectionCount() {
+        const countEl = document.getElementById('sectionCount');
+        if (countEl) countEl.textContent = this.sections.length;
+    }
+}
+
+// Initialize manager
+const sectionManager = new SectionManager();
+
+// Global functions for button clicks
+function addSectionWithTemplate(templateType) {
+    sectionManager.addSection(templateType);
+}
+
+function duplicateSection(sectionId) {
+    sectionManager.duplicateSection(sectionId);
+}
+
+// Initialize with an exposition section
+document.addEventListener('DOMContentLoaded', () => {
+    sectionManager.addSection('exposition');
+});
+
+// Add the rest of your V7 functions here (generateScore, etc.)
+// But with fixes for voice leading and rest distribution
+
+</script>
+</body>
+</html>

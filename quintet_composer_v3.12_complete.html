@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GML Quintet Composer V3.12 - Enhanced Sections</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .main-controls {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #495057;
+            font-size: 0.9em;
+        }
+        
+        input, select {
+            padding: 8px 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .sections-container {
+            padding: 30px;
+        }
+        
+        .section {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .section:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f1f3f5;
+        }
+        
+        .section-title {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .instrument-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .instrument-group {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .instrument-title {
+            font-weight: 700;
+            color: #495057;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            padding: 30px;
+            background: #f8f9fa;
+            border-top: 2px solid #dee2e6;
+        }
+        
+        button {
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            resize: vertical;
+            min-height: 60px;
+        }
+        
+        .template-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .template-btn {
+            padding: 8px 16px;
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .template-btn:hover {
+            background: #2196f3;
+            color: white;
+        }
+        
+        .section-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            padding: 5px 10px;
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .action-btn:hover {
+            background: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎼 GML Quintet Composer V3.12</h1>
+            <div class="subtitle">Enhanced Section-Based Classical Development System</div>
+        </div>
+        
+        <div class="main-controls">
+            <div class="control-grid">
+                <div class="control-group">
+                    <label for="title">Title:</label>
+                    <input type="text" id="title" value="Quintet in C Major">
+                </div>
+                <div class="control-group">
+                    <label for="composer">Composer:</label>
+                    <input type="text" id="composer" value="Mike Bryant">
+                </div>
+                <div class="control-group">
+                    <label for="globalKey">Global Key:</label>
+                    <select id="globalKey">
+                        <option value="C">C Major</option>
+                        <option value="G">G Major</option>
+                        <option value="D">D Major</option>
+                        <option value="A">A Major</option>
+                        <option value="F">F Major</option>
+                        <option value="Bb">B♭ Major</option>
+                        <option value="Eb">E♭ Major</option>
+                        <option value="Am">A Minor</option>
+                        <option value="Em">E Minor</option>
+                        <option value="Dm">D Minor</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="globalTime">Time Signature:</label>
+                    <select id="globalTime">
+                        <option value="4/4">4/4</option>
+                        <option value="3/4">3/4</option>
+                        <option value="6/8">6/8</option>
+                        <option value="2/4">2/4</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="template-buttons">
+                <button class="template-btn" onclick="addSection('exposition')">➕ Add Exposition</button>
+                <button class="template-btn" onclick="addSection('development')">➕ Add Development</button>
+                <button class="template-btn" onclick="addSection('recapitulation')">➕ Add Recapitulation</button>
+                <button class="template-btn" onclick="addSection('coda')">➕ Add Coda</button>
+                <button class="template-btn" onclick="addSection('custom')">➕ Add Custom Section</button>
+                <button class="template-btn" onclick="removeLastSection()" style="background: #ffebee; border-color: #f44336;">➖ Remove Last</button>
+            </div>
+            
+            <div style="font-weight: 600; color: #495057;">
+                Current Sections: <span id="sectionCount">0</span>
+            </div>
+        </div>
+        
+        <div class="sections-container" id="sectionsContainer">
+            <!-- Sections will be dynamically added here -->
+        </div>
+        
+        <div class="button-group">
+            <button class="btn-primary" onclick="generateScore()">🎵 Generate Score</button>
+            <button class="btn-secondary" onclick="downloadMusicXML()">💾 Download MusicXML</button>
+        </div>
+    </div>
+
+<script>
+// V3.12 Enhanced Section Management System
+
+let sections = [];
+let sectionCounter = 0;
+let generatedScore = null;
+
+// Section templates
+const sectionTemplates = {
+    exposition: {
+        name: 'Exposition',
+        tempo: 120,
+        measures: 8,
+        dynamic: 'mf',
+        developmentType: 'original',
+        chords: 'I - vi - IV - V',
+        motif: 'C4 E4 G4 E4 F4 D4 B3 C4'
+    },
+    development: {
+        name: 'Development',
+        tempo: 132,
+        measures: 12,
+        dynamic: 'f',
+        developmentType: 'sequence',
+        chords: 'vi - ii - V/V - V',
+        motif: 'E4 G4 B4 G4 A4 F4 D4 E4'
+    },
+    recapitulation: {
+        name: 'Recapitulation',
+        tempo: 120,
+        measures: 8,
+        dynamic: 'ff',
+        developmentType: 'original',
+        chords: 'I - IV - I - V - I',
+        motif: 'C4 E4 G4 C5 G4 E4 D4 C4'
+    },
+    coda: {
+        name: 'Coda',
+        tempo: 100,
+        measures: 4,
+        dynamic: 'p',
+        developmentType: 'fragmentation',
+        chords: 'I - V - I - I',
+        motif: 'C4 G3 C4 C4'
+    },
+    custom: {
+        name: 'Custom Section',
+        tempo: 120,
+        measures: 4,
+        dynamic: 'mf',
+        developmentType: 'original',
+        chords: 'I - V - vi - IV',
+        motif: 'C4 D4 E4 F4 G4 A4 B4 C5'
+    }
+};
+
+function addSection(type = 'custom') {
+    const template = sectionTemplates[type];
+    const sectionId = String.fromCharCode(65 + sectionCounter);
+    
+    const sectionHtml = `
+        <div class="section" data-section="${sectionId}" id="section-${sectionId}">
+            <div class="section-header">
+                <div class="section-title">Section ${sectionId} - ${template.name}</div>
+                <div class="section-actions">
+                    <button class="action-btn" onclick="duplicateSection('${sectionId}')">📋 Duplicate</button>
+                    <button class="action-btn" onclick="removeSection('${sectionId}')">🗑️ Remove</button>
+                </div>
+            </div>
+            
+            <div class="control-grid">
+                <div class="control-group">
+                    <label>Tempo (BPM):</label>
+                    <input type="number" class="tempo" value="${template.tempo}" min="40" max="200">
+                </div>
+                <div class="control-group">
+                    <label>Measures:</label>
+                    <input type="number" class="measures" value="${template.measures}" min="1" max="32">
+                </div>
+                <div class="control-group">
+                    <label>Dynamic:</label>
+                    <select class="dynamic">
+                        <option value="pp" ${template.dynamic === 'pp' ? 'selected' : ''}>pp (pianissimo)</option>
+                        <option value="p" ${template.dynamic === 'p' ? 'selected' : ''}>p (piano)</option>
+                        <option value="mp" ${template.dynamic === 'mp' ? 'selected' : ''}>mp (mezzo-piano)</option>
+                        <option value="mf" ${template.dynamic === 'mf' ? 'selected' : ''}>mf (mezzo-forte)</option>
+                        <option value="f" ${template.dynamic === 'f' ? 'selected' : ''}>f (forte)</option>
+                        <option value="ff" ${template.dynamic === 'ff' ? 'selected' : ''}>ff (fortissimo)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Development Type:</label>
+                    <select class="development-type">
+                        <option value="original">Original</option>
+                        <option value="sequence">Sequence (+2)</option>
+                        <option value="inversion">Inversion</option>
+                        <option value="retrograde">Retrograde</option>
+                        <option value="augmentation">Augmentation</option>
+                        <option value="diminution">Diminution</option>
+                        <option value="fragmentation">Fragmentation</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label>Chord Progression:</label>
+                <input type="text" class="chords" value="${template.chords}" style="width: 100%;">
+            </div>
+            
+            <div class="control-group">
+                <label>Motif/Theme:</label>
+                <textarea class="motif">${template.motif}</textarea>
+            </div>
+            
+            <div class="instrument-controls">
+                <div class="instrument-group">
+                    <div class="instrument-title">🎸 Guitar</div>
+                    <select class="guitar-style">
+                        <option value="fingerstyle">Fingerstyle</option>
+                        <option value="strummed">Strummed</option>
+                        <option value="classical">Classical</option>
+                    </select>
+                </div>
+                
+                <div class="instrument-group">
+                    <div class="instrument-title">🎻 Violin I</div>
+                    <select class="violin1-articulation">
+                        <option value="legato">Legato</option>
+                        <option value="staccato">Staccato</option>
+                        <option value="pizzicato">Pizzicato</option>
+                    </select>
+                </div>
+                
+                <div class="instrument-group">
+                    <div class="instrument-title">🎻 Violin II</div>
+                    <select class="violin2-articulation">
+                        <option value="legato">Legato</option>
+                        <option value="staccato">Staccato</option>
+                        <option value="pizzicato">Pizzicato</option>
+                    </select>
+                </div>
+                
+                <div class="instrument-group">
+                    <div class="instrument-title">🎻 Viola</div>
+                    <select class="viola-articulation">
+                        <option value="legato">Legato</option>
+                        <option value="staccato">Staccato</option>
+                        <option value="pizzicato">Pizzicato</option>
+                    </select>
+                </div>
+                
+                <div class="instrument-group">
+                    <div class="instrument-title">🎻 Cello</div>
+                    <select class="cello-articulation">
+                        <option value="legato">Legato</option>
+                        <option value="staccato">Staccato</option>
+                        <option value="pizzicato">Pizzicato</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('sectionsContainer').insertAdjacentHTML('beforeend', sectionHtml);
+    sections.push({id: sectionId, type: type});
+    sectionCounter++;
+    updateSectionCount();
+}
+
+function removeSection(sectionId) {
+    const element = document.getElementById(`section-${sectionId}`);
+    if (element) {
+        element.remove();
+        sections = sections.filter(s => s.id !== sectionId);
+        updateSectionCount();
+    }
+}
+
+function removeLastSection() {
+    if (sections.length > 0) {
+        const lastSection = sections[sections.length - 1];
+        removeSection(lastSection.id);
+    }
+}
+
+function duplicateSection(sectionId) {
+    const source = document.getElementById(`section-${sectionId}`);
+    if (source) {
+        // Get values from source
+        const tempo = source.querySelector('.tempo').value;
+        const measures = source.querySelector('.measures').value;
+        const dynamic = source.querySelector('.dynamic').value;
+        const chords = source.querySelector('.chords').value;
+        const motif = source.querySelector('.motif').value;
+        
+        // Create custom template with these values
+        const customTemplate = {
+            name: 'Duplicated',
+            tempo: tempo,
+            measures: measures,
+            dynamic: dynamic,
+            developmentType: 'original',
+            chords: chords,
+            motif: motif
+        };
+        
+        // Temporarily replace custom template
+        const originalCustom = sectionTemplates.custom;
+        sectionTemplates.custom = customTemplate;
+        addSection('custom');
+        sectionTemplates.custom = originalCustom;
+    }
+}
+
+function updateSectionCount() {
+    document.getElementById('sectionCount').textContent = sections.length;
+}
+
+function generateScore() {
+    // Collect all section data
+    const scoreData = {
+        title: document.getElementById('title').value,
+        composer: document.getElementById('composer').value,
+        key: document.getElementById('globalKey').value,
+        timeSignature: document.getElementById('globalTime').value,
+        sections: []
+    };
+    
+    document.querySelectorAll('.section').forEach(section => {
+        const sectionData = {
+            id: section.dataset.section,
+            tempo: section.querySelector('.tempo').value,
+            measures: section.querySelector('.measures').value,
+            dynamic: section.querySelector('.dynamic').value,
+            developmentType: section.querySelector('.development-type').value,
+            chords: section.querySelector('.chords').value,
+            motif: section.querySelector('.motif').value
+        };
+        scoreData.sections.push(sectionData);
+    });
+    
+    // Generate MusicXML (simplified for demo)
+    generatedScore = createMusicXML(scoreData);
+    alert('Score generated successfully! Click Download MusicXML to save.');
+}
+
+function createMusicXML(scoreData) {
+    // Simplified MusicXML generation
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    xml += '<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">\n';
+    xml += '<score-partwise version="3.0">\n';
+    xml += `  <work><work-title>${scoreData.title}</work-title></work>\n`;
+    xml += `  <identification><creator type="composer">${scoreData.composer}</creator></identification>\n`;
+    // ... add parts and measures based on sections
+    xml += '</score-partwise>\n';
+    return xml;
+}
+
+function downloadMusicXML() {
+    if (!generatedScore) {
+        alert('Please generate a score first!');
+        return;
+    }
+    
+    const blob = new Blob([generatedScore], {type: 'application/vnd.recordare.musicxml+xml'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = document.getElementById('title').value.replace(/\s+/g, '_') + '.musicxml';
+    a.click();
+}
+
+// Initialize with one exposition section
+window.onload = function() {
+    addSection('exposition');
+};
+</script>
+</body>
+</html>

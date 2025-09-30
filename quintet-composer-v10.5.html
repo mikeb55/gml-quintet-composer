@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quintet Composer v10.5 - Complete Section Controls</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #5a67d8;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .version {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+        
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .control-group {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .control-group h3 {
+            color: #4a5568;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+        }
+        
+        label {
+            display: block;
+            margin: 8px 0;
+            color: #4a5568;
+            font-weight: 500;
+        }
+        
+        input[type="number"], 
+        input[type="text"], 
+        select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        input[type="number"]:focus,
+        input[type="text"]:focus,
+        select:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .section-container {
+            margin-bottom: 30px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .section-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .section-header h2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-letter {
+            background: rgba(255,255,255,0.2);
+            padding: 4px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .section-composer-badge {
+            background: rgba(255,255,255,0.3);
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .section-controls {
+            background: #f9fafb;
+            padding: 20px;
+            display: none;
+        }
+        
+        .section-controls.active {
+            display: block;
+        }
+        
+        .section-top-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+        }
+        
+        .composer-selector {
+            grid-column: span 2;
+        }
+        
+        .composer-mini-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .composer-mini-card {
+            padding: 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            background: white;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        
+        .composer-mini-card:hover {
+            background: #f7f3ff;
+            border-color: #764ba2;
+        }
+        
+        .composer-mini-card.selected {
+            background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+            border-color: #667eea;
+            font-weight: 600;
+        }
+        
+        .instrument-settings {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+        }
+        
+        .instrument-box {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .instrument-box h4 {
+            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .instrument-box select {
+            margin-bottom: 6px;
+            font-size: 12px;
+            padding: 5px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        button.secondary {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        }
+        
+        button.danger {
+            background: linear-gradient(135deg, #fc8181 0%, #f56565 100%);
+        }
+        
+        button.add-section {
+            background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
+        }
+        
+        .remove-section {
+            background: #fc8181;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .remove-section:hover {
+            background: #f56565;
+        }
+        
+        .status {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        
+        .status.success {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+        
+        .status.error {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 1px solid #fc8181;
+        }
+        
+        .toggle-indicator {
+            font-size: 20px;
+            transition: transform 0.3s;
+        }
+        
+        .section-header.expanded .toggle-indicator {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎼 Quintet Composer v10.5 🎵</h1>
+        <div class="version">Full Section Controls with Per-Section Composer Styles</div>
+        
+        <!-- Global Controls -->
+        <div class="controls-grid">
+            <div class="control-group">
+                <h3>🎵 Composition</h3>
+                <label>
+                    Title:
+                    <input type="text" id="title" value="Multi-Style Quintet" />
+                </label>
+                <label>
+                    Tempo (BPM):
+                    <input type="number" id="tempo" min="40" max="200" value="120" />
+                </label>
+            </div>
+            
+            <div class="control-group">
+                <h3>📐 Default Settings</h3>
+                <label>
+                    Measures per Section:
+                    <input type="number" id="measuresPerSection" min="4" max="16" value="8" />
+                </label>
+                <label>
+                    Default Key:
+                    <select id="globalKey">
+                        <option value="C">C Major</option>
+                        <option value="G">G Major</option>
+                        <option value="D">D Major</option>
+                        <option value="F">F Major</option>
+                        <option value="Am">A minor</option>
+                        <option value="Em">E minor</option>
+                    </select>
+                </label>
+            </div>
+        </div>
+        
+        <!-- Sections Container -->
+        <div id="sectionsContainer"></div>
+        
+        <!-- Add Section Button -->
+        <div style="text-align: center; margin: 20px 0;">
+            <button onclick="addSection()" class="add-section">➕ Add New Section</button>
+        </div>
+        
+        <!-- Generate/Export Buttons -->
+        <div class="button-group">
+            <button onclick="generateScore()">🎼 Generate Score</button>
+            <button onclick="exportMusicXML()" class="secondary" id="exportBtn" disabled>💾 Export MusicXML</button>
+            <button onclick="resetAll()" class="danger">🔄 Reset All</button>
+        </div>
+        
+        <div id="status"></div>
+    </div>
+    
+    <script>
+        // Global variables
+        let currentScore = null;
+        let sections = [];
+        let sectionCounter = 0;
+        
+        // Composer profiles
+        const COMPOSERS = {
+            bach: { name: 'Bach', style: 'Fugal' },
+            mozart: { name: 'Mozart', style: 'Classical' },
+            beethoven: { name: 'Beethoven', style: 'Dramatic' },
+            brahms: { name: 'Brahms', style: 'Romantic' },
+            ravel: { name: 'Ravel', style: 'Impressionist' },
+            glass: { name: 'Glass', style: 'Minimalist' }
+        };
+        
+        // Initialize with one section
+        function initialize() {
+            addSection();
+        }
+        
+        // Add a new section
+        function addSection() {
+            const sectionNames = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+            const sectionName = sectionNames[sections.length % sectionNames.length];
+            
+            const section = {
+                id: `section-${sectionCounter}`,
+                name: sectionName,
+                composer: sections.length === 0 ? 'bach' : 'mozart', // Default different composers
+                key: document.getElementById('globalKey').value,
+                timeSignature: '4/4',
+                instruments: {
+                    guitar: { pattern: 'chords', polyrhythm: 'none', dynamics: 'mf' },
+                    violin1: { pattern: 'melody', polyrhythm: 'none', dynamics: 'mf' },
+                    violin2: { pattern: 'harmony', polyrhythm: 'none', dynamics: 'mp' },
+                    viola: { pattern: 'arpeggios', polyrhythm: 'none', dynamics: 'mp' },
+                    cello: { pattern: 'bassline', polyrhythm: 'none', dynamics: 'mf' }
+                }
+            };
+            
+            sections.push(section);
+            sectionCounter++;
+            renderSections();
+        }
+        
+        // Remove a section
+        function removeSection(id) {
+            if (sections.length > 1) {
+                sections = sections.filter(s => s.id !== id);
+                renderSections();
+            } else {
+                showStatus('Must have at least one section', 'error');
+            }
+        }
+        
+        // Toggle section visibility
+        function toggleSection(id) {
+            const header = document.querySelector(`#${id} .section-header`);
+            const controls = document.querySelector(`#${id} .section-controls`);
+            header.classList.toggle('expanded');
+            controls.classList.toggle('active');
+        }
+        
+        // Update composer for section
+        function updateComposer(sectionId, composer) {
+            const section = sections.find(s => s.id === sectionId);
+            if (section) {
+                section.composer = composer;
+                // Update UI
+                document.querySelectorAll(`#${sectionId} .composer-mini-card`).forEach(card => {
+                    card.classList.remove('selected');
+                });
+                document.querySelector(`#${sectionId} [data-composer="${composer}"]`).classList.add('selected');
+                document.querySelector(`#${sectionId} .section-composer-badge`).textContent = COMPOSERS[composer].name;
+            }
+        }
+        
+        // Update section settings
+        function updateSection(sectionId, property, value) {
+            const section = sections.find(s => s.id === sectionId);
+            if (section) {
+                section[property] = value;
+            }
+        }
+        
+        // Update instrument settings
+        function updateInstrument(sectionId, instrument, property, value) {
+            const section = sections.find(s => s.id === sectionId);
+            if (section) {
+                section.instruments[instrument][property] = value;
+            }
+        }
+        
+        // Render all sections
+        function renderSections() {
+            const container = document.getElementById('sectionsContainer');
+            container.innerHTML = sections.map(section => `
+                <div class="section-container" id="${section.id}">
+                    <div class="section-header ${sections.length === 1 ? 'expanded' : ''}" onclick="toggleSection('${section.id}')">
+                        <h2>
+                            <span class="section-letter">${section.name}</span>
+                            Section ${section.name}
+                            <span class="section-composer-badge">${COMPOSERS[section.composer].name}</span>
+                        </h2>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            ${sections.length > 1 ? 
+                                `<button class="remove-section" onclick="event.stopPropagation(); removeSection('${section.id}')">Remove</button>` 
+                                : ''}
+                            <span class="toggle-indicator">▼</span>
+                        </div>
+                    </div>
+                    <div class="section-controls ${sections.length === 1 ? 'active' : ''}">
+                        <div class="section-top-controls">
+                            <div class="composer-selector">
+                                <label style="font-weight: 600; color: #764ba2;">Composer Style for this Section:</label>
+                                <div class="composer-mini-grid">
+                                    ${Object.entries(COMPOSERS).map(([key, comp]) => `
+                                        <div class="composer-mini-card ${section.composer === key ? 'selected' : ''}" 
+                                             data-composer="${key}"
+                                             onclick="updateComposer('${section.id}', '${key}')">
+                                            ${comp.name}
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            <div>
+                                <label>
+                                    Key Signature:
+                                    <select onchange="updateSection('${section.id}', 'key', this.value)">
+                                        <option value="C" ${section.key === 'C' ? 'selected' : ''}>C Major</option>
+                                        <option value="G" ${section.key === 'G' ? 'selected' : ''}>G Major</option>
+                                        <option value="D" ${section.key === 'D' ? 'selected' : ''}>D Major</option>
+                                        <option value="F" ${section.key === 'F' ? 'selected' : ''}>F Major</option>
+                                        <option value="Am" ${section.key === 'Am' ? 'selected' : ''}>A minor</option>
+                                        <option value="Em" ${section.key === 'Em' ? 'selected' : ''}>E minor</option>
+                                    </select>
+                                </label>
+                            </div>
+                            <div>
+                                <label>
+                                    Time Signature:
+                                    <select onchange="updateSection('${section.id}', 'timeSignature', this.value)">
+                                        <option value="4/4" ${section.timeSignature === '4/4' ? 'selected' : ''}>4/4</option>
+                                        <option value="3/4" ${section.timeSignature === '3/4' ? 'selected' : ''}>3/4</option>
+                                        <option value="5/4" ${section.timeSignature === '5/4' ? 'selected' : ''}>5/4</option>
+                                        <option value="6/8" ${section.timeSignature === '6/8' ? 'selected' : ''}>6/8</option>
+                                        <option value="7/8" ${section.timeSignature === '7/8' ? 'selected' : ''}>7/8</option>
+                                    </select>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <h4 style="margin: 15px 0 10px 0; color: #4a5568;">Instrument Settings:</h4>
+                        <div class="instrument-settings">
+                            ${renderInstrumentSettings(section, 'guitar', '🎸 Guitar')}
+                            ${renderInstrumentSettings(section, 'violin1', '🎻 Violin I')}
+                            ${renderInstrumentSettings(section, 'violin2', '🎻 Violin II')}
+                            ${renderInstrumentSettings(section, 'viola', '🎻 Viola')}
+                            ${renderInstrumentSettings(section, 'cello', '🎻 Cello')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Render instrument settings
+        function renderInstrumentSettings(section, instrument, displayName) {
+            const settings = section.instruments[instrument];
+            return `
+                <div class="instrument-box">
+                    <h4>${displayName}</h4>
+                    <select onchange="updateInstrument('${section.id}', '${instrument}', 'pattern', this.value)">
+                        <option value="melody" ${settings.pattern === 'melody' ? 'selected' : ''}>Melody</option>
+                        <option value="harmony" ${settings.pattern === 'harmony' ? 'selected' : ''}>Harmony</option>
+                        <option value="chords" ${settings.pattern === 'chords' ? 'selected' : ''}>Chords</option>
+                        <option value="arpeggios" ${settings.pattern === 'arpeggios' ? 'selected' : ''}>Arpeggios</option>
+                        <option value="tremolo" ${settings.pattern === 'tremolo' ? 'selected' : ''}>Tremolo</option>
+                        <option value="pizzicato" ${settings.pattern === 'pizzicato' ? 'selected' : ''}>Pizzicato</option>
+                        <option value="staccato" ${settings.pattern === 'staccato' ? 'selected' : ''}>Staccato</option>
+                        <option value="legato" ${settings.pattern === 'legato' ? 'selected' : ''}>Legato</option>
+                        <option value="bassline" ${settings.pattern === 'bassline' ? 'selected' : ''}>Bass Line</option>
+                        <option value="pedal" ${settings.pattern === 'pedal' ? 'selected' : ''}>Pedal Tone</option>
+                    </select>
+                    
+                    <select onchange="updateInstrument('${section.id}', '${instrument}', 'polyrhythm', this.value)">
+                        <option value="none" ${settings.polyrhythm === 'none' ? 'selected' : ''}>No Polyrhythm</option>
+                        <option value="3:2" ${settings.polyrhythm === '3:2' ? 'selected' : ''}>3:2 (Triplets)</option>
+                        <option value="4:3" ${settings.polyrhythm === '4:3' ? 'selected' : ''}>4:3</option>
+                        <option value="5:4" ${settings.polyrhythm === '5:4' ? 'selected' : ''}>5:4 (Quintuplets)</option>
+                        <option value="7:6" ${settings.polyrhythm === '7:6' ? 'selected' : ''}>7:6</option>
+                    </select>
+                    
+                    <select onchange="updateInstrument('${section.id}', '${instrument}', 'dynamics', this.value)">
+                        <option value="pp" ${settings.dynamics === 'pp' ? 'selected' : ''}>pp</option>
+                        <option value="p" ${settings.dynamics === 'p' ? 'selected' : ''}>p</option>
+                        <option value="mp" ${settings.dynamics === 'mp' ? 'selected' : ''}>mp</option>
+                        <option value="mf" ${settings.dynamics === 'mf' ? 'selected' : ''}>mf</option>
+                        <option value="f" ${settings.dynamics === 'f' ? 'selected' : ''}>f</option>
+                        <option value="ff" ${settings.dynamics === 'ff' ? 'selected' : ''}>ff</option>
+                    </select>
+                </div>
+            `;
+        }
+        
+        // Generate score (simplified for demonstration)
+        function generateScore() {
+            try {
+                const title = document.getElementById('title').value;
+                const tempo = parseInt(document.getElementById('tempo').value);
+                const measuresPerSection = parseInt(document.getElementById('measuresPerSection').value);
+                
+                // Build MusicXML
+                let musicXML = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">
+<score-partwise version="3.1">
+  <work>
+    <work-title>${title}</work-title>
+  </work>
+  <part-list>
+    <score-part id="P1"><part-name>Guitar</part-name></score-part>
+    <score-part id="P2"><part-name>Violin I</part-name></score-part>
+    <score-part id="P3"><part-name>Violin II</part-name></score-part>
+    <score-part id="P4"><part-name>Viola</part-name></score-part>
+    <score-part id="P5"><part-name>Cello</part-name></score-part>
+  </part-list>`;
+                
+                // Generate parts
+                ['guitar', 'violin1', 'violin2', 'viola', 'cello'].forEach((inst, idx) => {
+                    musicXML += `\n  <part id="P${idx + 1}">`;
+                    let measureNum = 1;
+                    
+                    sections.forEach(section => {
+                        for (let m = 0; m < measuresPerSection; m++) {
+                            musicXML += `\n    <measure number="${measureNum}">`;
+                            
+                            if (measureNum === 1) {
+                                // Add initial attributes
+                                musicXML += `\n      <attributes>
+        <divisions>4</divisions>
+        <key><fifths>0</fifths></key>
+        <time><beats>4</beats><beat-type>4</beat-type></time>
+        <clef><sign>G</sign><line>2</line></clef>
+      </attributes>`;
+                            }
+                            
+                            if (m === 0) {
+                                // Add section rehearsal mark
+                                musicXML += `\n      <direction placement="above">
+        <direction-type><rehearsal>${section.name} (${COMPOSERS[section.composer].name})</rehearsal></direction-type>
+      </direction>`;
+                            }
+                            
+                            // Generate notes based on composer and settings
+                            musicXML += generateNotesForMeasure(inst, section, m);
+                            
+                            musicXML += '\n    </measure>';
+                            measureNum++;
+                        }
+                    });
+                    
+                    musicXML += '\n  </part>';
+                });
+                
+                musicXML += '\n</score-partwise>';
+                
+                currentScore = musicXML;
+                document.getElementById('exportBtn').disabled = false;
+                
+                // Show success with section summary
+                const summary = sections.map(s => `${s.name}:${COMPOSERS[s.composer].name}`).join(', ');
+                showStatus(`Score generated! Sections: ${summary}`, 'success');
+                
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Generate notes for a measure (simplified)
+        function generateNotesForMeasure(instrument, section, measureIndex) {
+            let xml = '';
+            const pattern = section.instruments[instrument].pattern;
+            const composer = section.composer;
+            
+            // Different patterns based on composer
+            if (composer === 'bach' && pattern === 'melody') {
+                // Continuous 16th notes
+                for (let i = 0; i < 8; i++) {
+                    xml += '\n      <note><pitch><step>G</step><octave>4</octave></pitch><duration>2</duration><type>16th</type></note>';
+                }
+            } else if (composer === 'mozart' && pattern === 'chords') {
+                // Alberti bass
+                const alberti = ['C', 'G', 'E', 'G'];
+                for (let note of alberti) {
+                    xml += `\n      <note><pitch><step>${note}</step><octave>3</octave></pitch><duration>4</duration><type>quarter</type></note>`;
+                }
+            } else if (composer === 'beethoven' && measureIndex === 0) {
+                // Fate motif
+                xml += '\n      <note><pitch><step>G</step><octave>4</octave></pitch><duration>3</duration><type>eighth</type></note>';
+                xml += '\n      <note><pitch><step>G</step><octave>4</octave></pitch><duration>3</duration><type>eighth</type></note>';
+                xml += '\n      <note><pitch><step>G</step><octave>4</octave></pitch><duration>3</duration><type>eighth</type></note>';
+                xml += '\n      <note><pitch><step>E</step><alter>-1</alter><octave>4</octave></pitch><duration>7</duration><type>quarter</type></note>';
+            } else {
+                // Default whole note
+                xml += '\n      <note><pitch><step>C</step><octave>4</octave></pitch><duration>16</duration><type>whole</type></note>';
+            }
+            
+            return xml;
+        }
+        
+        // Export MusicXML
+        function exportMusicXML() {
+            if (!currentScore) {
+                showStatus('No score to export!', 'error');
+                return;
+            }
+            
+            const blob = new Blob([currentScore], { type: 'application/vnd.recordare.musicxml+xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `quintet-v10.5-${new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-')}.musicxml`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showStatus('MusicXML exported successfully!', 'success');
+        }
+        
+        // Reset all
+        function resetAll() {
+            sections = [];
+            sectionCounter = 0;
+            currentScore = null;
+            document.getElementById('exportBtn').disabled = true;
+            initialize();
+            showStatus('All settings reset', 'info');
+        }
+        
+        // Show status message
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            setTimeout(() => {
+                status.textContent = '';
+                status.className = 'status';
+            }, 5000);
+        }
+        
+        // Initialize on load
+        initialize();
+    </script>
+</body>
+</html>

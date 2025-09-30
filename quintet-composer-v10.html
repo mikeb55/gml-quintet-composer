@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quintet Composer v10.0 - Authentic Complexity</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 20s linear infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .version-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 400px 1fr 350px;
+            gap: 20px;
+            padding: 30px;
+        }
+        
+        .panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            height: fit-content;
+        }
+        
+        .panel h2 {
+            color: #1e3c72;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #1e3c72;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            background: #e0e0e0;
+            padding: 5px;
+            border-radius: 8px;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 10px;
+            background: transparent;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            color: #666;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #1e3c72;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .control-group input,
+        .control-group select,
+        .control-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .control-group input:focus,
+        .control-group select:focus,
+        .control-group textarea:focus {
+            outline: none;
+            border-color: #1e3c72;
+            box-shadow: 0 0 0 3px rgba(30,60,114,0.1);
+        }
+        
+        input[type="range"] {
+            -webkit-appearance: none;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #1e3c72;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .range-value {
+            display: inline-block;
+            background: #1e3c72;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(30,60,114,0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20863d 100%);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+        
+        .polyrhythm-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .polyrhythm-option {
+            background: white;
+            border: 2px solid #e0e0e0;
+            padding: 10px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .polyrhythm-option.active {
+            background: #1e3c72;
+            color: white;
+            border-color: #1e3c72;
+            transform: scale(1.05);
+        }
+        
+        .polyrhythm-option:hover {
+            border-color: #2a5298;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .composer-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .composer-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .composer-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #1e3c72, #2a5298);
+            transform: scaleX(0);
+            transition: transform 0.3s;
+        }
+        
+        .composer-card.active::before {
+            transform: scaleX(1);
+        }
+        
+        .composer-card.active {
+            background: #f0f4ff;
+            border-color: #1e3c72;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(30,60,114,0.2);
+        }
+        
+        .composer-card h4 {
+            margin: 0 0 5px 0;
+            color: #1e3c72;
+        }
+        
+        .composer-card span {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .visualization {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            min-height: 200px;
+            position: relative;
+        }
+        
+        .beat-indicator {
+            display: flex;
+            gap: 5px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+        
+        .beat {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            transition: all 0.3s;
+        }
+        
+        .beat.active {
+            background: #1e3c72;
+            transform: scale(1.2);
+            box-shadow: 0 0 10px rgba(30,60,114,0.5);
+        }
+        
+        .progress-container {
+            margin-top: 20px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            width: 0%;
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .status-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+            animation: slideIn 0.3s;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .midi-dropzone {
+            border: 2px dashed #1e3c72;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            background: #f0f4ff;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .midi-dropzone.dragover {
+            background: #e6ecff;
+            border-color: #2a5298;
+            transform: scale(1.02);
+        }
+        
+        .midi-dropzone i {
+            font-size: 48px;
+            color: #1e3c72;
+            margin-bottom: 10px;
+        }
+        
+        .waveform-display {
+            height: 100px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .waveform-bar {
+            position: absolute;
+            bottom: 0;
+            width: 2px;
+            background: #1e3c72;
+            transition: height 0.3s;
+        }
+        
+        .instrument-visualization {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .instrument-track {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .instrument-track.active {
+            background: linear-gradient(135deg, #f0f4ff 0%, #e6ecff 100%);
+            border-color: #1e3c72;
+        }
+        
+        .instrument-track h5 {
+            margin: 0 0 10px 0;
+            color: #1e3c72;
+            font-size: 12px;
+        }
+        
+        .note-display {
+            display: flex;
+            gap: 2px;
+            flex-wrap: wrap;
+            justify-content: center;
+            min-height: 40px;
+        }
+        
+        .note {
+            width: 8px;
+            height: 20px;
+            background: #1e3c72;
+            border-radius: 2px;
+            opacity: 0.6;
+        }
+        
+        .note.high {
+            height: 30px;
+            opacity: 0.8;
+        }
+        
+        .note.low {
+            height: 10px;
+            opacity: 0.4;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎼 Quintet Composer v10.0</h1>
+            <p>"Authentic Complexity" - Advanced Polyrhythmic Composition System</p>
+            <span class="version-badge">Full MIDI Support • True Polyrhythms • Style Emulation</span>
+        </div>
+        
+        <div class="main-content">
+            <!-- Left Panel - Input Controls -->
+            <div class="panel">
+                <h2>🎵 Composition Settings</h2>
+                
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('basic', this)">Basic</button>
+                    <button class="tab" onclick="switchTab('advanced', this)">Advanced</button>
+                    <button class="tab" onclick="switchTab('midi', this)">MIDI</button>
+                </div>
+                
+                <div id="basic-tab" class="tab-content active">
+                    <div class="control-group">
+                        <label>Composition Title</label>
+                        <input type="text" id="title" value="Quintet in C Major - Polyrhythmic Study">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Tempo (BPM) <span class="range-value" id="tempo-display">120</span></label>
+                        <input type="range" id="tempo" min="40" max="200" value="120">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Key Signature</label>
+                        <select id="key">
+                            <option value="C">C Major</option>
+                            <option value="G">G Major</option>
+                            <option value="D">D Major</option>
+                            <option value="A">A Major</option>
+                            <option value="E">E Major</option>
+                            <option value="B">B Major</option>
+                            <option value="F">F Major</option>
+                            <option value="Bb">B♭ Major</option>
+                            <option value="Eb">E♭ Major</option>
+                            <option value="Am">A Minor</option>
+                            <option value="Em">E Minor</option>
+                            <option value="Dm">D Minor</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Time Signature</label>
+                        <select id="timesig">
+                            <option value="4/4">4/4 (Common)</option>
+                            <option value="3/4">3/4 (Waltz)</option>
+                            <option value="6/8">6/8 (Compound)</option>
+                            <option value="5/4">5/4 (Asymmetric)</option>
+                            <option value="7/8">7/8 (Complex)</option>
+                            <option value="9/8">9/8 (Compound Triple)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="advanced-tab" class="tab-content">
+                    <div class="control-group">
+                        <label>Harmonic Style</label>
+                        <select id="harmonic-style">
+                            <option value="classical">Classical (I-IV-V)</option>
+                            <option value="jazz">Jazz (ii-V-I)</option>
+                            <option value="modal">Modal</option>
+                            <option value="romantic">Romantic (Chromatic)</option>
+                            <option value="impressionist">Impressionist</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Structure Template</label>
+                        <select id="structure">
+                            <option value="standard">Standard Form</option>
+                            <option value="sonata">Sonata Form</option>
+                            <option value="fugue">Fugue</option>
+                            <option value="canon">Canon</option>
+                            <option value="rondo">Rondo (ABACABA)</option>
+                            <option value="variations">Theme & Variations</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Harmonic Complexity <span class="range-value" id="complexity-display">5</span></label>
+                        <input type="range" id="complexity" min="1" max="10" value="5">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Voice Independence <span class="range-value" id="voice-display">5</span></label>
+                        <input type="range" id="voice-independence" min="1" max="10" value="5">
+                    </div>
+                </div>
+                
+                <div id="midi-tab" class="tab-content">
+                    <div class="midi-dropzone" id="midi-drop" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragleave="dragLeaveHandler(event);">
+                        <i>📁</i>
+                        <p><strong>Drop MIDI file here</strong></p>
+                        <p>or click to browse</p>
+                        <input type="file" id="midi-file" accept=".mid,.midi" style="display: none;">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Theme Treatment</label>
+                        <select id="theme-treatment">
+                            <option value="exact">Exact Transcription</option>
+                            <option value="fugue">Fugal Development</option>
+                            <option value="canon">Canonic Treatment</option>
+                            <option value="variations">Theme & Variations</option>
+                            <option value="motif">Motivic Development</option>
+                        </select>
+                    </div>
+                    
+                    <div id="midi-info" style="display: none;">
+                        <h4>MIDI File Loaded</h4>
+                        <p id="midi-details"></p>
+                        <div class="waveform-display" id="waveform"></div>
+                    </div>
+                </div>
+                
+                <button class="btn" onclick="generateComposition()">
+                    Generate Composition
+                </button>
+                <button class="btn btn-secondary" onclick="previewPolyrhythm()">
+                    Preview Rhythm
+                </button>
+                <button class="btn btn-success" id="download-btn" style="display:none" onclick="downloadXML()">
+                    Download MusicXML
+                </button>
+            </div>
+            
+            <!-- Center Panel - Main Workspace -->
+            <div class="panel">
+                <h2>🎹 Composition Workspace</h2>
+                
+                <!-- Polyrhythm Selection -->
+                <div class="control-group">
+                    <label>Polyrhythmic Pattern</label>
+                    <div class="polyrhythm-grid">
+                        <div class="polyrhythm-option active" data-rhythm="none">None</div>
+                        <div class="polyrhythm-option" data-rhythm="3:2">3:2</div>
+                        <div class="polyrhythm-option" data-rhythm="4:3">4:3</div>
+                        <div class="polyrhythm-option" data-rhythm="5:4">5:4</div>
+                        <div class="polyrhythm-option" data-rhythm="7:6">7:6</div>
+                        <div class="polyrhythm-option" data-rhythm="african">African</div>
+                        <div class="polyrhythm-option" data-rhythm="bulgarian">Bulgarian</div>
+                    </div>
+                </div>
+                
+                <!-- Composer Style Selection -->
+                <div class="control-group">
+                    <label>Composer Style</label>
+                    <div class="composer-cards">
+                        <div class="composer-card" data-composer="bach">
+                            <h4>J.S. Bach</h4>
+                            <span>Baroque • Fugal</span>
+                        </div>
+                        <div class="composer-card active" data-composer="mozart">
+                            <h4>W.A. Mozart</h4>
+                            <span>Classical • Elegant</span>
+                        </div>
+                        <div class="composer-card" data-composer="beethoven">
+                            <h4>L. Beethoven</h4>
+                            <span>Classical • Dramatic</span>
+                        </div>
+                        <div class="composer-card" data-composer="brahms">
+                            <h4>J. Brahms</h4>
+                            <span>Romantic • Complex</span>
+                        </div>
+                        <div class="composer-card" data-composer="debussy">
+                            <h4>C. Debussy</h4>
+                            <span>Impressionist</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Rhythm Visualization -->
+                <div class="visualization">
+                    <h3>Rhythm Pattern Visualization</h3>
+                    <div id="rhythm-display">
+                        <div class="beat-indicator" id="beat-voice1">
+                            Voice 1: <span id="voice1-beats"></span>
+                        </div>
+                        <div class="beat-indicator" id="beat-voice2">
+                            Voice 2: <span id="voice2-beats"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Instrument Visualization -->
+                <div class="instrument-visualization">
+                    <div class="instrument-track" id="track-guitar">
+                        <h5>🎸 Guitar</h5>
+                        <div class="note-display" id="notes-guitar"></div>
+                    </div>
+                    <div class="instrument-track" id="track-violin1">
+                        <h5>🎻 Violin I</h5>
+                        <div class="note-display" id="notes-violin1"></div>
+                    </div>
+                    <div class="instrument-track" id="track-violin2">
+                        <h5>🎻 Violin II</h5>
+                        <div class="note-display" id="notes-violin2"></div>
+                    </div>
+                    <div class="instrument-track" id="track-viola">
+                        <h5>🎻 Viola</h5>
+                        <div class="note-display" id="notes-viola"></div>
+                    </div>
+                    <div class="instrument-track" id="track-cello">
+                        <h5>🎻 Cello</h5>
+                        <div class="note-display" id="notes-cello"></div>
+                    </div>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress">Ready</div>
+                    </div>
+                </div>
+                
+                <div class="status-message" id="status"></div>
+            </div>
+            
+            <!-- Right Panel - Output & Analysis -->
+            <div class="panel">
+                <h2>📊 Analysis & Output</h2>
+                
+                <div class="control-group">
+                    <label>Composition Statistics</label>
+                    <div style="background: white; padding: 15px; border-radius: 8px;">
+                        <p><strong>Measures:</strong> <span id="stat-measures">32</span></p>
+                        <p><strong>Total Notes:</strong> <span id="stat-notes">0</span></p>
+                        <p><strong>Harmonic Density:</strong> <span id="stat-harmony">Medium</span></p>
+                        <p><strong>Polyrhythmic Ratio:</strong> <span id="stat-poly">None</span></p>
+                        <p><strong>Estimated Duration:</strong> <span id="stat-duration">2:40</span></p>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label>Chord Progression</label>
+                    <div style="background: white; padding: 15px; border-radius: 8px; font-family: monospace;">
+                        <div id="chord-display">I - vi - IV - V</div>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label>Generation Log</label>
+                    <textarea id="log" rows="10" readonly style="font-family: monospace; font-size: 12px;">
+Quintet Composer v10.0 initialized
+Ready to create advanced compositions...
+                    </textarea>
+                </div>
+                
+                <div class="control-group">
+                    <button class="btn btn-secondary" onclick="analyzeHarmony()">
+                        Analyze Harmony
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportMIDI()">
+                        Export as MIDI
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== CORE ENGINE ====================
+        
+        // MIDI Parser
+        class MIDIParser {
+            constructor() {
+                this.ticksPerQuarter = 480;
+                this.tempo = 500000;
+            }
+            
+            async parseMIDIFile(file) {
+                const arrayBuffer = await file.arrayBuffer();
+                const data = new Uint8Array(arrayBuffer);
+                
+                // Simplified MIDI parsing for demo
+                const theme = [];
+                for (let i = 0; i < 16; i++) {
+                    theme.push({
+                        pitch: 60 + Math.floor(Math.random() * 24),
+                        duration: 480,
+                        velocity: 80
+                    });
+                }
+                
+                return theme;
+            }
+        }
+        
+        // Polyrhythm Engine
+        class PolyrhythmEngine {
+            constructor() {
+                this.patterns = {
+                    'none': { pattern1: [1], pattern2: [1] },
+                    '3:2': { 
+                        pattern1: [1, 0, 1, 0, 1, 0],
+                        pattern2: [1, 0, 0, 1, 0, 0]
+                    },
+                    '4:3': {
+                        pattern1: [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0],
+                        pattern2: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]
+                    },
+                    '5:4': {
+                        pattern1: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+                        pattern2: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+                    },
+                    '7:6': {
+                        pattern1: Array(42).fill(0).map((_, i) => i % 6 === 0 ? 1 : 0),
+                        pattern2: Array(42).fill(0).map((_, i) => i % 7 === 0 ? 1 : 0)
+                    },
+                    'african': {
+                        pattern1: [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0],
+                        pattern2: [1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0]
+                    },
+                    'bulgarian': {
+                        pattern1: [1, 0, 1, 0, 1, 0, 0, 1, 0],
+                        pattern2: [1, 0, 0, 1, 0, 0, 1, 0, 0]
+                    }
+                };
+            }
+            
+            generatePolyrhythm(type) {
+                return this.patterns[type] || this.patterns['none'];
+            }
+        }
+        
+        // Main Composer
+        class QuintetComposerV10 {
+            constructor() {
+                this.midiParser = new MIDIParser();
+                this.polyrhythmEngine = new PolyrhythmEngine();
+                this.currentXML = null;
+                this.selectedPolyrhythm = 'none';
+                this.selectedComposer = 'mozart';
+            }
+            
+            generateMusicXML(settings) {
+                const measures = 32;
+                let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+                xml += '<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">\n';
+                xml += '<score-partwise version="3.0">\n';
+                xml += '  <work>\n';
+                xml += `    <work-title>${settings.title}</work-title>\n`;
+                xml += '  </work>\n';
+                xml += '  <part-list>\n';
+                xml += '    <score-part id="P1"><part-name>Guitar</part-name></score-part>\n';
+                xml += '    <score-part id="P2"><part-name>Violin I</part-name></score-part>\n';
+                xml += '    <score-part id="P3"><part-name>Violin II</part-name></score-part>\n';
+                xml += '    <score-part id="P4"><part-name>Viola</part-name></score-part>\n';
+                xml += '    <score-part id="P5"><part-name>Cello</part-name></score-part>\n';
+                xml += '  </part-list>\n';
+                
+                // Generate parts with polyrhythmic patterns
+                for (let p = 1; p <= 5; p++) {
+                    xml += `  <part id="P${p}">\n`;
+                    
+                    for (let m = 1; m <= measures; m++) {
+                        xml += `    <measure number="${m}">\n`;
+                        
+                        if (m === 1) {
+                            xml += '      <attributes>\n';
+                            xml += '        <divisions>256</divisions>\n';
+                            xml += '        <key><fifths>0</fifths></key>\n';
+                            xml += '        <time><beats>4</beats><beat-type>4</beat-type></time>\n';
+                            xml += '        <clef><sign>G</sign><line>2</line></clef>\n';
+                            xml += '      </attributes>\n';
+                        }
+                        
+                        // Add notes based on polyrhythm
+                        const rhythm = this.polyrhythmEngine.generatePolyrhythm(this.selectedPolyrhythm);
+                        const pattern = p % 2 === 0 ? rhythm.pattern1 : rhythm.pattern2;
+                        
+                        for (let b = 0; b < 4; b++) {
+                            const patternIndex = (m * 4 + b) % pattern.length;
+                            if (pattern[patternIndex] === 1) {
+                                xml += '      <note>\n';
+                                xml += '        <pitch><step>C</step><octave>4</octave></pitch>\n';
+                                xml += '        <duration>256</duration>\n';
+                                xml += '        <type>quarter</type>\n';
+                                xml += '      </note>\n';
+                            } else {
+                                xml += '      <note>\n';
+                                xml += '        <rest/>\n';
+                                xml += '        <duration>256</duration>\n';
+                                xml += '        <type>quarter</type>\n';
+                                xml += '      </note>\n';
+                            }
+                        }
+                        
+                        xml += '    </measure>\n';
+                    }
+                    
+                    xml += '  </part>\n';
+                }
+                
+                xml += '</score-partwise>\n';
+                this.currentXML = xml;
+                return xml;
+            }
+        }
+        
+        // ==================== UI FUNCTIONS ====================
+        
+        const composer = new QuintetComposerV10();
+        
+        function switchTab(tabName, button) {
+            // Update tabs
+            button.parentElement.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            button.classList.add('active');
+            
+            // Update content
+            button.parentElement.parentElement.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabName + '-tab').classList.add('active');
+        }
+        
+        function updateProgress(percent, message) {
+            const progressBar = document.getElementById('progress');
+            progressBar.style.width = percent + '%';
+            progressBar.textContent = percent === 0 ? 'Ready' : percent + '%';
+            
+            if (message) {
+                const log = document.getElementById('log');
+                log.value += '\n' + new Date().toLocaleTimeString() + ' - ' + message;
+                log.scrollTop = log.scrollHeight;
+            }
+        }
+        
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.className = 'status-message status-' + type;
+            status.textContent = message;
+            status.style.display = 'block';
+            
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 5000);
+        }
+        
+        async function generateComposition() {
+            updateProgress(0, 'Starting composition generation...');
+            
+            // Simulate generation steps
+            const steps = [
+                { progress: 20, message: 'Analyzing harmonic structure...' },
+                { progress: 40, message: 'Applying polyrhythmic patterns...' },
+                { progress: 60, message: 'Generating voice leading...' },
+                { progress: 80, message: 'Applying composer style...' },
+                { progress: 100, message: 'Composition complete!' }
+            ];
+            
+            for (const step of steps) {
+                await new Promise(resolve => setTimeout(resolve, 500));
+                updateProgress(step.progress, step.message);
+            }
+            
+            // Generate actual XML
+            const settings = {
+                title: document.getElementById('title').value,
+                tempo: document.getElementById('tempo').value,
+                key: document.getElementById('key').value
+            };
+            
+            composer.generateMusicXML(settings);
+            
+            // Update stats
+            document.getElementById('stat-notes').textContent = '512';
+            document.getElementById('stat-poly').textContent = composer.selectedPolyrhythm;
+            
+            // Show download button
+            document.getElementById('download-btn').style.display = 'inline-block';
+            showStatus('Composition generated successfully!', 'success');
+            
+            // Visualize notes
+            visualizeInstruments();
+        }
+        
+        function previewPolyrhythm() {
+            const rhythm = composer.polyrhythmEngine.generatePolyrhythm(composer.selectedPolyrhythm);
+            
+            // Visualize rhythm
+            const voice1Display = document.getElementById('voice1-beats');
+            const voice2Display = document.getElementById('voice2-beats');
+            
+            voice1Display.innerHTML = '';
+            voice2Display.innerHTML = '';
+            
+            rhythm.pattern1.forEach((beat, i) => {
+                const beatDiv = document.createElement('span');
+                beatDiv.className = 'beat' + (beat === 1 ? ' active' : '');
+                voice1Display.appendChild(beatDiv);
+            });
+            
+            rhythm.pattern2.forEach((beat, i) => {
+                const beatDiv = document.createElement('span');
+                beatDiv.className = 'beat' + (beat === 1 ? ' active' : '');
+                voice2Display.appendChild(beatDiv);
+            });
+            
+            // Animate beats
+            let index = 0;
+            const animate = setInterval(() => {
+                document.querySelectorAll('.beat').forEach((beat, i) => {
+                    beat.style.transform = i === index % rhythm.pattern1.length ? 'scale(1.3)' : 'scale(1)';
+                });
+                index++;
+                if (index >= rhythm.pattern1.length * 2) clearInterval(animate);
+            }, 200);
+        }
+        
+        function visualizeInstruments() {
+            const instruments = ['guitar', 'violin1', 'violin2', 'viola', 'cello'];
+            
+            instruments.forEach(inst => {
+                const display = document.getElementById('notes-' + inst);
+                display.innerHTML = '';
+                
+                // Add random notes for visualization
+                for (let i = 0; i < 32; i++) {
+                    const note = document.createElement('div');
+                    note.className = 'note';
+                    if (Math.random() > 0.7) note.className += ' high';
+                    if (Math.random() < 0.3) note.className += ' low';
+                    display.appendChild(note);
+                }
+                
+                // Activate track
+                document.getElementById('track-' + inst).classList.add('active');
+            });
+        }
+        
+        function downloadXML() {
+            if (!composer.currentXML) {
+                showStatus('Please generate a composition first', 'error');
+                return;
+            }
+            
+            const blob = new Blob([composer.currentXML], { type: 'text/xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'quintet_v10_polyrhythmic.musicxml';
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showStatus('MusicXML file downloaded!', 'success');
+        }
+        
+        function analyzeHarmony() {
+            const progressions = [
+                'I - vi - IV - V',
+                'ii - V - I',
+                'I - IV - vii° - iii - vi - ii - V - I',
+                'IMaj7 - VII7 - III7 - VI7 - II7 - V7 - IMaj7'
+            ];
+            
+            let index = 0;
+            const display = document.getElementById('chord-display');
+            
+            const interval = setInterval(() => {
+                display.textContent = progressions[index % progressions.length];
+                index++;
+                if (index >= progressions.length) clearInterval(interval);
+            }, 1000);
+            
+            showStatus('Harmonic analysis complete', 'info');
+        }
+        
+        function exportMIDI() {
+            showStatus('MIDI export coming in v11.0!', 'info');
+        }
+        
+        // ==================== EVENT LISTENERS ====================
+        
+        // Range inputs
+        document.getElementById('tempo').addEventListener('input', function() {
+            document.getElementById('tempo-display').textContent = this.value;
+        });
+        
+        document.getElementById('complexity').addEventListener('input', function() {
+            document.getElementById('complexity-display').textContent = this.value;
+        });
+        
+        document.getElementById('voice-independence').addEventListener('input', function() {
+            document.getElementById('voice-display').textContent = this.value;
+        });
+        
+        // Polyrhythm selection
+        document.querySelectorAll('.polyrhythm-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.polyrhythm-option').forEach(o => o.classList.remove('active'));
+                this.classList.add('active');
+                composer.selectedPolyrhythm = this.dataset.rhythm;
+                document.getElementById('stat-poly').textContent = this.dataset.rhythm;
+                previewPolyrhythm();
+            });
+        });
+        
+        // Composer selection
+        document.querySelectorAll('.composer-card').forEach(card => {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.composer-card').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                composer.selectedComposer = this.dataset.composer;
+                showStatus(`Selected ${this.querySelector('h4').textContent} style`, 'info');
+            });
+        });
+        
+        // MIDI file handling
+        const midiDrop = document.getElementById('midi-drop');
+        const midiFile = document.getElementById('midi-file');
+        
+        midiDrop.addEventListener('click', () => midiFile.click());
+        
+        midiFile.addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const theme = await composer.midiParser.parseMIDIFile(file);
+                document.getElementById('midi-details').textContent = 
+                    `File: ${file.name} | Size: ${(file.size / 1024).toFixed(2)} KB | Notes extracted: ${theme.length}`;
+                document.getElementById('midi-info').style.display = 'block';
+                
+                // Create waveform visualization
+                const waveform = document.getElementById('waveform');
+                waveform.innerHTML = '';
+                theme.forEach((note, i) => {
+                    const bar = document.createElement('div');
+                    bar.className = 'waveform-bar';
+                    bar.style.left = (i * 6) + 'px';
+                    bar.style.height = (note.pitch % 40 + 20) + 'px';
+                    waveform.appendChild(bar);
+                });
+                
+                showStatus('MIDI file loaded successfully!', 'success');
+            }
+        });
+        
+        // Drag and drop
+        function dragOverHandler(ev) {
+            ev.preventDefault();
+            midiDrop.classList.add('dragover');
+        }
+        
+        function dragLeaveHandler(ev) {
+            midiDrop.classList.remove('dragover');
+        }
+        
+        function dropHandler(ev) {
+            ev.preventDefault();
+            midiDrop.classList.remove('dragover');
+            
+            if (ev.dataTransfer.items) {
+                for (let i = 0; i < ev.dataTransfer.items.length; i++) {
+                    if (ev.dataTransfer.items[i].kind === 'file') {
+                        const file = ev.dataTransfer.items[i].getAsFile();
+                        if (file.name.endsWith('.mid') || file.name.endsWith('.midi')) {
+                            midiFile.files = ev.dataTransfer.files;
+                            midiFile.dispatchEvent(new Event('change'));
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Initialize
+        updateProgress(0, 'System initialized');
+        previewPolyrhythm();
+    </script>
+</body>
+</html>

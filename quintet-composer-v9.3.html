@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quintet Composer v9.3 - Bulletproof Foundation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 15px; 
+            padding: 30px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 { 
+            text-align: center; 
+            color: #333; 
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .version {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .controls { 
+            display: flex; 
+            gap: 15px; 
+            margin-bottom: 30px; 
+            justify-content: center; 
+            flex-wrap: wrap;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        button { 
+            padding: 12px 24px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        button:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f0f8ff;
+            border-radius: 8px;
+            border: 2px solid #4CAF50;
+        }
+        .test-result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .test-pass {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .test-fail {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        #status { 
+            padding: 15px; 
+            background: #e8f5e9; 
+            border-radius: 8px; 
+            margin-top: 20px; 
+            text-align: center;
+            font-weight: 600;
+            color: #2e7d32;
+        }
+        #composition-display {
+            margin-top: 20px;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        input[type="file"] {
+            padding: 10px;
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎼 Quintet Composer v9.3</h1>
+        <div class="version">Bulletproof Foundation - Testing Every Component</div>
+        
+        <div class="controls">
+            <button onclick="generateComposition()">Generate Composition</button>
+            <button onclick="testMusicXML()">Test MusicXML Generation</button>
+            <button onclick="exportMusicXML()">Export MusicXML</button>
+            <input type="file" id="midiFile" accept=".mid,.midi" onchange="loadMidiFile(event)">
+        </div>
+
+        <div class="test-section">
+            <h3>System Tests</h3>
+            <button onclick="runAllTests()">Run All Tests</button>
+            <div id="test-results"></div>
+        </div>
+
+        <div id="composition-display"></div>
+        <div id="status">Ready - Click "Run All Tests" to verify system</div>
+    </div>
+
+    <script>
+        // CRITICAL: Test-driven development - every function must be testable
+        
+        // Global composition state
+        let composition = {
+            title: "Quintet Composition v9.3",
+            tempo: 120,
+            divisions: 4, // MusicXML divisions per quarter note
+            timeSignature: { numerator: 4, denominator: 4 },
+            measures: [],
+            instruments: ['Guitar', 'Violin I', 'Violin II', 'Viola', 'Cello']
+        };
+
+        // Musical constants
+        const MEASURES_PER_SECTION = {
+            'Intro': 4,
+            'Verse': 8, 
+            'Chorus': 8,
+            'Bridge': 8,
+            'Outro': 4
+        };
+        const TOTAL_MEASURES = 32;
+
+        // Scale definitions
+        const SCALES = {
+            'C': ['C', 'D', 'E', 'F', 'G', 'A', 'B'],
+            'G': ['G', 'A', 'B', 'C', 'D', 'E', 'F#']
+        };
+
+        // Test Suite
+        const tests = {
+            testMeasureGeneration: function() {
+                const measure = generateMeasure(1, 'C');
+                return measure && 
+                       measure.number === 1 && 
+                       measure.instruments &&
+                       Object.keys(measure.instruments).length === 5;
+            },
+            
+            testNoteGeneration: function() {
+                const note = generateNote('C', 4, 4);
+                return note && 
+                       note.pitch && 
+                       note.octave && 
+                       note.duration === 4;
+            },
+            
+            testXMLStructure: function() {
+                composition.measures = [generateMeasure(1, 'C')];
+                const xml = generateMusicXML();
+                return xml.includes('<?xml') && 
+                       xml.includes('<score-partwise') &&
+                       xml.includes('</score-partwise>');
+            },
+            
+            testMeasureCompleteness: function() {
+                // Each measure should have exactly 4 beats in 4/4 time
+                const measure = generateMeasure(1, 'C');
+                let allComplete = true;
+                for (let inst of composition.instruments) {
+                    const notes = measure.instruments[inst];
+                    let totalDuration = notes.reduce((sum, note) => sum + note.duration, 0);
+                    if (totalDuration !== 4) { // 4 quarter notes = 4 beats
+                        allComplete = false;
+                    }
+                }
+                return allComplete;
+            }
+        };
+
+        function runAllTests() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '';
+            
+            let allPassed = true;
+            for (let testName in tests) {
+                try {
+                    const passed = tests[testName]();
+                    const resultDiv = document.createElement('div');
+                    resultDiv.className = passed ? 'test-result test-pass' : 'test-result test-fail';
+                    resultDiv.textContent = `${testName}: ${passed ? 'PASSED ✓' : 'FAILED ✗'}`;
+                    resultsDiv.appendChild(resultDiv);
+                    
+                    if (!passed) allPassed = false;
+                } catch (error) {
+                    const resultDiv = document.createElement('div');
+                    resultDiv.className = 'test-result test-fail';
+                    resultDiv.textContent = `${testName}: ERROR - ${error.message}`;
+                    resultsDiv.appendChild(resultDiv);
+                    allPassed = false;
+                }
+            }
+            
+            updateStatus(allPassed ? 'All tests passed! System ready.' : 'Some tests failed - check results');
+            return allPassed;
+        }
+
+        function generateNote(pitch, octave, duration) {
+            return {
+                pitch: pitch,
+                octave: octave,
+                duration: duration, // in quarter notes
+                type: duration === 4 ? 'whole' : duration === 2 ? 'half' : 'quarter'
+            };
+        }
+
+        function generateMeasure(measureNumber, key) {
+            const scale = SCALES[key] || SCALES['C'];
+            const measure = {
+                number: measureNumber,
+                instruments: {}
+            };
+            
+            // Simple version: one whole note per measure for each instrument
+            composition.instruments.forEach(inst => {
+                const noteIndex = Math.floor(Math.random() * scale.length);
+                let octave = 4;
+                
+                // Adjust octave by instrument
+                if (inst === 'Cello') octave = 2;
+                else if (inst === 'Viola') octave = 3;
+                else if (inst === 'Guitar') octave = 3;
+                
+                // One whole note per measure (4 beats in 4/4 time)
+                measure.instruments[inst] = [
+                    generateNote(scale[noteIndex], octave, 4)
+                ];
+            });
+            
+            return measure;
+        }
+
+        function generateComposition() {
+            composition.measures = [];
+            
+            // Generate 32 measures
+            for (let i = 1; i <= TOTAL_MEASURES; i++) {
+                composition.measures.push(generateMeasure(i, 'C'));
+            }
+            
+            displayComposition();
+            updateStatus(`Generated ${TOTAL_MEASURES} measures successfully`);
+        }
+
+        function displayComposition() {
+            const display = document.getElementById('composition-display');
+            let output = 'COMPOSITION STRUCTURE\n';
+            output += '====================\n\n';
+            
+            let measureIndex = 0;
+            for (let section in MEASURES_PER_SECTION) {
+                output += `${section} (${MEASURES_PER_SECTION[section]} measures):\n`;
+                
+                for (let m = 0; m < MEASURES_PER_SECTION[section]; m++) {
+                    if (measureIndex < composition.measures.length) {
+                        const measure = composition.measures[measureIndex];
+                        output += `  Measure ${measure.number}:\n`;
+                        
+                        for (let inst of composition.instruments) {
+                            const notes = measure.instruments[inst];
+                            const noteStr = notes.map(n => `${n.pitch}${n.octave}`).join(' ');
+                            output += `    ${inst}: ${noteStr}\n`;
+                        }
+                    }
+                    measureIndex++;
+                }
+                output += '\n';
+            }
+            
+            display.textContent = output;
+        }
+
+        function generateMusicXML() {
+            let xml = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n';
+            xml += '<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">\n';
+            xml += '<score-partwise version="3.0">\n';
+            
+            // Work title
+            xml += '  <work>\n';
+            xml += `    <work-title>${composition.title}</work-title>\n`;
+            xml += '  </work>\n';
+            
+            // Identification
+            xml += '  <identification>\n';
+            xml += '    <encoding>\n';
+            xml += '      <software>Quintet Composer v9.3</software>\n';
+            xml += `      <encoding-date>${new Date().toISOString().split('T')[0]}</encoding-date>\n`;
+            xml += '    </encoding>\n';
+            xml += '  </identification>\n';
+            
+            // Part list
+            xml += '  <part-list>\n';
+            composition.instruments.forEach((inst, idx) => {
+                xml += `    <score-part id="P${idx + 1}">\n`;
+                xml += `      <part-name>${inst}</part-name>\n`;
+                xml += '    </score-part>\n';
+            });
+            xml += '  </part-list>\n';
+            
+            // Generate parts
+            composition.instruments.forEach((inst, partIdx) => {
+                xml += `  <part id="P${partIdx + 1}">\n`;
+                
+                composition.measures.forEach((measure, mIdx) => {
+                    xml += `    <measure number="${measure.number}">\n`;
+                    
+                    // Add attributes to first measure
+                    if (mIdx === 0) {
+                        xml += '      <attributes>\n';
+                        xml += `        <divisions>${composition.divisions}</divisions>\n`;
+                        xml += '        <key>\n';
+                        xml += '          <fifths>0</fifths>\n';
+                        xml += '        </key>\n';
+                        xml += '        <time>\n';
+                        xml += `          <beats>${composition.timeSignature.numerator}</beats>\n`;
+                        xml += `          <beat-type>${composition.timeSignature.denominator}</beat-type>\n`;
+                        xml += '        </time>\n';
+                        
+                        // Clef based on instrument
+                        if (inst === 'Cello') {
+                            xml += '        <clef>\n';
+                            xml += '          <sign>F</sign>\n';
+                            xml += '          <line>4</line>\n';
+                            xml += '        </clef>\n';
+                        } else if (inst === 'Viola') {
+                            xml += '        <clef>\n';
+                            xml += '          <sign>C</sign>\n';
+                            xml += '          <line>3</line>\n';
+                            xml += '        </clef>\n';
+                        } else {
+                            xml += '        <clef>\n';
+                            xml += '          <sign>G</sign>\n';
+                            xml += '          <line>2</line>\n';
+                            xml += '        </clef>\n';
+                        }
+                        xml += '      </attributes>\n';
+                    }
+                    
+                    // Add notes
+                    const notes = measure.instruments[inst];
+                    notes.forEach(note => {
+                        xml += '      <note>\n';
+                        xml += '        <pitch>\n';
+                        xml += `          <step>${note.pitch.charAt(0)}</step>\n`;
+                        if (note.pitch.includes('#')) {
+                            xml += '          <alter>1</alter>\n';
+                        }
+                        xml += `          <octave>${note.octave}</octave>\n`;
+                        xml += '        </pitch>\n';
+                        xml += `        <duration>${note.duration * composition.divisions}</duration>\n`;
+                        xml += `        <type>${note.type}</type>\n`;
+                        xml += '      </note>\n';
+                    });
+                    
+                    xml += '    </measure>\n';
+                });
+                
+                xml += '  </part>\n';
+            });
+            
+            xml += '</score-partwise>';
+            return xml;
+        }
+
+        function testMusicXML() {
+            // Generate a test composition
+            generateComposition();
+            
+            // Generate XML
+            const xml = generateMusicXML();
+            
+            // Basic validation
+            const validations = [
+                xml.includes('<?xml version="1.0"'),
+                xml.includes('<score-partwise'),
+                xml.includes('</score-partwise>'),
+                xml.includes('<part-list>'),
+                xml.includes('<part id="P1">'),
+                xml.includes('<measure number="1">'),
+                xml.includes('<pitch>'),
+                xml.includes('<duration>')
+            ];
+            
+            const allValid = validations.every(v => v);
+            
+            if (allValid) {
+                updateStatus('MusicXML generation test PASSED - Ready to export');
+                // Show preview
+                console.log('Generated XML preview (first 500 chars):', xml.substring(0, 500));
+            } else {
+                updateStatus('MusicXML generation test FAILED - Check console');
+                console.error('Validation failures:', validations);
+            }
+            
+            return allValid;
+        }
+
+        function exportMusicXML() {
+            if (composition.measures.length === 0) {
+                updateStatus('Generate a composition first!');
+                return;
+            }
+            
+            const xml = generateMusicXML();
+            const blob = new Blob([xml], { type: 'application/xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'quintet_v9.3.musicxml';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            updateStatus('MusicXML exported successfully!');
+        }
+
+        function loadMidiFile(event) {
+            const file = event.target.files[0];
+            if (file) {
+                updateStatus(`MIDI file loaded: ${file.name} - Parser coming in v10.0`);
+            }
+        }
+
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+
+        // Run tests on load
+        window.onload = function() {
+            runAllTests();
+        };
+    </script>
+</body>
+</html>

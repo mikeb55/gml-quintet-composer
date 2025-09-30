@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quintet Composer v10.1 - Authentic Complexity</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 20s linear infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .version-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 400px 1fr 350px;
+            gap: 20px;
+            padding: 30px;
+        }
+        
+        .panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            height: fit-content;
+        }
+        
+        .panel h2 {
+            color: #1e3c72;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #1e3c72;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            background: #e0e0e0;
+            padding: 5px;
+            border-radius: 8px;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 10px;
+            background: transparent;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            color: #666;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #1e3c72;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .control-group input,
+        .control-group select,
+        .control-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .control-group input:focus,
+        .control-group select:focus,
+        .control-group textarea:focus {
+            outline: none;
+            border-color: #1e3c72;
+            box-shadow: 0 0 0 3px rgba(30,60,114,0.1);
+        }
+        
+        input[type="range"] {
+            -webkit-appearance: none;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #1e3c72;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .range-value {
+            display: inline-block;
+            background: #1e3c72;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(30,60,114,0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20863d 100%);
+        }
+        
+        .composer-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .composer-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .composer-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #1e3c72, #2a5298);
+            transform: scaleX(0);
+            transition: transform 0.3s;
+        }
+        
+        .composer-card.active::before {
+            transform: scaleX(1);
+        }
+        
+        .composer-card.active {
+            background: #f0f4ff;
+            border-color: #1e3c72;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(30,60,114,0.2);
+        }
+        
+        .composer-card h4 {
+            margin: 0 0 5px 0;
+            color: #1e3c72;
+        }
+        
+        .composer-card span {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .visualization {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            min-height: 200px;
+            position: relative;
+        }
+        
+        .score-preview {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            white-space: pre;
+        }
+        
+        .progress-container {
+            margin-top: 20px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            width: 0%;
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .status-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+            animation: slideIn 0.3s;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .style-characteristics {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        
+        .style-characteristics h4 {
+            color: #1e3c72;
+            margin-bottom: 10px;
+        }
+        
+        .style-characteristics ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .style-characteristics li {
+            padding: 5px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .style-characteristics li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: #1e3c72;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎼 Quintet Composer v10.1</h1>
+            <p>"Authentic Complexity" - Real Composer-Specific Generation</p>
+            <span class="version-badge">Each Style Creates Unique Music</span>
+        </div>
+        
+        <div class="main-content">
+            <!-- Left Panel - Input Controls -->
+            <div class="panel">
+                <h2>🎵 Composition Settings</h2>
+                
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('basic', this)">Basic</button>
+                    <button class="tab" onclick="switchTab('advanced', this)">Advanced</button>
+                </div>
+                
+                <div id="basic-tab" class="tab-content active">
+                    <div class="control-group">
+                        <label>Composition Title</label>
+                        <input type="text" id="title" value="Quintet Study">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Tempo (BPM) <span class="range-value" id="tempo-display">120</span></label>
+                        <input type="range" id="tempo" min="40" max="200" value="120">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Key Signature</label>
+                        <select id="key">
+                            <option value="C">C Major</option>
+                            <option value="G">G Major</option>
+                            <option value="D">D Major</option>
+                            <option value="A">A Major</option>
+                            <option value="F">F Major</option>
+                            <option value="Bb">B♭ Major</option>
+                            <option value="Am">A Minor</option>
+                            <option value="Em">E Minor</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Measures</label>
+                        <select id="measures">
+                            <option value="16">16 (Short)</option>
+                            <option value="32" selected>32 (Standard)</option>
+                            <option value="64">64 (Extended)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="advanced-tab" class="tab-content">
+                    <div class="control-group">
+                        <label>Time Signature</label>
+                        <select id="timesig">
+                            <option value="4/4">4/4 (Common)</option>
+                            <option value="3/4">3/4 (Waltz)</option>
+                            <option value="6/8">6/8 (Compound)</option>
+                            <option value="5/4">5/4 (Asymmetric)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Complexity <span class="range-value" id="complexity-display">5</span></label>
+                        <input type="range" id="complexity" min="1" max="10" value="5">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Dynamics Range <span class="range-value" id="dynamics-display">5</span></label>
+                        <input type="range" id="dynamics" min="1" max="10" value="5">
+                    </div>
+                </div>
+                
+                <button class="btn" onclick="generateComposition()">
+                    Generate Composition
+                </button>
+                <button class="btn btn-secondary" onclick="previewStyle()">
+                    Preview Style
+                </button>
+                <button class="btn btn-success" id="download-btn" style="display:none" onclick="downloadXML()">
+                    Download MusicXML
+                </button>
+            </div>
+            
+            <!-- Center Panel - Main Workspace -->
+            <div class="panel">
+                <h2>🎹 Composition Workspace</h2>
+                
+                <!-- Composer Style Selection -->
+                <div class="control-group">
+                    <label>Select Composer Style</label>
+                    <div class="composer-cards">
+                        <div class="composer-card active" data-composer="bach">
+                            <h4>J.S. Bach</h4>
+                            <span>Baroque • Fugal</span>
+                        </div>
+                        <div class="composer-card" data-composer="mozart">
+                            <h4>W.A. Mozart</h4>
+                            <span>Classical • Elegant</span>
+                        </div>
+                        <div class="composer-card" data-composer="beethoven">
+                            <h4>L. Beethoven</h4>
+                            <span>Classical • Dramatic</span>
+                        </div>
+                        <div class="composer-card" data-composer="brahms">
+                            <h4>J. Brahms</h4>
+                            <span>Romantic • Complex</span>
+                        </div>
+                        <div class="composer-card" data-composer="debussy">
+                            <h4>C. Debussy</h4>
+                            <span>Impressionist</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Style Characteristics -->
+                <div class="style-characteristics" id="style-info">
+                    <h4>Bach Style Characteristics:</h4>
+                    <ul>
+                        <li>Polyphonic texture with independent voices</li>
+                        <li>Fugal subjects and countersubjects</li>
+                        <li>Sequential development</li>
+                        <li>Intricate voice leading</li>
+                        <li>Mathematical precision</li>
+                    </ul>
+                </div>
+                
+                <!-- Score Preview -->
+                <div class="visualization">
+                    <h3>Score Preview</h3>
+                    <div class="score-preview" id="score-preview">
+Bach-Style Opening (Fugal):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Violin I:   [Subject]    G--A--B--C--D--E--F#--G--|
+Violin II:  [Rest----]   ------------[Answer in D]--|
+Viola:      [Rest----]   -------------------------|
+Cello:      [Rest----]   --------[Subject in G]---|
+Guitar:     [Continuo]   C---G---C---G---D---G----|
+                    </div>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress">Ready</div>
+                    </div>
+                </div>
+                
+                <div class="status-message" id="status"></div>
+            </div>
+            
+            <!-- Right Panel - Output & Analysis -->
+            <div class="panel">
+                <h2>📊 Analysis & Output</h2>
+                
+                <div class="control-group">
+                    <label>Composition Statistics</label>
+                    <div style="background: white; padding: 15px; border-radius: 8px;">
+                        <p><strong>Style:</strong> <span id="stat-style">Bach</span></p>
+                        <p><strong>Texture:</strong> <span id="stat-texture">Polyphonic</span></p>
+                        <p><strong>Voices:</strong> <span id="stat-voices">5 Independent</span></p>
+                        <p><strong>Complexity:</strong> <span id="stat-complexity">High</span></p>
+                        <p><strong>Form:</strong> <span id="stat-form">Fugue</span></p>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label>Generation Log</label>
+                    <textarea id="log" rows="12" readonly style="font-family: monospace; font-size: 12px;">
+Quintet Composer v10.1 initialized
+Ready to create composer-specific works...
+                    </textarea>
+                </div>
+                
+                <div class="control-group">
+                    <button class="btn btn-secondary" onclick="compareStyles()">
+                        Compare All Styles
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== COMPOSER STYLE DEFINITIONS ====================
+        
+        const composerStyles = {
+            bach: {
+                name: 'J.S. Bach',
+                texture: 'Polyphonic',
+                form: 'Fugue',
+                characteristics: [
+                    'Polyphonic texture with independent voices',
+                    'Fugal subjects and countersubjects',
+                    'Sequential development',
+                    'Intricate voice leading',
+                    'Mathematical precision'
+                ],
+                // Musical patterns specific to Bach
+                patterns: {
+                    violin1: {
+                        subject: ['G4', 'A4', 'B4', 'C5', 'D5', 'E5', 'F#5', 'G5'],
+                        countersubject: ['D4', 'C4', 'B3', 'A3', 'B3', 'C4', 'D4', 'E4'],
+                        sequence: ['E4', 'F#4', 'G4', 'A4', 'G4', 'F#4', 'E4', 'D4']
+                    },
+                    violin2: {
+                        answer: ['D4', 'E4', 'F#4', 'G4', 'A4', 'B4', 'C#5', 'D5'],
+                        episode: ['B3', 'C4', 'D4', 'E4', 'F#4', 'G4', 'A4', 'B4']
+                    },
+                    harmony: ['I', 'V', 'I', 'ii', 'V', 'I', 'IV', 'V'],
+                    rhythmPattern: [4, 4, 8, 8, 4, 8, 8, 4] // quarter, quarter, eighth, eighth, etc.
+                }
+            },
+            mozart: {
+                name: 'W.A. Mozart',
+                texture: 'Homophonic',
+                form: 'Sonata',
+                characteristics: [
+                    'Elegant melodic lines',
+                    'Clear harmonic progressions',
+                    'Alberti bass patterns',
+                    'Balanced phrases',
+                    'Grace notes and ornaments'
+                ],
+                patterns: {
+                    violin1: {
+                        theme1: ['C5', 'D5', 'E5', 'F5', 'G5', 'F5', 'E5', 'D5'],
+                        theme2: ['G4', 'C5', 'E5', 'G5', 'E5', 'C5', 'G4', 'C5'],
+                        cadence: ['D5', 'B4', 'C5', 'rest', 'G4', 'E4', 'C4', 'rest']
+                    },
+                    violin2: {
+                        harmony: ['E4', 'G4', 'C4', 'E4', 'G4', 'E4', 'C4', 'E4'],
+                        accompaniment: ['C4', 'E4', 'G4', 'E4', 'C4', 'E4', 'G4', 'E4']
+                    },
+                    harmony: ['I', 'V', 'I', 'IV', 'I', 'V', 'vi', 'V'],
+                    rhythmPattern: [4, 4, 4, 4, 2, 2, 2, 2] // even, classical rhythm
+                }
+            },
+            beethoven: {
+                name: 'L. van Beethoven',
+                texture: 'Homophonic-Dramatic',
+                form: 'Sonata with Development',
+                characteristics: [
+                    'Motivic development',
+                    'Dynamic contrasts (sforzando)',
+                    'Expanded forms',
+                    'Heroic themes',
+                    'Surprising modulations'
+                ],
+                patterns: {
+                    violin1: {
+                        motif: ['G4', 'G4', 'G4', 'Eb4'],
+                        development: ['Eb4', 'Eb4', 'Eb4', 'C4'],
+                        heroic: ['C5', 'G4', 'E5', 'C5', 'G5', 'E5', 'C6', 'rest']
+                    },
+                    violin2: {
+                        support: ['Eb4', 'Eb4', 'Eb4', 'C4'],
+                        counter: ['G3', 'G3', 'G3', 'Eb3']
+                    },
+                    harmony: ['I', 'V', 'I', 'bVI', 'ii', 'V', 'I', 'I'],
+                    rhythmPattern: [8, 8, 8, 2, 8, 8, 8, 2] // fate motif rhythm
+                }
+            },
+            brahms: {
+                name: 'Johannes Brahms',
+                texture: 'Dense Polyphonic',
+                form: 'Intermezzo',
+                characteristics: [
+                    'Complex polyrhythms (3 against 2)',
+                    'Rich harmonic language',
+                    'Thick textures',
+                    'Developing variation',
+                    'Nostalgic melodies'
+                ],
+                patterns: {
+                    violin1: {
+                        melody: ['A4', 'C5', 'E5', 'A5', 'G5', 'E5', 'C5', 'A4'],
+                        hemiola: ['F4', 'A4', 'C5', 'F5', 'E5', 'C5']
+                    },
+                    violin2: {
+                        cross: ['F4', 'G4', 'A4', 'Bb4', 'A4', 'G4', 'F4', 'E4'],
+                        thirds: ['C4', 'E4', 'G4', 'C5', 'G4', 'E4', 'C4', 'G3']
+                    },
+                    harmony: ['I', 'IV', 'ii', 'V', 'vi', 'ii', 'V', 'I'],
+                    rhythmPattern: [3, 3, 2, 2, 2, 3, 3, 4] // mixed meter feeling
+                }
+            },
+            debussy: {
+                name: 'Claude Debussy',
+                texture: 'Impressionistic',
+                form: 'Free Form',
+                characteristics: [
+                    'Whole tone scales',
+                    'Parallel harmony',
+                    'Coloristic effects',
+                    'Pentatonic melodies',
+                    'Atmospheric textures'
+                ],
+                patterns: {
+                    violin1: {
+                        pentatonic: ['D4', 'E4', 'G4', 'A4', 'B4', 'D5', 'B4', 'A4'],
+                        wholetone: ['C4', 'D4', 'E4', 'F#4', 'G#4', 'A#4', 'C5', 'rest']
+                    },
+                    violin2: {
+                        parallel: ['A3', 'B3', 'D4', 'E4', 'G4', 'A4', 'G4', 'E4'],
+                        wash: ['E3', 'G3', 'B3', 'E4', 'G4', 'B4', 'G4', 'E4']
+                    },
+                    harmony: ['I', 'bII', 'IV', 'I', 'vi', 'III', 'I', 'I'],
+                    rhythmPattern: [6, 6, 4, 4, 6, 6, 8, 8] // fluid, uneven rhythm
+                }
+            }
+        };
+        
+        // ==================== MUSIC GENERATION ENGINE ====================
+        
+        class QuintetComposerV10_1 {
+            constructor() {
+                this.selectedComposer = 'bach';
+                this.currentXML = null;
+            }
+            
+            generateMusicXML(settings) {
+                const style = composerStyles[this.selectedComposer];
+                const measures = parseInt(settings.measures) || 32;
+                
+                let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+                xml += '<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">\n';
+                xml += '<score-partwise version="3.0">\n';
+                
+                // Header with composer-specific title
+                xml += '  <work>\n';
+                xml += `    <work-title>${settings.title} (${style.name} Style)</work-title>\n`;
+                xml += '  </work>\n';
+                xml += '  <identification>\n';
+                xml += `    <creator type="composer">Style: ${style.name}</creator>\n`;
+                xml += '  </identification>\n';
+                
+                // Part list
+                xml += '  <part-list>\n';
+                xml += '    <score-part id="P1"><part-name>Guitar</part-name></score-part>\n';
+                xml += '    <score-part id="P2"><part-name>Violin I</part-name></score-part>\n';
+                xml += '    <score-part id="P3"><part-name>Violin II</part-name></score-part>\n';
+                xml += '    <score-part id="P4"><part-name>Viola</part-name></score-part>\n';
+                xml += '    <score-part id="P5"><part-name>Cello</part-name></score-part>\n';
+                xml += '  </part-list>\n';
+                
+                // Generate each part with composer-specific patterns
+                xml += this.generatePart('P1', 'Guitar', measures, style);
+                xml += this.generatePart('P2', 'Violin I', measures, style);
+                xml += this.generatePart('P3', 'Violin II', measures, style);
+                xml += this.generatePart('P4', 'Viola', measures, style);
+                xml += this.generatePart('P5', 'Cello', measures, style);
+                
+                xml += '</score-partwise>\n';
+                this.currentXML = xml;
+                return xml;
+            }
+            
+            generatePart(id, instrument, totalMeasures, style) {
+                let xml = `  <part id="${id}">\n`;
+                
+                for (let m = 1; m <= totalMeasures; m++) {
+                    xml += `    <measure number="${m}">\n`;
+                    
+                    // Add attributes to first measure
+                    if (m === 1) {
+                        xml += '      <attributes>\n';
+                        xml += '        <divisions>256</divisions>\n';
+                        xml += '        <key><fifths>0</fifths></key>\n';
+                        xml += '        <time><beats>4</beats><beat-type>4</beat-type></time>\n';
+                        xml += '        <clef><sign>G</sign><line>2</line></clef>\n';
+                        
+                        // Add tempo marking for style
+                        if (this.selectedComposer === 'bach') {
+                            xml += '        <tempo>Andante</tempo>\n';
+                        } else if (this.selectedComposer === 'mozart') {
+                            xml += '        <tempo>Allegro</tempo>\n';
+                        } else if (this.selectedComposer === 'beethoven') {
+                            xml += '        <tempo>Allegro con brio</tempo>\n';
+                        } else if (this.selectedComposer === 'brahms') {
+                            xml += '        <tempo>Andante espressivo</tempo>\n';
+                        } else if (this.selectedComposer === 'debussy') {
+                            xml += '        <tempo>Moderato</tempo>\n';
+                        }
+                        
+                        xml += '      </attributes>\n';
+                    }
+                    
+                    // Generate notes based on composer style
+                    xml += this.generateMeasureNotes(instrument, m, style);
+                    
+                    xml += '    </measure>\n';
+                }
+                
+                xml += '  </part>\n';
+                return xml;
+            }
+            
+            generateMeasureNotes(instrument, measureNum, style) {
+                let xml = '';
+                
+                // Get the appropriate pattern for this instrument and style
+                let notes = [];
+                let rhythms = style.patterns.rhythmPattern;
+                
+                if (this.selectedComposer === 'bach') {
+                    // Bach: Complex fugal patterns
+                    if (instrument === 'Violin I') {
+                        if (measureNum <= 4) {
+                            notes = style.patterns.violin1.subject;
+                        } else if (measureNum <= 8) {
+                            notes = style.patterns.violin1.countersubject;
+                        } else {
+                            notes = style.patterns.violin1.sequence;
+                        }
+                    } else if (instrument === 'Violin II') {
+                        if (measureNum <= 4) {
+                            notes = Array(8).fill('rest');
+                        } else if (measureNum <= 8) {
+                            notes = style.patterns.violin2.answer;
+                        } else {
+                            notes = style.patterns.violin2.episode;
+                        }
+                    } else if (instrument === 'Viola') {
+                        // Delayed entry for fugue
+                        if (measureNum <= 8) {
+                            notes = Array(8).fill('rest');
+                        } else {
+                            notes = style.patterns.violin1.subject.map(n => 
+                                n.replace('5', '3').replace('4', '3'));
+                        }
+                    } else if (instrument === 'Cello') {
+                        // Bass line following harmonic progression
+                        notes = ['C3', 'G2', 'C3', 'D3', 'G2', 'C3', 'F2', 'G2'];
+                    } else {
+                        // Guitar continuo
+                        notes = ['C4', 'E4', 'G4', 'C5', 'G4', 'E4', 'C4', 'G3'];
+                    }
+                    
+                } else if (this.selectedComposer === 'mozart') {
+                    // Mozart: Elegant melodic lines with Alberti bass
+                    if (instrument === 'Violin I') {
+                        notes = measureNum % 4 < 2 ? 
+                            style.patterns.violin1.theme1 : 
+                            style.patterns.violin1.theme2;
+                    } else if (instrument === 'Violin II') {
+                        notes = style.patterns.violin2.harmony;
+                    } else if (instrument === 'Viola') {
+                        notes = style.patterns.violin2.accompaniment.map(n => 
+                            n.replace('4', '3'));
+                    } else if (instrument === 'Cello') {
+                        // Simple bass line
+                        notes = ['C2', 'C2', 'G2', 'G2', 'C2', 'C2', 'G2', 'G2'];
+                        rhythms = [4, 4, 4, 4, 4, 4, 4, 4];
+                    } else {
+                        // Guitar - Alberti bass pattern
+                        notes = ['C3', 'G3', 'E3', 'G3', 'C3', 'G3', 'E3', 'G3'];
+                        rhythms = [8, 8, 8, 8, 8, 8, 8, 8];
+                    }
+                    
+                } else if (this.selectedComposer === 'beethoven') {
+                    // Beethoven: Dramatic motifs
+                    if (instrument === 'Violin I') {
+                        if (measureNum % 4 === 1) {
+                            notes = [...style.patterns.violin1.motif, ...style.patterns.violin1.motif];
+                        } else {
+                            notes = style.patterns.violin1.heroic;
+                        }
+                    } else if (instrument === 'Violin II') {
+                        notes = [...style.patterns.violin2.support, ...style.patterns.violin2.counter];
+                    } else {
+                        // Other instruments support with dramatic chords
+                        notes = ['C3', 'C3', 'C3', 'G3', 'Eb3', 'Eb3', 'Eb3', 'C3'];
+                        rhythms = style.patterns.rhythmPattern;
+                    }
+                    
+                } else if (this.selectedComposer === 'brahms') {
+                    // Brahms: Complex polyrhythms
+                    if (instrument === 'Violin I') {
+                        notes = style.patterns.violin1.melody;
+                        // Create 3 against 2
+                        if (measureNum % 2 === 0) {
+                            rhythms = [3, 3, 3, 3, 4, 4, 4];
+                        }
+                    } else if (instrument === 'Violin II') {
+                        notes = style.patterns.violin2.cross;
+                    } else if (instrument === 'Viola') {
+                        notes = style.patterns.violin2.thirds.map(n => 
+                            n.replace('4', '3').replace('5', '4'));
+                    } else {
+                        // Rich bass
+                        notes = ['F2', 'C3', 'A2', 'F2', 'C3', 'F2', 'C2', 'F2'];
+                    }
+                    
+                } else if (this.selectedComposer === 'debussy') {
+                    // Debussy: Impressionistic colors
+                    if (instrument === 'Violin I') {
+                        notes = measureNum % 3 === 0 ? 
+                            style.patterns.violin1.wholetone : 
+                            style.patterns.violin1.pentatonic;
+                    } else if (instrument === 'Violin II') {
+                        notes = style.patterns.violin2.parallel;
+                    } else if (instrument === 'Viola') {
+                        notes = style.patterns.violin2.wash.map(n => 
+                            n.replace('4', '3').replace('3', '2'));
+                    } else {
+                        // Pedal tones
+                        notes = ['C2', 'rest', 'rest', 'C2', 'rest', 'rest', 'G2', 'rest'];
+                        rhythms = [2, 8, 8, 2, 8, 8, 2, 8];
+                    }
+                }
+                
+                // Generate actual notes
+                for (let i = 0; i < notes.length && i < 8; i++) {
+                    if (notes[i] === 'rest') {
+                        xml += '      <note>\n';
+                        xml += '        <rest/>\n';
+                        xml += `        <duration>${rhythms[i % rhythms.length] * 64}</duration>\n`;
+                        xml += '        <type>quarter</type>\n';
+                        xml += '      </note>\n';
+                    } else {
+                        const pitch = notes[i].substring(0, notes[i].length - 1);
+                        const octave = notes[i].substring(notes[i].length - 1);
+                        
+                        xml += '      <note>\n';
+                        xml += '        <pitch>\n';
+                        xml += `          <step>${pitch.replace('#', '').replace('b', '')}</step>\n`;
+                        if (pitch.includes('#')) {
+                            xml += '          <alter>1</alter>\n';
+                        } else if (pitch.includes('b')) {
+                            xml += '          <alter>-1</alter>\n';
+                        }
+                        xml += `          <octave>${octave}</octave>\n`;
+                        xml += '        </pitch>\n';
+                        xml += `        <duration>${rhythms[i % rhythms.length] * 64}</duration>\n`;
+                        xml += '        <type>quarter</type>\n';
+                        
+                        // Add dynamics for Beethoven
+                        if (this.selectedComposer === 'beethoven' && i === 0 && measureNum % 4 === 1) {
+                            xml += '        <dynamics><sf/></dynamics>\n';
+                        }
+                        
+                        xml += '      </note>\n';
+                    }
+                }
+                
+                return xml;
+            }
+        }
+        
+        // ==================== UI FUNCTIONS ====================
+        
+        const composer = new QuintetComposerV10_1();
+        
+        function switchTab(tabName, button) {
+            button.parentElement.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            button.classList.add('active');
+            
+            button.parentElement.parentElement.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabName + '-tab').classList.add('active');
+        }
+        
+        function updateProgress(percent, message) {
+            const progressBar = document.getElementById('progress');
+            progressBar.style.width = percent + '%';
+            progressBar.textContent = percent === 0 ? 'Ready' : percent + '%';
+            
+            if (message) {
+                const log = document.getElementById('log');
+                const timestamp = new Date().toLocaleTimeString();
+                log.value += `\n${timestamp} - ${message}`;
+                log.scrollTop = log.scrollHeight;
+            }
+        }
+        
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.className = 'status-message status-' + type;
+            status.textContent = message;
+            status.style.display = 'block';
+            
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 5000);
+        }
+        
+        function updateStyleInfo() {
+            const style = composerStyles[composer.selectedComposer];
+            const infoDiv = document.getElementById('style-info');
+            
+            infoDiv.innerHTML = `
+                <h4>${style.name} Style Characteristics:</h4>
+                <ul>
+                    ${style.characteristics.map(c => `<li>${c}</li>`).join('')}
+                </ul>
+            `;
+            
+            // Update stats
+            document.getElementById('stat-style').textContent = style.name;
+            document.getElementById('stat-texture').textContent = style.texture;
+            document.getElementById('stat-form').textContent = style.form;
+            
+            // Update score preview
+            updateScorePreview();
+        }
+        
+        function updateScorePreview() {
+            const previews = {
+                bach: `Bach-Style Opening (Fugal):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Violin I:   [Subject]    G--A--B--C--D--E--F#--G--|
+Violin II:  [Rest----]   ------------[Answer in D]--|
+Viola:      [Rest----]   -------------------------|
+Cello:      [Rest----]   --------[Subject in G]---|
+Guitar:     [Continuo]   C---G---C---G---D---G----|`,
+                
+                mozart: `Mozart-Style Opening (Sonata):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Violin I:   [Theme 1]    C--D--E--F--G--F--E--D---|
+Violin II:  [Harmony]    E--G--C--E--G--E--C--E---|
+Viola:      [Accomp.]    C---E---G---C---E---G----|
+Cello:      [Bass---]    C-------G-------C--------|
+Guitar:     [Alberti]    C-G-E-G-C-G-E-G----------|`,
+                
+                beethoven: `Beethoven-Style Opening (Dramatic):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Violin I:   [Fate Motif] G-G-G-Eb...G-G-G-Eb...--|
+Violin II:  [Support]    Eb-Eb-Eb-C...Eb-Eb-Eb-C-|
+Viola:      [Harmony]    C--C--C--G--Eb-Eb-Eb-C--|
+Cello:      [Foundation] C---sf!---G---sf!--------|
+Guitar:     [Chords]     C-chord---Eb-chord-------|`,
+                
+                brahms: `Brahms-Style Opening (Polyrhythmic):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Violin I:   [3 against] A---C---E-A-G-E-C--------|
+Violin II:  [2 rhythm]  F--G--A--Bb-A--G--F--E---|
+Viola:      [Thirds]    C-E-G-C-G-E-C-G----------|
+Cello:      [Rich Bass] F---C---A---F---C--------|
+Guitar:     [Arpegg.]   F-A-C-F-E-C-A-F----------|`,
+                
+                debussy: `Debussy-Style Opening (Impressionistic):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Violin I:   [Pentatonic] D~~E~~G~~A~~B~~D~~~~~~--|
+Violin II:  [Parallel]   A~~~B~~~D~~~E~~~G~~~~~~~~|
+Viola:      [Wash]       E~~~~~G~~~~~B~~~~~E~~~~~~|
+Cello:      [Pedal]      C-----------rest---------|
+Guitar:     [Colors]     Whole-tone-clusters------|`
+            };
+            
+            document.getElementById('score-preview').textContent = 
+                previews[composer.selectedComposer] || previews.bach;
+        }
+        
+        async function generateComposition() {
+            updateProgress(0, `Starting ${composerStyles[composer.selectedComposer].name} style generation...`);
+            
+            const steps = [
+                { progress: 20, message: `Analyzing ${composerStyles[composer.selectedComposer].form} structure...` },
+                { progress: 40, message: `Creating ${composerStyles[composer.selectedComposer].texture} texture...` },
+                { progress: 60, message: 'Applying composer-specific patterns...' },
+                { progress: 80, message: 'Finalizing voice leading...' },
+                { progress: 100, message: 'Composition complete!' }
+            ];
+            
+            for (const step of steps) {
+                await new Promise(resolve => setTimeout(resolve, 400));
+                updateProgress(step.progress, step.message);
+            }
+            
+            const settings = {
+                title: document.getElementById('title').value,
+                tempo: document.getElementById('tempo').value,
+                key: document.getElementById('key').value,
+                measures: document.getElementById('measures').value
+            };
+            
+            composer.generateMusicXML(settings);
+            
+            document.getElementById('download-btn').style.display = 'inline-block';
+            showStatus(`${composerStyles[composer.selectedComposer].name} style composition generated!`, 'success');
+        }
+        
+        function previewStyle() {
+            const style = composerStyles[composer.selectedComposer];
+            updateProgress(0, `Previewing ${style.name} style...`);
+            
+            // Show characteristic elements
+            setTimeout(() => {
+                updateProgress(33, `Texture: ${style.texture}`);
+                setTimeout(() => {
+                    updateProgress(66, `Form: ${style.form}`);
+                    setTimeout(() => {
+                        updateProgress(100, 'Preview complete');
+                        setTimeout(() => updateProgress(0, 'Ready'), 2000);
+                    }, 500);
+                }, 500);
+            }, 500);
+        }
+        
+        function compareStyles() {
+            const log = document.getElementById('log');
+            log.value += '\n\n=== STYLE COMPARISON ===\n';
+            
+            for (const [key, style] of Object.entries(composerStyles)) {
+                log.value += `\n${style.name}:\n`;
+                log.value += `  Texture: ${style.texture}\n`;
+                log.value += `  Form: ${style.form}\n`;
+                log.value += `  Key Features: ${style.characteristics[0]}\n`;
+            }
+            
+            log.scrollTop = log.scrollHeight;
+            showStatus('Style comparison generated', 'info');
+        }
+        
+        function downloadXML() {
+            if (!composer.currentXML) {
+                showStatus('Please generate a composition first', 'error');
+                return;
+            }
+            
+            const blob = new Blob([composer.currentXML], { type: 'text/xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `quintet_${composer.selectedComposer}_style.musicxml`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showStatus('MusicXML file downloaded!', 'success');
+        }
+        
+        // ==================== EVENT LISTENERS ====================
+        
+        // Range inputs
+        document.getElementById('tempo').addEventListener('input', function() {
+            document.getElementById('tempo-display').textContent = this.value;
+        });
+        
+        document.getElementById('complexity').addEventListener('input', function() {
+            document.getElementById('complexity-display').textContent = this.value;
+        });
+        
+        document.getElementById('dynamics').addEventListener('input', function() {
+            document.getElementById('dynamics-display').textContent = this.value;
+        });
+        
+        // Composer selection
+        document.querySelectorAll('.composer-card').forEach(card => {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.composer-card').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                composer.selectedComposer = this.dataset.composer;
+                updateStyleInfo();
+                showStatus(`Selected ${this.querySelector('h4').textContent} style`, 'info');
+            });
+        });
+        
+        // Initialize
+        updateProgress(0, 'System initialized');
+        updateStyleInfo();
+    </script>
+</body>
+</html>
