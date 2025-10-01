@@ -203,32 +203,36 @@
         for (let i=0;i<bars;i++) seq.push(preset[i % preset.length]);
         tokens = seq;
       } else {
-        // split by spaces and keep '|' tokens
         const parts = raw.split(/\s+/).flatMap(t => t.split(/(?=\|)|(?<=\|)/)).filter(Boolean);
-        // expand durations and remove barlines (we treat them as measure separators only when durations are specified)
-        let currentBar = [];
         let bars = [];
+        let currentBar = [];
+        let mode = 'auto'; // auto: 1 chord per bar; barline: collect until '|'; durations: explicit per token
         for (const p of parts) {
           if (p === '|') {
+            mode = 'barline';
             if (currentBar.length) { bars.push(currentBar.slice()); currentBar = []; }
             continue;
           }
           const durMatch = p.match(/^(.*?):(\d+)$/);
-          const base = durMatch ? durMatch[1] : p;
-          const count = durMatch ? parseInt(durMatch[2],10) : 1;
-          for (let i=0;i<count;i++) {
-            if (currentBar.length) { bars.push(currentBar.slice()); currentBar = []; }
-            bars.push([base]);
+          if (durMatch) {
+            mode = 'durations';
+            const base = durMatch[1];
+            const count = parseInt(durMatch[2],10) || 1;
+            for (let i=0;i<count;i++) bars.push([base]);
+            continue;
           }
-          if (!durMatch) currentBar.push(base);
+          if (mode === 'auto') {
+            bars.push([p]);
+          } else if (mode === 'barline') {
+            currentBar.push(p);
+          } else { // durations mode, treat as one bar per token
+            bars.push([p]);
+          }
         }
-        if (currentBar.length) bars.push(currentBar.slice());
-        // If bars were not explicitly formed, map each token to a bar
-        if (bars.length === 0) bars = parts.filter(x=>x!== '|').map(x=>[x]);
+        if (mode === 'barline' && currentBar.length) bars.push(currentBar.slice());
         tokens = bars.map(bar => bar[0]);
       }
 
-      // interpret tokens to chords per bar
       const chords = tokens.map(tok => {
         const cleaned = tok.replace(/\|/g,'');
         let chord = null;
