@@ -1,3 +1,542 @@
+THIS SHOULD BE A LINTER ERROR<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quintet Composer — v11.0 Harmonic Framework First</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 16px; }
+    h1 { font-size: 20px; margin: 0 0 12px; }
+    .row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+    .label { min-width: 140px; }
+    input[type="text"], select { padding: 6px 8px; }
+    button { padding: 8px 12px; cursor: pointer; }
+    #diagnostics { margin-top: 12px; padding: 8px; background: #f6f6f8; border: 1px solid #ddd; white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+  </style>
+  <!-- No external dependencies; single-file HTML app -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'unsafe-inline' 'self';">
+</head>
+<body>
+  <h1>Quintet Composer — v11.0 “Harmonic Framework First”</h1>
+
+  <div class="row" style="margin-bottom: 8px;">
+    <div class="label">Style</div>
+    <select id="styleSelect" aria-label="Style preset">
+      <option value="Bach">Bach</option>
+      <option value="Mozart">Mozart</option>
+      <option value="Jazz">Jazz</option>
+    </select>
+  </div>
+
+  <div class="row" style="margin-bottom: 8px;">
+    <div class="label">Chord progression</div>
+    <input type="text" id="chordInput" size="64" placeholder="Chord progression: C G Am F or I V vi IV or Cmaj7 Dm7 G7 Cmaj7">
+  </div>
+
+  <div class="row" style="margin-bottom: 12px;">
+    <button id="generateBtn">Generate</button>
+    <button id="exportBtn">Export (.musicxml)</button>
+    <button id="copyHtmlBtn">Copy HTML</button>
+  </div>
+
+  <div id="diagnostics" aria-live="polite"></div>
+
+  <script>
+  (function() {
+    const DEFAULT_BARS_EMPTY_INPUT = 8;
+    const TIME_SIGNATURE = { beats: 4, beatType: 4 };
+    const DIVISIONS = 1; // quarter note = 1 division; measures sum to 4
+    const KEY = { fifths: 0, mode: 'major' }; // C major
+
+    const styleSelect = document.getElementById('styleSelect');
+    const chordInput = document.getElementById('chordInput');
+    const generateBtn = document.getElementById('generateBtn');
+    const exportBtn = document.getElementById('exportBtn');
+    const copyHtmlBtn = document.getElementById('copyHtmlBtn');
+    const diagnosticsEl = document.getElementById('diagnostics');
+
+    const TRIADS = {
+      major: [0,4,7],
+      minor: [0,3,7],
+      dim: [0,3,6],
+      aug: [0,4,8]
+    };
+    const SEVENTHS = {
+      maj7: [0,4,7,11],
+      '7': [0,4,7,10],
+      m7: [0,3,7,10],
+      m7b5: [0,3,6,10]
+    };
+
+    const DEGREE_TO_PC_MAJOR = { 1:0, 2:2, 3:4, 4:5, 5:7, 6:9, 7:11 };
+    const LETTER_TO_PC = { C:0, D:2, E:4, F:5, G:7, A:9, B:11 };
+    const PC_TO_LETTER = [
+      { step:'C', alter:0 },
+      { step:'C', alter:1 },
+      { step:'D', alter:0 },
+      { step:'D', alter:1 },
+      { step:'E', alter:0 },
+      { step:'F', alter:0 },
+      { step:'F', alter:1 },
+      { step:'G', alter:0 },
+      { step:'G', alter:1 },
+      { step:'A', alter:0 },
+      { step:'A', alter:1 },
+      { step:'B', alter:0 }
+    ];
+
+    function clamp(val, min, max) { return Math.max(min, Math.min(max, val)); }
+    function mod(n, m) { return ((n % m) + m) % m; }
+
+    function parseStylePreset(style) {
+      if (style === 'Bach') return ['I','V','I','vi','ii','V','I'];
+      if (style === 'Mozart') return ['I','IV','I','V','I'];
+      if (style === 'Jazz') return ['IIm7','V7','IMaj7'];
+      return ['I','V','vi','IV'];
+    }
+
+    function isRomanNumeralToken(tok) {
+      return /^[#b]?[ivIV]{1,3}(?:maj7|M7|m7b5|m7|7)?$/.test(tok.replace(/[°o]/g,'dim')) || /^[#b]?[ivIV]{1,3}[mM]?(?:maj7|M7|m7b5|m7|7)?$/.test(tok);
+    }
+
+    function numeralToChord(numeral) {
+      let tok = numeral.replace(/\s+/g,'');
+      tok = tok.replace(/[°o]/g,'dim');
+      const accidental = tok.startsWith('#') ? 1 : tok.startsWith('b') ? -1 : 0;
+      if (accidental) tok = tok.slice(1);
+      const match = tok.match(/^([ivIV]{1,3})([mM]?)(maj7|M7|m7b5|m7|7)?$/);
+      if (!match) return null;
+      const roman = match[1];
+      const optQual = match[2];
+      const seventh = match[3] || '';
+      const isLower = roman === roman.toLowerCase();
+      // degree
+      const map = { I:1, II:2, III:3, IV:4, V:5, VI:6, VII:7 };
+      const deg = map[roman.toUpperCase()];
+      let rootPc = mod(DEGREE_TO_PC_MAJOR[deg] + accidental, 12);
+      // quality baseline
+      let quality = isLower ? 'minor' : 'major';
+      if (/dim/i.test(tok)) quality = 'dim';
+      if (/aug|\+/i.test(tok)) quality = 'aug';
+      // seventh mapping
+      let kind = quality;
+      if (seventh) {
+        if (/maj7|M7/.test(seventh)) kind = 'maj7';
+        else if (/m7b5/.test(seventh)) kind = 'm7b5';
+        else if (/m7/.test(seventh)) kind = 'm7';
+        else if (/7/.test(seventh)) kind = '7';
+      }
+      // For lowercase with 7 and no explicit minor marker, prefer minor seventh on ii, iii, vi
+      if (!seventh && isLower) {
+        // keep triad quality
+      }
+      return { rootPc, kind, symbol: numeral };
+    }
+
+    function nameToChord(name) {
+      let tok = name.replace(/\s+/g,'');
+      // handle inversion
+      const invIdx = tok.indexOf('/');
+      if (invIdx !== -1) tok = tok.slice(0, invIdx);
+      const m = tok.match(/^([A-Ga-g])([#b]?)(maj7|M7|m7b5|m7|7|maj|m|min|dim|aug)?$/);
+      if (!m) return null;
+      const letter = m[1].toUpperCase();
+      const acc = m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0;
+      const qualRaw = m[3] || '';
+      let rootPc = mod(LETTER_TO_PC[letter] + acc, 12);
+      let kind = 'major';
+      if (/maj7|M7/.test(qualRaw)) kind = 'maj7';
+      else if (/m7b5/.test(qualRaw)) kind = 'm7b5';
+      else if (/m7/.test(qualRaw)) kind = 'm7';
+      else if (/7/.test(qualRaw)) kind = '7';
+      else if (/maj/.test(qualRaw)) kind = 'major';
+      else if (/m|min/.test(qualRaw)) kind = 'minor';
+      else if (/dim/.test(qualRaw)) kind = 'dim';
+      else if (/aug/.test(qualRaw)) kind = 'aug';
+      return { rootPc, kind, symbol: name };
+    }
+
+    function chordKindToPcs(kind) {
+      if (SEVENTHS[kind]) return SEVENTHS[kind];
+      if (TRIADS[kind]) return TRIADS[kind];
+      // default major
+      return TRIADS.major;
+    }
+
+    function pcToStepAlter(pc) { return PC_TO_LETTER[mod(pc,12)]; }
+
+    function midiFromPcNear(pc, targetMidi) {
+      // choose midi for given pc near targetMidi
+      let baseOct = Math.floor(targetMidi / 12);
+      let candidates = [baseOct - 1, baseOct, baseOct + 1].map(o => o*12 + pc);
+      let best = candidates[0];
+      let bestDist = Math.abs(candidates[0] - targetMidi);
+      for (let i=1;i<candidates.length;i++) {
+        const d = Math.abs(candidates[i] - targetMidi);
+        if (d < bestDist) { best = candidates[i]; bestDist = d; }
+      }
+      return best;
+    }
+
+    function enforceRange(midi, minMidi, maxMidi) {
+      while (midi < minMidi) midi += 12;
+      while (midi > maxMidi) midi -= 12;
+      return clamp(midi, minMidi, maxMidi);
+    }
+
+    function diatonicStep(pc, step) {
+      // C major diatonic movement by step (+/-1 or 2) in semitones approximated
+      const cmaj = [0,2,4,5,7,9,11,12];
+      let idx = 0;
+      for (let i=0;i<cmaj.length;i++) { if (cmaj[i] % 12 === (pc%12)) { idx = i; break; } }
+      let newIdx = clamp(idx + step, 0, cmaj.length-1);
+      return cmaj[newIdx] % 12;
+    }
+
+    function parseProgression(input, style, barsHint) {
+      let tokens = [];
+      const raw = (input || '').trim();
+      if (!raw) {
+        const preset = parseStylePreset(style);
+        const bars = Math.max(barsHint || DEFAULT_BARS_EMPTY_INPUT, preset.length);
+        let seq = [];
+        for (let i=0;i<bars;i++) seq.push(preset[i % preset.length]);
+        tokens = seq;
+      } else {
+        // split by spaces and keep '|' tokens
+        const parts = raw.split(/\s+/).flatMap(t => t.split(/(?=\|)|(?<=\|)/)).filter(Boolean);
+        // expand durations and remove barlines (we treat them as measure separators only when durations are specified)
+        let currentBar = [];
+        let bars = [];
+        for (const p of parts) {
+          if (p === '|') {
+            if (currentBar.length) { bars.push(currentBar.slice()); currentBar = []; }
+            continue;
+          }
+          const durMatch = p.match(/^(.*?):(\d+)$/);
+          const base = durMatch ? durMatch[1] : p;
+          const count = durMatch ? parseInt(durMatch[2],10) : 1;
+          for (let i=0;i<count;i++) {
+            if (currentBar.length) { bars.push(currentBar.slice()); currentBar = []; }
+            bars.push([base]);
+          }
+          if (!durMatch) currentBar.push(base);
+        }
+        if (currentBar.length) bars.push(currentBar.slice());
+        // If bars were not explicitly formed, map each token to a bar
+        if (bars.length === 0) bars = parts.filter(x=>x!== '|').map(x=>[x]);
+        tokens = bars.map(bar => bar[0]);
+      }
+
+      // interpret tokens to chords per bar
+      const chords = tokens.map(tok => {
+        const cleaned = tok.replace(/\|/g,'');
+        let chord = null;
+        if (isRomanNumeralToken(cleaned)) chord = numeralToChord(cleaned);
+        if (!chord) chord = nameToChord(cleaned);
+        if (!chord) chord = { rootPc: 0, kind: 'major', symbol: 'C' };
+        const pcs = chordKindToPcs(chord.kind).map(semi => mod(chord.rootPc + semi, 12));
+        return { ...chord, pcs };
+      });
+      return chords;
+    }
+
+    function makeHarmonyXML(chord) {
+      const { rootPc, kind } = chord;
+      const ra = pcToStepAlter(rootPc);
+      let kindTag = 'major';
+      if (kind === 'minor') kindTag = 'minor';
+      else if (kind === 'dim') kindTag = 'diminished';
+      else if (kind === 'aug') kindTag = 'augmented';
+      else if (kind === 'maj7') kindTag = 'major-seventh';
+      else if (kind === '7') kindTag = 'dominant';
+      else if (kind === 'm7') kindTag = 'minor-seventh';
+      else if (kind === 'm7b5') kindTag = 'half-diminished';
+      const alterTag = (typeof ra.alter === 'number' && ra.alter !== 0) ? `\n          <root-alter>${ra.alter}</root-alter>` : '';
+      return `        <harmony>\n          <root>\n            <root-step>${ra.step}</root-step>${alterTag}\n          </root>\n          <kind>${kindTag}</kind>\n        </harmony>`;
+    }
+
+    function noteXML(step, alter, octave, duration, chordTag=false) {
+      const alterLine = (typeof alter === 'number' && alter !== 0) ? `\n        <alter>${alter}</alter>` : '';
+      const chordLine = chordTag ? `\n      <chord/>` : '';
+      return `      <note>${chordLine}\n        <pitch>\n          <step>${step}</step>${alterLine}\n          <octave>${octave}</octave>\n        </pitch>\n        <duration>${duration}</duration>\n        <type>quarter</type>\n      </note>`;
+    }
+
+    function attributesXML(clef) {
+      const clefXml = clef === 'treble'
+        ? '<sign>G</sign>\n          <line>2</line>'
+        : clef === 'alto'
+        ? '<sign>C</sign>\n          <line>3</line>'
+        : '<sign>F</sign>\n          <line>4</line>';
+      return `        <attributes>\n          <divisions>${DIVISIONS}</divisions>\n          <key>\n            <fifths>${KEY.fifths}</fifths>\n            <mode>${KEY.mode}</mode>\n          </key>\n          <time>\n            <beats>${TIME_SIGNATURE.beats}</beats>\n            <beat-type>${TIME_SIGNATURE.beatType}</beat-type>\n          </time>\n          <clef>\n            ${clefXml}\n          </clef>\n        </attributes>`;
+    }
+
+    function barlineFinalXML() {
+      return `        <barline location="right">\n          <bar-style>light-heavy</bar-style>\n        </barline>`;
+    }
+
+    function pcsToMidiChoice(pcs, prevMidi, rangeMin, rangeMax, preferRoot=false, rootPc=null) {
+      const target = prevMidi != null ? prevMidi : Math.round((rangeMin + rangeMax)/2);
+      let bestMidi = null;
+      let bestDist = Infinity;
+      for (const pc of pcs) {
+        let candidate = midiFromPcNear(pc, target);
+        candidate = enforceRange(candidate, rangeMin, rangeMax);
+        let dist = Math.abs(candidate - target);
+        if (preferRoot && rootPc != null && pc === rootPc) dist -= 0.25;
+        if (dist < bestDist) { bestDist = dist; bestMidi = candidate; }
+      }
+      return bestMidi;
+    }
+
+    function generateParts(chordTimeline, style) {
+      const beatsPerBar = TIME_SIGNATURE.beats;
+      const parts = {
+        Guitar: { clef: 'treble', range:[52,76], measures: [] },
+        'Violin I': { clef: 'treble', range:[60,100], measures: [] },
+        'Violin II': { clef: 'treble', range:[55,90], measures: [] },
+        Viola: { clef: 'alto', range:[50,76], measures: [] },
+        Cello: { clef: 'bass', range:[36,60], measures: [] }
+      };
+
+      let prev = {
+        Guitar: null,
+        'Violin I': null,
+        'Violin II': null,
+        Viola: null,
+        Cello: null
+      };
+
+      for (let barIndex=0; barIndex<chordTimeline.length; barIndex++) {
+        const chord = chordTimeline[barIndex];
+        const rootPc = chord.rootPc;
+        const pcs = chord.pcs;
+
+        // Guitar: chord stack on beat 1, then root/fifth pattern
+        {
+          const [minR, maxR] = parts.Guitar.range;
+          const measureNotes = [];
+          // Beat 1 chord
+          const stackPcs = pcs.slice(0, Math.min(pcs.length, 4));
+          let baseTarget = prev.Guitar != null ? prev.Guitar : minR + 12;
+          let rootMidi = enforceRange(midiFromPcNear(rootPc, baseTarget), minR, maxR);
+          let voicingBase = rootMidi;
+          const stacked = [];
+          for (let i=0;i<stackPcs.length;i++) {
+            const pc = stackPcs[i];
+            let midi = midiFromPcNear(pc, voicingBase + i*3);
+            midi = enforceRange(midi, minR, maxR);
+            stacked.push(midi);
+          }
+          // write stacked as simultaneous quarter notes
+          stacked.forEach((midi, idx) => {
+            const ra = pcToStepAlter(mod(midi,12));
+            const oct = Math.floor(midi/12) - 1;
+            measureNotes.push(noteXML(ra.step, ra.alter, oct, 1, idx>0));
+          });
+          prev.Guitar = stacked[0];
+          // Beats 2-4 root/fifth alternation
+          const fifthPc = mod(rootPc + 7, 12);
+          for (let beat=2; beat<=beatsPerBar; beat++) {
+            const usePc = (beat % 2 === 0) ? rootPc : fifthPc;
+            let midi = midiFromPcNear(usePc, prev.Guitar);
+            midi = enforceRange(midi, minR, maxR);
+            prev.Guitar = midi;
+            const ra = pcToStepAlter(mod(midi,12));
+            const oct = Math.floor(midi/12) - 1;
+            measureNotes.push(noteXML(ra.step, ra.alter, oct, 1, false));
+          }
+          parts.Guitar.measures.push({ harmony: chord, notes: measureNotes });
+        }
+
+        // Cello: root on 1 & 3; optional fifth on 3 (especially Jazz penultimate)
+        {
+          const [minR, maxR] = parts.Cello.range;
+          const measureNotes = [];
+          let baseTarget = prev.Cello != null ? prev.Cello : minR + 7;
+          let rootMidi = enforceRange(midiFromPcNear(rootPc, baseTarget), minR, maxR);
+          let fifthMidi = enforceRange(midiFromPcNear(mod(rootPc+7,12), rootMidi+5), minR, maxR);
+          for (let beat=1; beat<=beatsPerBar; beat++) {
+            let useMidi = rootMidi;
+            if (beat === 3) {
+              const jazzApproach = (style === 'Jazz' && barIndex === chordTimeline.length - 2);
+              useMidi = jazzApproach ? fifthMidi : (Math.random() < 0.6 ? fifthMidi : rootMidi);
+            }
+            const ra = pcToStepAlter(mod(useMidi,12));
+            const oct = Math.floor(useMidi/12) - 1;
+            measureNotes.push(noteXML(ra.step, ra.alter, oct, 1, false));
+            prev.Cello = useMidi;
+          }
+          parts.Cello.measures.push({ notes: measureNotes });
+        }
+
+        // Inner voices (Viola, Violin II): chord tones, move <= 3 semitones if possible
+        for (const name of ['Viola','Violin II']) {
+          const [minR, maxR] = parts[name].range;
+          const measureNotes = [];
+          let pPrev = prev[name] != null ? prev[name] : Math.round((minR+maxR)/2);
+          let choice = pcsToMidiChoice(pcs, pPrev, minR, maxR, false, rootPc);
+          for (let beat=1; beat<=beatsPerBar; beat++) {
+            // Small adjustments per beat
+            if (beat > 1) {
+              // prefer staying or small move within chord tones
+              const candidates = pcs.map(pc => enforceRange(midiFromPcNear(pc, choice), minR, maxR));
+              let best = choice; let bestDist = 0;
+              for (const cand of candidates) {
+                const d = Math.abs(cand - choice);
+                if (d <= 3 && (best === choice || d < bestDist)) { best = cand; bestDist = d; }
+              }
+              choice = best;
+            }
+            const ra = pcToStepAlter(mod(choice,12));
+            const oct = Math.floor(choice/12) - 1;
+            measureNotes.push(noteXML(ra.step, ra.alter, oct, 1, false));
+            prev[name] = choice;
+          }
+          parts[name].measures.push({ notes: measureNotes });
+        }
+
+        // Melody (Violin I): chord tones on strong beats; weak beats may have non-chord tones (~30%)
+        {
+          const [minR, maxR] = parts['Violin I'].range;
+          const measureNotes = [];
+          let pPrev = prev['Violin I'] != null ? prev['Violin I'] : Math.round((minR+maxR)/2) + 5;
+          for (let beat=1; beat<=beatsPerBar; beat++) {
+            const strong = (beat === 1 || beat === 3);
+            let pc;
+            if (strong) {
+              const choiceMidi = pcsToMidiChoice(pcs, pPrev, minR, maxR, false, rootPc);
+              pc = mod(choiceMidi, 12);
+              pPrev = choiceMidi;
+            } else {
+              if (Math.random() < 0.3) {
+                const step = (Math.random() < 0.5 ? -1 : 1) * (Math.random() < 0.7 ? 1 : 2);
+                pc = diatonicStep(mod(pPrev,12), step);
+                let midi = midiFromPcNear(pc, pPrev);
+                midi = enforceRange(midi, minR, maxR);
+                pPrev = midi;
+              } else {
+                const choiceMidi = pcsToMidiChoice(pcs, pPrev, minR, maxR, false, rootPc);
+                pc = mod(choiceMidi, 12);
+                pPrev = choiceMidi;
+              }
+            }
+            const ra = pcToStepAlter(pc);
+            const oct = Math.floor(pPrev/12) - 1;
+            measureNotes.push(noteXML(ra.step, ra.alter, oct, 1, false));
+          }
+          prev['Violin I'] = pPrev;
+          parts['Violin I'].measures.push({ notes: measureNotes });
+        }
+      }
+
+      return parts;
+    }
+
+    function buildMusicXML(parts, chordTimeline) {
+      const partIds = [
+        { id: 'P1', name: 'Guitar', clef: parts.Guitar.clef },
+        { id: 'P2', name: 'Violin I', clef: parts['Violin I'].clef },
+        { id: 'P3', name: 'Violin II', clef: parts['Violin II'].clef },
+        { id: 'P4', name: 'Viola', clef: parts.Viola.clef },
+        { id: 'P5', name: 'Cello', clef: parts.Cello.clef }
+      ];
+
+      function partListXML() {
+        return partIds.map(p => `    <score-part id="${p.id}">\n      <part-name>${p.name}</part-name>\n    </score-part>`).join('\n');
+      }
+
+      function measuresXML(partName, id) {
+        const measures = parts[partName].measures;
+        const clef = parts[partName].clef;
+        const isGuitar = (partName === 'Guitar');
+        let xml = '';
+        for (let i=0;i<measures.length;i++) {
+          const m = measures[i];
+          xml += `  <measure number="${i+1}">\n`;
+          if (i === 0) xml += attributesXML(clef) + '\n';
+          if (isGuitar) xml += makeHarmonyXML(chordTimeline[i]) + '\n';
+          xml += m.notes.join('\n') + '\n';
+          if (i === measures.length - 1) xml += barlineFinalXML() + '\n';
+          xml += '  </measure>\n';
+        }
+        return xml;
+      }
+
+      const header = `<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE score-partwise PUBLIC \"-//Recordare//DTD MusicXML 3.1 Partwise//EN\" \"http://www.musicxml.org/dtds/partwise.dtd\">\n<score-partwise version="3.1">\n  <part-list>\n${partListXML()}\n  </part-list>`;
+      const footer = '</score-partwise>';
+      const bodies = partIds.map(p => `<part id="${p.id}">\n${measuresXML(p.name, p.id)}</part>`).join('\n');
+      return [header, bodies, footer].join('\n');
+    }
+
+    function runDiagnostics(parts, chordTimeline) {
+      const bars = chordTimeline.length;
+      const lines = [];
+      lines.push(`Bars: ${bars}, Time: ${TIME_SIGNATURE.beats}/${TIME_SIGNATURE.beatType}, Key: C major`);
+      // duration sums
+      for (const name of ['Guitar','Violin I','Violin II','Viola','Cello']) {
+        const ms = parts[name].measures;
+        for (let i=0;i<ms.length;i++) {
+          const sum = ms[i].notes.length * DIVISIONS; // each note is quarter = 1
+          const ok = sum === TIME_SIGNATURE.beats * DIVISIONS ? 'OK' : 'BAD';
+          if (i === 0 && name === 'Guitar') {
+            lines.push(`Bar ${i+1} ${name}: duration=${sum} (${ok}), harmony tag present`);
+          } else {
+            lines.push(`Bar ${i+1} ${name}: duration=${sum} (${ok})`);
+          }
+        }
+      }
+      diagnosticsEl.textContent = lines.join('\n');
+    }
+
+    function generate() {
+      const style = styleSelect.value;
+      const chords = parseProgression(chordInput.value, style, DEFAULT_BARS_EMPTY_INPUT);
+      const parts = generateParts(chords, style);
+      runDiagnostics(parts, chords);
+      const xml = buildMusicXML(parts, chords);
+      window.__lastXML = xml;
+      return xml;
+    }
+
+    function exportXML() {
+      const xml = window.__lastXML || generate();
+      const blob = new Blob([xml], { type: 'application/vnd.recordare.musicxml+xml' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'quintet_v11_0.musicxml';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=>URL.revokeObjectURL(a.href), 5000);
+    }
+
+    function copyHTML() {
+      const src = document.documentElement.outerHTML;
+      navigator.clipboard.writeText(src).then(() => {
+        diagnosticsEl.textContent = (diagnosticsEl.textContent || '') + '\nCopied HTML to clipboard.';
+      }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = src;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+        diagnosticsEl.textContent = (diagnosticsEl.textContent || '') + '\nCopied HTML to clipboard (fallback).';
+      });
+    }
+
+    generateBtn.addEventListener('click', generate);
+    exportBtn.addEventListener('click', exportXML);
+    copyHtmlBtn.addEventListener('click', copyHTML);
+
+    // Initial generate
+    generate();
+  })();
+  </script>
+</body>
+</html>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
