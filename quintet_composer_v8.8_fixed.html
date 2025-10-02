@@ -392,7 +392,7 @@
                             harmony.push({
                                 pitch: adjustedTones[toneIndex],
                                 start: noteTick,
-                                duration: 2,
+                                duration: 8, // 2 beats (8 ticks with ticksPerBeat=4)
                                 velocity: b === 0 ? 75 : 65,
                                 measure: startMeasure + m,
                                 beat: b
@@ -423,7 +423,7 @@
                             bass.push({
                                 pitch: root + pitchOffset,
                                 start: noteTick,
-                                duration: ticksPerBeat,
+                                duration: ticksPerBeat * 2, // 2 beats (8 ticks)
                                 velocity: b === 0 ? 80 : 70,
                                 measure: startMeasure + m,
                                 beat: b
