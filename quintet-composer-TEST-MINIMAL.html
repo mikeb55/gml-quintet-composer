@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Button Test</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #333; color: white; }
+        button { padding: 10px 20px; font-size: 16px; margin: 10px; }
+        #output { margin: 20px 0; padding: 10px; background: #555; }
+    </style>
+</head>
+<body>
+    <h1>Button Test</h1>
+    <button onclick="testButton()" id="testBtn">Test Button</button>
+    <div id="output">Click the button to test</div>
+
+    <script>
+        function testButton() {
+            console.log('Button clicked!');
+            document.getElementById('output').innerHTML = '<div style="color: green;">SUCCESS! Button is working!</div>';
+        }
+    </script>
+</body>
+</html>
