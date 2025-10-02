@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quintet Composer v10.17 — Classic UI + MusicXML Export + MIDI Import</title>
+  <style>
+    :root { --bg:#f7f8fb; --panel:#ffffff; --ink:#0f172a; --muted:#475569; --line:#e5e7eb; --accent:#2563eb; --accent-2:#16a34a; }
+    * { box-sizing: border-box; font-family: Inter, ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial; }
+    body { margin:0; background:var(--bg); color:var(--ink); }
+    header { background:#ffffff; border-bottom:1px solid var(--line); padding:14px 18px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    h1 { font-size:18px; margin:0; font-weight:700; }
+    .sub { font-size:12px; color:var(--muted); }
+    .row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .btn { appearance:none; border:1px solid var(--line); background:#fff; color:var(--ink); padding:10px 12px; border-radius:10px; cursor:pointer; }
+    .btn.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .btn.secondary { background:#fff; color:var(--accent); border-color:var(--accent); }
+    .btn:focus { outline:2px solid var(--accent); outline-offset:1px; }
+    main { padding:16px; display:grid; grid-template-columns: 320px 1fr; gap:16px; }
+    .panel { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:14px; }
+    .panel h2 { margin:0 0 10px 0; font-size:16px; }
+    label { display:block; font-size:12px; color:var(--muted); margin:8px 0 4px; }
+    input, select { width:100%; padding:9px 10px; border-radius:10px; border:1px solid var(--line); background:#fff; color:var(--ink); }
+    .grid { width:100%; border-collapse:collapse; font-size:13px; }
+    .grid th, .grid td { padding:10px; border-bottom:1px solid var(--line); text-align:left; }
+    .badge { display:inline-block; border:1px solid var(--line); border-radius:999px; padding:2px 8px; font-size:12px; background:#fff; }
+    .status { font-size:12px; color:var(--accent-2); min-height:18px; margin-top:8px; }
+    footer { color:var(--muted); font-size:12px; padding:12px 16px; border-top:1px solid var(--line); }
+    .hidden { display:none; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Quintet Composer — String Quintet (Gtr, Vln I, Vln II, Vla, Vc)</h1>
+      <div class="sub">v10.17: Classic light UI restored • Guitar chords back • MIDI import restored • Sibelius-ready MusicXML</div>
+    </div>
+    <div class="row">
+      <button id="copySource" class="btn secondary" title="Copy entire .html to clipboard">Copy HTML</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel" id="controls">
+      <h2>Project</h2>
+      <label>Title</label>
+      <input id="title" value="Quintet Sketch" />
+
+      <label>Key (major)</label>
+      <select id="keySelect">
+        <option value="C">C</option><option value="G">G</option><option value="D">D</option><option value="A">A</option><option value="E">E</option><option value="B">B</option><option value="F#">F#</option><option value="F">F</option><option value="Bb">Bb</option><option value="Eb">Eb</option><option value="Ab">Ab</option><option value="Db">Db</option><option value="Gb">Gb</option>
+      </select>
+
+      <div class="row" style="gap:8px">
+        <div style="flex:1">
+          <label>Time Sig (beats)</label>
+          <input id="beats" type="number" min="1" max="12" value="4" />
+        </div>
+        <div style="flex:1">
+          <label>Time Sig (beat type)</label>
+          <input id="beatType" type="number" min="1" max="16" value="4" />
+        </div>
+      </div>
+
+      <div class="row" style="gap:8px">
+        <div style="flex:1">
+          <label>Measures</label>
+          <input id="measures" type="number" min="1" max="200" value="8" />
+        </div>
+        <div style="flex:1">
+          <label>Sections</label>
+          <select id="sectionPattern">
+            <option value="A">A</option>
+            <option value="AB">AB</option>
+            <option value="ABA" selected>ABA</option>
+            <option value="ABAC">ABAC</option>
+            <option value="ABCD">ABCD</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row" style="gap:8px; margin-top:10px">
+        <button id="importMIDI" class="btn">Import MIDI</button>
+        <input id="midiFile" class="hidden" type="file" accept=".mid,.midi" />
+        <button id="generate" class="btn primary">Generate</button>
+        <button id="exportXML" class="btn">Export (.musicxml)</button>
+      </div>
+
+      <div class="status" id="status"></div>
+      <p class="sub">Preview shows musical context (chords for guitar); no note numbers clutter.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Score Preview</h2>
+      <table class="grid" id="preview">
+        <thead>
+          <tr>
+            <th>Measure</th>
+            <th>Guitar (chords)</th>
+            <th>Vln I</th>
+            <th>Vln II</th>
+            <th>Viola</th>
+            <th>Cello</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer>
+    Exports MusicXML 3.1 (partwise) using correct MIME (<code>application/vnd.recordare.musicxml+xml</code>) and <code>.musicxml</code> extension. MIDI import restored (SMF type 0/1 basic support).
+  </footer>
+
+  <script>
+  // —— Utility: Copy entire HTML to clipboard ——
+  document.getElementById('copySource').addEventListener('click', async () => {
+    const html = '<!DOCTYPE html>
+' + document.documentElement.outerHTML;
+    try { await navigator.clipboard.writeText(html); alert('HTML copied to clipboard. Save as "Quintet-Composer-V10_17_SINGLE.html"'); }
+    catch(e){ const t=document.createElement('textarea'); t.value=html; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); alert('HTML copied (fallback). Save as "Quintet-Composer-V10_17_SINGLE.html"'); }
+  });
+
+  // —— Music theory helpers ——
+  const KEY_DATA = {
+    C:{ fifths:0,  scale:['C','D','E','F','G','A','B'],  accidentals:{} },
+    G:{ fifths:1,  scale:['G','A','B','C','D','E','F#'], accidentals:{'F':'#'} },
+    D:{ fifths:2,  scale:['D','E','F#','G','A','B','C#'], accidentals:{'F':'#','C':'#'} },
+    A:{ fifths:3,  scale:['A','B','C#','D','E','F#','G#'], accidentals:{'F':'#','C':'#','G':'#'} },
+    E:{ fifths:4,  scale:['E','F#','G#','A','B','C#','D#'], accidentals:{'F':'#','C':'#','G':'#','D':'#'} },
+    B:{ fifths:5,  scale:['B','C#','D#','E','F#','G#','A#'], accidentals:{'F':'#','C':'#','G':'#','D':'#','A':'#'} },
+    'F#':{ fifths:6, scale:['F#','G#','A#','B','C#','D#','E#'], accidentals:{'F':'#','C':'#','G':'#','D':'#','A':'#','E':'#'} },
+    F:{ fifths:-1, scale:['F','G','A','Bb','C','D','E'], accidentals:{'B':'b'} },
+    Bb:{ fifths:-2, scale:['Bb','C','D','Eb','F','G','A'], accidentals:{'B':'b','E':'b'} },
+    Eb:{ fifths:-3, scale:['Eb','F','G','Ab','Bb','C','D'], accidentals:{'B':'b','E':'b','A':'b'} },
+    Ab:{ fifths:-4, scale:['Ab','Bb','C','Db','Eb','F','G'], accidentals:{'B':'b','E':'b','A':'b','D':'b'} },
+    Db:{ fifths:-5, scale:['Db','Eb','F','Gb','Ab','Bb','C'], accidentals:{'B':'b','E':'b','A':'b','D':'b','G':'b'} },
+    Gb:{ fifths:-6, scale:['Gb','Ab','Bb','Cb','Db','Eb','F'], accidentals:{'B':'b','E':'b','A':'b','D':'b','G':'b','C':'b'} },
+  };
+
+  function chordRomanToTriad(key, roman){ // returns {name, tones:[{step,alter,oct}]}
+    const scale = KEY_DATA[key].scale;
+    const degMap = { 'I':0,'ii':1,'iii':2,'IV':3,'V':4,'vi':5,'vii°':6 };
+    const degree = degMap[roman];
+    const rootName = scale[degree];
+    const name = roman.replace('°','') + (roman==='vii°'?'°':'');
+    const pitch = parsePitch(rootName, 4); // guitar middle-voicing
+    const third = stepUp(scale, degree, 2);
+    const fifth = stepUp(scale, degree, 4);
+    const tones = [ pitch, parsePitch(third,4), parsePitch(fifth,4) ];
+    return { name: chordLabel(rootName, roman), tones };
+  }
+
+  function stepUp(scale, i, interval){ return scale[(i+interval)%7]; }
+  function chordLabel(root, roman){ // simple label like C, G, Am, F
+    const minor = ['ii','iii','vi'].includes(roman);
+    return root + (minor?'m':'');
+  }
+
+  function parsePitch(name, defaultOct){ // name like C, F#, Bb, E#, Cb
+    const m = name.match(/^([A-G])(bb|b|#|##)?$/);
+    if(!m) return { step:'C', alter:0, octave:defaultOct };
+    const step = m[1];
+    const alt = m[2]==='#'?1: m[2]==='##'?2: m[2]==='b'?-1: m[2]==='bb'?-2: 0;
+    return { step, alter:alt, octave:defaultOct };
+  }
+
+  // —— Minimal MusicXML writer ——
+  class MusicXMLWriter {
+    constructor({ title = "Quintet Sketch", creator = "Mike Bryant", software = "Quintet Composer v10.17", version = "3.1", divisions=480 } = {}) {
+      this.s = []; this.divisions = divisions;
+      this._p(`<?xml version="1.0" encoding="UTF-8"?>`);
+      this._p(`<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">`);
+      this._p(`<score-partwise version="${version}">`);
+      this._p(`<movement-title>${this._e(title)}</movement-title>`);
+      this._p(`<identification><creator type="composer">${this._e(creator)}</creator><encoding><software>${this._e(software)}</software></encoding></identification>`);
+    }
+    _p(x){ this.s.push(x); } _e(x){ return String(x).replace(/[<&>]/g, m=>({"<":"&lt;","&":"&amp;",">":"&gt;"}[m])); }
+    partList(parts){ this._p(`<part-list>`); parts.forEach(p=>this._p(`<score-part id="${p.id}"><part-name>${this._e(p.name)}</part-name></score-part>`)); this._p(`</part-list>`); }
+    openPart(id){ this._p(`<part id="${id}">`); } closePart(){ this._p(`</part>`); }
+    openMeasure(n, { fifths=0, beats=4, beatType=4, clef="G", clefLine=2, showAttrs=false }={}){
+      this._p(`<measure number="${n}">`);
+      if(showAttrs){ this._p(`<attributes><divisions>${this.divisions}</divisions><key><fifths>${fifths}</fifths></key><time><beats>${beats}</beats><beat-type>${beatType}</beat-type></time><clef><sign>${clef}</sign><line>${clefLine}</line></clef></attributes>`); }
+    }
+    harmony(rootStep, rootAlter=0, kind="major"){ this._p(`<harmony><root><root-step>${rootStep}</root-step>${rootAlter?`<root-alter>${rootAlter}</root-alter>`:''}</root><kind${kind==='minor'?' text="minor"':''}>${kind}</kind></harmony>`); }
+    _dur(type){ const d=this.divisions; const map={whole:d*4,half:d*2,quarter:d,eighth:d/2,"16th":d/4}; return map[type]??d; }
+    notePitch(n, chord=false){ const alter = (n.alter?`<alter>${n.alter}</alter>`:''); this._p(`<note>${chord?`<chord/>`:''}<pitch><step>${n.step}</step>${alter}<octave>${n.octave}</octave></pitch><duration>${this._dur(n.type||'quarter')}</duration><type>${n.type||'quarter'}</type></note>`); }
+    rest(type='quarter'){ this._p(`<note><rest/><duration>${this._dur(type)}</duration><type>${type}</type></note>`);}    
+    closeMeasure(){ this._p(`</measure>`); }
+    footer(){ this._p(`</score-partwise>`); return this.s.join('
+'); }
+  }
+
+  function downloadMusicXML(xml, baseName){ const blob=new Blob([xml],{type:'application/vnd.recordare.musicxml+xml'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${baseName}.musicxml`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href); }
+
+  // —— App state ——
+  const PARTS = [
+    { id:'P1', name:'Guitar', clef:'G', clefLine:2 },
+    { id:'P2', name:'Violin I', clef:'G', clefLine:2 },
+    { id:'P3', name:'Violin II', clef:'G', clefLine:2 },
+    { id:'P4', name:'Viola', clef:'C', clefLine:3 },
+    { id:'P5', name:'Cello', clef:'F', clefLine:4 },
+  ];
+
+  let app = { title:'Quintet Sketch', key:'C', beats:4, beatType:4, measures:[], source:'generated' };
+
+  function setStatus(msg){ document.getElementById('status').textContent = msg; }
+  function byId(x){ return document.getElementById(x); }
+
+  // —— Generator with Guitar chords back ——
+  const DEFAULT_ROMAN = ['I','V','vi','IV'];
+  function generate(){
+    app.title = (byId('title').value||'Quintet Sketch').trim();
+    app.key = byId('keySelect').value; app.beats = +byId('beats').value||4; app.beatType=+byId('beatType').value||4;
+    const total = Math.max(1, +byId('measures').value||8);
+    const pattern = byId('sectionPattern').value;
+    app.measures = [];
+
+    // make chord grid for guitar from roman cycle
+    for(let m=0; m<total; m++){
+      const meas = { beats:app.beats, beatType:app.beatType, fifths:KEY_DATA[app.key].fifths };
+      // Guitar: chord per beat (I-V-vi-IV repeating by measure)
+      const roman = DEFAULT_ROMAN[m % DEFAULT_ROMAN.length];
+      const tri = chordRomanToTriad(app.key, roman);
+      meas.gtrChord = tri; // store for preview/harmony tag
+      meas.P1 = [];
+      for(let b=0;b<app.beats;b++){
+        tri.tones.forEach((t, idx)=>{ const n={...t, type:'quarter'}; meas.P1.push(idx===0? n : {...n}); }); // stacked -> we will add <chord/> on export
+      }
+      // Strings: simple supportive lines (no numbers in preview)
+      meas.P2 = Array(app.beats).fill({ step:'E', alter:0, octave:5, type:'quarter' });
+      meas.P3 = Array(app.beats).fill({ step:'C', alter:0, octave:5, type:'quarter' });
+      meas.P4 = Array(app.beats).fill({ step:'A', alter:0, octave:4, type:'quarter' });
+      meas.P5 = Array(app.beats).fill({ step:'C', alter:0, octave:3, type:'quarter' });
+      app.measures.push(meas);
+    }
+
+    render(pattern);
+    setStatus(`Generated ${total} measures in ${app.beats}/${app.beatType} in ${app.key} major. Guitar chords restored.`);
+  }
+
+  function render(pattern){
+    const tb = byId('tbody'); tb.innerHTML='';
+    app.measures.forEach((m,i)=>{
+      const tr=document.createElement('tr');
+      const tdM=document.createElement('td'); tdM.textContent = `${i+1} (${pattern[i%pattern.length]})`; tr.appendChild(tdM);
+      const tdG=document.createElement('td'); tdG.innerHTML = `<span class="badge">${m.gtrChord?.name||'-'}</span>`; tr.appendChild(tdG);
+      ['P2','P3','P4','P5'].forEach(pid=>{ const td=document.createElement('td'); td.textContent = 'phrase'; tr.appendChild(td); });
+      tb.appendChild(tr);
+    });
+  }
+
+  // —— MIDI import (basic SMF type 0/1) ——
+  document.getElementById('importMIDI').addEventListener('click', ()=> byId('midiFile').click());
+  byId('midiFile').addEventListener('change', async (e)=>{
+    const file = e.target.files[0]; if(!file) return;
+    const buf = await file.arrayBuffer();
+    const midi = parseMIDI(buf);
+    if(!midi){ setStatus('MIDI: parse error'); return; }
+    // Build simple measures from channel notes; map channels→parts (1:Gtr,2:Vln I,3:Vln II,4:Vla,5:Vc)
+    const tpq = midi.header.ticksPerQuarter || 480;
+    const beats = app.beats, beatType=app.beatType; const measTicks = tpq * (4/beatType) * beats;
+    const lastTick = Math.max(1, ...midi.tracks.map(t=>t.lastTick||0));
+    const total = Math.max(1, Math.ceil(lastTick / measTicks));
+    app.measures = [];
+    for(let m=0;m<total;m++){
+      app.measures.push({ beats, beatType, fifths:KEY_DATA[app.key].fifths, P1:[], P2:[], P3:[], P4:[], P5:[] });
+    }
+    // assign
+    midi.tracks.forEach(tr=>{
+      tr.notes.forEach(n=>{
+        const ch = (n.channel||0)+1; // 1-16
+        const pid = ch===1?'P1': ch===2?'P2': ch===3?'P3': ch===4?'P4': ch===5?'P5': null;
+        if(!pid) return;
+        const mIndex = Math.floor(n.start / measTicks);
+        if(!app.measures[mIndex]) return;
+        // Map MIDI note number to MusicXML step/alter/octave
+        const pitch = midiNumberToPitch(n.noteNumber);
+        app.measures[mIndex][pid].push({ ...pitch, type:'quarter' });
+      });
+    });
+    app.source='midi';
+    render('M'.repeat(app.measures.length));
+    setStatus(`Imported MIDI • ${total} measures at ${beats}/${beatType}, TPQ ${tpq}.`);
+  });
+
+  function midiNumberToPitch(num){
+    const names=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+    const name = names[num%12]; const octave = Math.floor(num/12)-1;
+    const m = name.match(/^([A-G])(#)?$/); const step=m[1]; const alter=m[2]?1:0;
+    return { step, alter, octave };
+  }
+
+  function parseMIDI(buf){
+    const dv=new DataView(buf); let i=0; function str(n){ let s=''; for(let k=0;k<n;k++) s+=String.fromCharCode(dv.getUint8(i++)); return s; }
+    function u16(){ const v=dv.getUint16(i); i+=2; return v; } function u32(){ const v=dv.getUint32(i); i+=4; return v; }
+    function vlq(){ let v=0; while(true){ const b=dv.getUint8(i++); v=(v<<7)|(b&0x7F); if(!(b&0x80)) break; } return v; }
+    if(str(4)!=='MThd') return null; const len=u32(); const fmt=u16(); const ntrks=u16(); const div=u16(); i+=(len-6);
+    const header={ format:fmt, ntrks, ticksPerQuarter: div & 0x7FFF };
+    const tracks=[];
+    for(let t=0;t<ntrks;t++){
+      if(str(4)!=='MTrk') break; const tlen=u32(); const end=i+tlen; let tick=0; let status=0; const notes=[]; const active={}; let lastTick=0;
+      while(i<end){ const delta=vlq(); tick+=delta; let b=dv.getUint8(i++); if(b<0x80){ i--; b=status; } else { status=b; }
+        if(status===0xFF){ const type=dv.getUint8(i++); const l=vlq(); if(type===0x2F){ i+=l; break; } else { i+=l; } }
+        else if(status===0xF0 || status===0xF7){ const l=vlq(); i+=l; }
+        else { const evt=status>>4; const chan=status&0x0F;
+          if(evt===0x9){ const n=dv.getUint8(i++); const vel=dv.getUint8(i++); if(vel>0){ active[chan+','+n]=tick; } else { const st=active[chan+','+n]; if(st!=null){ notes.push({ channel:chan, noteNumber:n, start:st, end:tick, dur:tick-st }); delete active[chan+','+n]; } }
+          } else if(evt===0x8){ const n=dv.getUint8(i++); const vel=dv.getUint8(i++); const st=active[chan+','+n]; if(st!=null){ notes.push({ channel:chan, noteNumber:n, start:st, end:tick, dur:tick-st }); delete active[chan+','+n]; }
+          } else if(evt===0xC || evt===0xD){ i+=1; } else { i+=2; }
+        }
+        lastTick=tick;
+      }
+      tracks.push({ notes, lastTick });
+    }
+    return { header, tracks };
+  }
+
+  // —— Build MusicXML from state (with guitar chord symbols + stacked notes) ——
+  function buildXML(){
+    const parts = PARTS.map(p=>({id:p.id, name:p.name}));
+    const w = new MusicXMLWriter({ title: app.title, divisions:480 });
+    w.partList(parts);
+    for(const p of PARTS){
+      w.openPart(p.id);
+      app.measures.forEach((m,idx)=>{
+        const show = idx===0; w.openMeasure(idx+1, { fifths:m.fifths, beats:m.beats, beatType:m.beatType, clef:p.clef, clefLine:p.clefLine, showAttrs:show });
+        if(p.id==='P1' && m.gtrChord){
+          const root = m.gtrChord.tones[0]; const kind = /m$/.test(m.gtrChord.name)?'minor':'major';
+          w.harmony(root.step, root.alter||0, kind);
+          m.gtrChord.tones.forEach((note,idx2)=> w.notePitch({ ...note, type:'quarter' }, idx2>0));
+          for(let b=1;b<m.beats;b++){ w.notePitch({ ...m.gtrChord.tones[0], type:'quarter' }); }
+        } else {
+          const arr = m[p.id]||[]; if(arr.length){
+            arr.forEach((n,j)=>{ w.notePitch(n, j>0 && arr[j-1]?.type===n.type ); });
+          } else {
+            for(let b=0;b<m.beats;b++) w.rest('quarter');
+          }
+        }
+        w.closeMeasure();
+      });
+      w.closePart();
+    }
+    return w.footer();
+  }
+
+  // —— Event wiring ——
+  document.getElementById('generate').addEventListener('click', generate);
+  document.getElementById('exportXML').addEventListener('click', ()=>{
+    if(!app.measures.length) generate();
+    const xml = buildXML();
+    const base = (app.title||'Quintet_Sketch').trim().split(' ').join('_');
+    downloadMusicXML(xml, base);
+    setStatus('Exported .musicxml successfully.');
+  });
+
+  // Initial render
+  window.addEventListener('load', ()=>{ generate(); });
+  </script>
+</body>
+</html>

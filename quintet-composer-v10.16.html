@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quintet Composer v10.16 (Hotfix) — MusicXML Export</title>
+  <style>
+    :root { --bg:#0e0f12; --fg:#ebedf1; --muted:#a9b0bd; --accent:#6ee7ff; --accent2:#9bff9b; }
+    * { box-sizing: border-box; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji"; }
+    body { margin: 0; background: var(--bg); color: var(--fg); }
+    header { padding: 20px; border-bottom: 1px solid #1b1f29; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    h1 { font-size: 18px; margin: 0; }
+    .version { color: var(--muted); font-size: 13px; }
+    .actions { display:flex; gap:8px; align-items:center; }
+    .copyBtn { padding: 10px 12px; border-radius: 10px; border: 1px solid #2a3142; background:#171b27; color: var(--fg); cursor:pointer; }
+    .copyBtn:hover { outline: 1px solid var(--accent); }
+    main { padding: 16px; display:grid; grid-template-columns: 300px 1fr; gap: 16px; }
+    .panel { background: #141722; border: 1px solid #1b1f29; border-radius: 12px; padding: 14px; }
+    .panel h2 { margin-top: 0; font-size: 16px; }
+    label { display:block; font-size: 12px; color: var(--muted); margin: 8px 0 4px; }
+    input, select { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #2a3142; background:#0f121a; color: var(--fg); }
+    .row { display:grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .btnbar { display:flex; gap: 8px; margin-top: 12px; flex-wrap: wrap;}
+    button { padding: 10px 12px; border-radius: 10px; border: 1px solid #2a3142; background:#171b27; color: var(--fg); cursor:pointer; }
+    button.primary { border-color: #2b394f; background: #132033; }
+    button.primary:hover { outline: 1px solid var(--accent); }
+    .status { font-size: 12px; color: var(--accent2); margin-top: 8px; min-height:18px; }
+    .grid { width:100%; border-collapse: collapse; font-size: 12px; }
+    .grid th, .grid td { padding: 8px; border-bottom: 1px solid #23293a; }
+    .muted { color: var(--muted); }
+    footer { padding: 10px 16px; color: var(--muted); font-size: 12px; border-top:1px solid #1b1f29; }
+    code { background:#0f121a; padding:2px 4px; border-radius:6px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Quintet Composer — String Quintet (Guitar + Vln I, Vln II, Vla, Vc)</h1>
+      <div class="version">v10.16 (hotfix): Correct .musicxml export, Sibelius-ready</div>
+    </div>
+    <div class="actions">
+      <button id="copySource" class="copyBtn" title="Copy this entire .html file to clipboard">Copy HTML</button>
+      <div class="version">GML • Mike's Generative Music Lab</div>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel" id="controls">
+      <h2>Project</h2>
+      <label>Title</label>
+      <input id="title" value="Quintet Sketch" />
+
+      <div class="row">
+        <div>
+          <label>Key (fifths)</label>
+          <select id="fifths">
+            <option value="0" selected>C major / A minor (0)</option>
+            <option value="1">G / Em (+1)</option>
+            <option value="2">D / Bm (+2)</option>
+            <option value="3">A / F#m (+3)</option>
+            <option value="4">E / C#m (+4)</option>
+            <option value="5">B / G#m (+5)</option>
+            <option value="6">F# / D#m (+6)</option>
+            <option value="-1">F / Dm (-1)</option>
+            <option value="-2">Bb / Gm (-2)</option>
+            <option value="-3">Eb / Cm (-3)</option>
+            <option value="-4">Ab / Fm (-4)</option>
+            <option value="-5">Db / Bbm (-5)</option>
+            <option value="-6">Gb / Ebm (-6)</option>
+          </select>
+        </div>
+        <div>
+          <label>Time Signature</label>
+          <div class="row">
+            <input id="beats" type="number" min="1" max="12" value="4" />
+            <input id="beatType" type="number" min="1" max="16" value="4" />
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Measures</label>
+          <input id="measures" type="number" min="1" max="200" value="8" />
+        </div>
+        <div>
+          <label>Sections</label>
+          <select id="sectionPattern">
+            <option value="A">A</option>
+            <option value="AB">AB</option>
+            <option value="ABA" selected>ABA</option>
+            <option value="ABAC">ABAC</option>
+            <option value="ABCD">ABCD</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btnbar">
+        <button class="primary" id="generate">Generate</button>
+        <button id="exportXML">Export (.musicxml)</button>
+      </div>
+      <div class="status" id="status"></div>
+      <p class="muted">Hotfix focus: exporter correctness. UI kept minimal/close to v10.15 semantics: set project, generate, export.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Score Preview (lightweight)</h2>
+      <table class="grid" id="preview">
+        <thead>
+          <tr>
+            <th>Measure</th>
+            <th>Guitar</th>
+            <th>Violin I</th>
+            <th>Violin II</th>
+            <th>Viola</th>
+            <th>Cello</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer>
+    Export uses official MusicXML 3.1 partwise + correct MIME (<code>application/vnd.recordare.musicxml+xml</code>) and forces <code>.musicxml</code> extension.
+  </footer>
+
+  <script>
+  // Copy the entire current HTML file to clipboard
+  document.getElementById('copySource').addEventListener('click', async () => {
+    const doctype = '<!DOCTYPE html>\n';
+    const html = doctype + document.documentElement.outerHTML;
+    try {
+      await navigator.clipboard.writeText(html);
+      alert('Full HTML copied to clipboard. Paste into a new file named "Quintet-Composer-V10_16_SINGLE.html".');
+    } catch (e) {
+      // Fallback for older browsers
+      const ta = document.createElement('textarea');
+      ta.value = html; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+      alert('Full HTML copied (fallback). Paste into a new file named "Quintet-Composer-V10_16_SINGLE.html".');
+    }
+  });
+
+  // ——— Minimal MusicXML Writer (embedded for single-file portability) ———
+  class MusicXMLWriter {
+    constructor({ title = "Quintet Sketch", creator = "Mike Bryant", software = "Quintet Composer v10.16", version = "3.1" } = {}) {
+      this.s = [];
+      this.divisions = 480; // PPQ
+      this._push(`<?xml version="1.0" encoding="UTF-8"?>`);
+      this._push(`<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">`);
+      this._push(`<score-partwise version="${version}">`);
+      this._push(`<movement-title>${this._esc(title)}</movement-title>`);
+      this._push(`<identification><creator type="composer">${this._esc(creator)}</creator><encoding><software>${this._esc(software)}</software></encoding></identification>`);
+    }
+    _push(x){ this.s.push(x); }
+    _esc(x){ return String(x).replace(/[<&>]/g,m=>({ "<":"&lt;","&":"&amp;",">":"&gt;" }[m])); }
+
+    openPartList(parts){ // [{id,name}]
+      this._push(`<part-list>`);
+      parts.forEach(p => this._push(`<score-part id="${p.id}"><part-name>${this._esc(p.name)}</part-name></score-part>`));
+      this._push(`</part-list>`);
+    }
+    openPart(id){ this._push(`<part id="${id}">`); }
+    closePart(){ this._push(`</part>`); }
+
+    openMeasure(num, { fifths=0, beats=4, beatType=4, clef="G", clefLine=2, showAttrs=false } = {}){
+      this._push(`<measure number="${num}">`);
+      if (showAttrs){
+        this._push(`<attributes>`);
+        this._push(`<divisions>${this.divisions}</divisions>`);
+        this._push(`<key><fifths>${fifths}</fifths></key>`);
+        this._push(`<time><beats>${beats}</beats><beat-type>${beatType}</beat-type></time>`);
+        this._push(`<clef><sign>${clef}</sign><line>${clefLine}</line></clef>`);
+        this._push(`</attributes>`);
+      }
+    }
+    closeMeasure(){ this._push(`</measure>`); }
+
+    _dur(type){
+      const d = this.divisions;
+      const map = { whole: d*4, half: d*2, quarter: d, eighth: d/2, "16th": d/4, "32nd": d/8 };
+      return map[type] ?? d;
+    }
+
+    note({ step="C", alter=0, octave=4, type="quarter", chord=false, tieStart=false, tieStop=false } = {}){
+      const dur = this._dur(type);
+      const alterTag = (alter && alter !== 0) ? `<alter>${alter}</alter>` : "";
+      const pitch = `<pitch><step>${step}</step>${alterTag}<octave>${octave}</octave></pitch>`;
+      this._push(`<note>${chord?`<chord/>`:""}${pitch}<duration>${dur}</duration><type>${type}</type>${tieStart?`<tie type="start"/>`:""}${tieStop?`<tie type="stop"/>`:""}</note>`);
+    }
+
+    rest({ type="quarter" } = {}){
+      const dur = this._dur(type);
+      this._push(`<note><rest/><duration>${dur}</duration><type>${type}</type></note>`);
+    }
+
+    footer(){
+      this._push(`</score-partwise>`);
+      return this.s.join("\n");
+    }
+  }
+
+  function downloadMusicXML(xmlString, baseName="Quintet_Sketch"){
+    const blob = new Blob([xmlString], { type: "application/vnd.recordare.musicxml+xml" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `${baseName}.musicxml`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  }
+
+  // ——— Simple quintet generator (deterministic demo) ———
+  const PARTS = [
+    { id:"P1", name:"Guitar", clef: "G", clefLine: 2 },
+    { id:"P2", name:"Violin I", clef: "G", clefLine: 2 },
+    { id:"P3", name:"Violin II", clef: "G", clefLine: 2 },
+    { id:"P4", name:"Viola", clef: "C", clefLine: 3 }, // Alto clef
+    { id:"P5", name:"Cello", clef: "F", clefLine: 4 },
+  ];
+
+  const NOTESETS = {
+    P1: [ {step:"E",octave:4}, {step:"B",octave:3}, {step:"E",octave:4}, {step:"B",octave:3} ],
+    P2: [ {step:"C",octave:5}, {step:"D",octave:5}, {step:"E",octave:5}, {step:"G",octave:5} ],
+    P3: [ {step:"G",octave:4}, {step:"A",octave:4}, {step:"B",octave:4}, {step:"D",octave:5} ],
+    P4: [ {step:"E",octave:4}, {step:"F",octave:4}, {step:"G",octave:4}, {step:"A",octave:4} ],
+    P5: [ {step:"C",octave:3}, {step:"G",octave:2}, {step:"C",octave:3}, {step:"G",octave:2} ],
+  };
+
+  window.appState = {
+    title: "Quintet Sketch",
+    filenameBase: "Quintet_Sketch",
+    beats: 4, beatType: 4, fifths: 0,
+    measures: [] // will be filled by generate()
+  };
+
+  function byId(id){ return document.getElementById(id); }
+  function setStatus(msg){ byId("status").textContent = msg; }
+
+  function generate(){
+    const title = byId("title").value.trim() || "Quintet Sketch";
+    const beats = Math.max(1, parseInt(byId("beats").value || "4", 10));
+    const beatType = Math.max(1, parseInt(byId("beatType").value || "4", 10));
+    const fifths = parseInt(byId("fifths").value || "0", 10);
+    const measures = Math.max(1, parseInt(byId("measures").value || "8", 10));
+    const pattern = byId("sectionPattern").value;
+
+    window.appState.title = title;
+    window.appState.filenameBase = title.replace(/\s+/g,"_");
+    window.appState.beats = beats;
+    window.appState.beatType = beatType;
+    window.appState.fifths = fifths;
+    window.appState.measures = [];
+
+    // Create measures and fill with deterministic quarter-note patterns
+    for (let m = 0; m < measures; m++){
+      const meas = { beats, beatType, fifths };
+      // For each part, make an array of 'beats' quarter notes from NOTESETS
+      PARTS.forEach(p => {
+        const src = NOTESETS[p.id];
+        meas[p.id] = [];
+        for(let b=0;b<beats;b++){
+          const n = src[b % src.length];
+          meas[p.id].push({ step:n.step, alter:0, octave:n.octave, type:"quarter", chord:false, tieStart:false, tieStop:false });
+        }
+      });
+      window.appState.measures.push(meas);
+    }
+
+    renderPreview(pattern);
+    setStatus(`Generated ${measures} measures in ${beats}/${beatType}, key fifths ${fifths}. Section pattern: ${pattern}`);
+  }
+
+  function renderPreview(pattern){
+    const tbody = byId("tbody");
+    tbody.innerHTML = "";
+    const measures = window.appState.measures || [];
+    measures.forEach((m, i) => {
+      const tr = document.createElement("tr");
+      const tdM = document.createElement("td");
+      tdM.textContent = `${i+1} (${pattern[i % pattern.length]})`;
+      tr.appendChild(tdM);
+
+      // For each part, show note names
+      PARTS.forEach(p => {
+        const td = document.createElement("td");
+        const arr = m[p.id] || [];
+        td.textContent = arr.map(n => `${n.step}${n.octave}`).join(" ");
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+  }
+
+  function buildXMLFromCurrentScore(state){
+    const parts = PARTS.map(p => ({ id: p.id, name: p.name }));
+    const w = new MusicXMLWriter({ title: state.title, software: "Quintet Composer v10.16" });
+    w.openPartList(parts);
+
+    for (const p of PARTS){
+      w.openPart(p.id);
+      (state.measures || []).forEach((m, idx) => {
+        const showAttrs = idx === 0;
+        w.openMeasure(idx+1, {
+          fifths: m.fifths ?? 0,
+          beats: m.beats ?? state.beats ?? 4,
+          beatType: m.beatType ?? state.beatType ?? 4,
+          clef: p.clef,
+          clefLine: p.clefLine,
+          showAttrs
+        });
+
+        const notes = m[p.id] || [];
+        if (notes.length){
+          notes.forEach(n => w.note(n));
+        } else {
+          for (let i=0; i<(m.beats ?? 4); i++) w.rest({ type:"quarter" });
+        }
+        w.closeMeasure();
+      });
+      w.closePart();
+    }
+    return w.footer();
+  }
+
+  document.getElementById("generate").addEventListener("click", generate);
+  document.getElementById("exportXML").addEventListener("click", () => {
+    if (!window.appState.measures || window.appState.measures.length === 0){
+      generate(); // ensure something exists
+    }
+    const xml = buildXMLFromCurrentScore(window.appState);
+    downloadMusicXML(xml, (window.appState?.filenameBase || "Quintet_Sketch"));
+    setStatus("Exported .musicxml successfully. Try opening in Sibelius.");
+  });
+
+  // Auto-generate a tiny default on load for immediate export
+  window.addEventListener("load", () => { generate(); });
+  </script>
+</body>
+</html>

@@ -153,15 +153,22 @@
                     xml += `<measure number="${m}">\n`;
                     if (m === 1) xml += '<attributes><divisions>4</divisions><key><fifths>0</fifths></key><time><beats>4</beats><beat-type>4</beat-type></time></attributes>\n';
                     
-                    part.notes.filter(n => n.measure === m).forEach(note => {
-                        const names = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-                        const oct = Math.floor(note.pitch / 12) - 1;
-                        const name = names[note.pitch % 12];
-                        xml += '<note><pitch><step>' + name.replace('#','') + '</step>';
-                        if (name.includes('#')) xml += '<alter>1</alter>';
-                        xml += `<octave>${oct}</octave></pitch><duration>${note.duration*4}</duration>`;
-                        xml += `<type>${note.duration===4?'whole':note.duration===2?'half':note.duration===1?'quarter':note.duration===0.5?'eighth':'16th'}</type></note>\n`;
-                    });
+                    const measureNotes = part.notes.filter(n => n.measure === m);
+                    if (measureNotes.length === 0) {
+                        // Add rest for empty measures
+                        xml += '<note><rest/><duration>16</duration><type>whole</type></note>\n';
+                    } else {
+                        measureNotes.forEach(note => {
+                            const names = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+                            const oct = Math.floor(note.pitch / 12) - 1;
+                            const name = names[note.pitch % 12];
+                            const duration = Math.round(note.duration * 4); // Ensure integer duration
+                            xml += '<note><pitch><step>' + name.replace('#','') + '</step>';
+                            if (name.includes('#')) xml += '<alter>1</alter>';
+                            xml += `<octave>${oct}</octave></pitch><duration>${duration}</duration>`;
+                            xml += `<type>${note.duration===4?'whole':note.duration===2?'half':note.duration===1?'quarter':note.duration===0.5?'eighth':'16th'}</type></note>\n`;
+                        });
+                    }
                     xml += '</measure>\n';
                 }
                 xml += '</part>\n';

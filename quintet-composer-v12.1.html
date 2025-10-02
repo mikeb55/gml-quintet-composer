@@ -1,0 +1,1769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quintet Composer — v12.1 Harmonic Framework + MIDI Export</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 16px; }
+    h1 { font-size: 20px; margin: 0 0 12px; }
+    .row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+    .label { min-width: 140px; }
+    input[type="text"], select { padding: 6px 8px; }
+    button { padding: 8px 12px; cursor: pointer; }
+    #diagnostics { margin-top: 12px; padding: 8px; background: #f6f6f8; border: 1px solid #ddd; white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+  </style>
+  <!-- No external dependencies; single-file HTML app -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'unsafe-inline' 'self';">
+</head>
+<body>
+  <h1>Quintet Composer — v12.1 "Harmonic Framework + MIDI Export"</h1>
+
+  <div class="row" style="margin-bottom: 8px;">
+    <div class="label">Style</div>
+    <select id="styleSelect" aria-label="Style preset">
+      <option value="Bach">Bach</option>
+      <option value="Mozart">Mozart</option>
+      <option value="Jazz">Jazz</option>
+    </select>
+  </div>
+
+  <div class="row" style="margin-bottom: 8px;">
+    <div class="label">Chord progression</div>
+    <input type="text" id="chordInput" size="64" placeholder="Chord progression: C G Am F or I V vi IV or Cmaj7 Dm7 G7 Cmaj7">
+  </div>
+
+  <div class="row" style="margin-bottom: 12px;">
+    <button id="generateBtn">Generate</button>
+    <button id="exportBtn">Export (.musicxml)</button>
+    <button id="copyHtmlBtn">Copy HTML</button>
+  </div>
+
+  <div id="diagnostics" aria-live="polite"></div>
+
+  <script>
+  (function() {
+    const DEFAULT_BARS_EMPTY_INPUT = 8;
+    const TIME_SIGNATURE = { beats: 4, beatType: 4 };
+    const DIVISIONS = 1; // quarter note = 1 division; measures sum to 4
+    const KEY = { fifths: 0, mode: 'major' }; // C major
+
+    const styleSelect = document.getElementById('styleSelect');
+    const chordInput = document.getElementById('chordInput');
+    const generateBtn = document.getElementById('generateBtn');
+    const exportBtn = document.getElementById('exportBtn');
+    const copyHtmlBtn = document.getElementById('copyHtmlBtn');
+    const diagnosticsEl = document.getElementById('diagnostics');
+
+    const TRIADS = {
+      major: [0,4,7],
+      minor: [0,3,7],
+      dim: [0,3,6],
+      aug: [0,4,8]
+    };
+    const SEVENTHS = {
+      maj7: [0,4,7,11],
+      '7': [0,4,7,10],
+      m7: [0,3,7,10],
+      m7b5: [0,3,6,10]
+    };
+
+    const DEGREE_TO_PC_MAJOR = { 1:0, 2:2, 3:4, 4:5, 5:7, 6:9, 7:11 };
+    const LETTER_TO_PC = { C:0, D:2, E:4, F:5, G:7, A:9, B:11 };
+    const PC_TO_LETTER = [
+      { step:'C', alter:0 },
+      { step:'C', alter:1 },
+      { step:'D', alter:0 },
+      { step:'D', alter:1 },
+      { step:'E', alter:0 },
+      { step:'F', alter:0 },
+      { step:'F', alter:1 },
+      { step:'G', alter:0 },
+      { step:'G', alter:1 },
+      { step:'A', alter:0 },
+      { step:'A', alter:1 },
+      { step:'B', alter:0 }
+    ];
+
+    function clamp(val, min, max) { return Math.max(min, Math.min(max, val)); }
+    function mod(n, m) { return ((n % m) + m) % m; }
+
+    function parseStylePreset(style) {
+      if (style === 'Bach') return ['I','V','I','vi','ii','V','I'];
+      if (style === 'Mozart') return ['I','IV','I','V','I'];
+      if (style === 'Jazz') return ['IIm7','V7','IMaj7'];
+      return ['I','V','vi','IV'];
+    }
+
+    function isRomanNumeralToken(tok) {
+      return /^[#b]?[ivIV]{1,3}(?:maj7|M7|m7b5|m7|7)?$/.test(tok.replace(/[°o]/g,'dim')) || /^[#b]?[ivIV]{1,3}[mM]?(?:maj7|M7|m7b5|m7|7)?$/.test(tok);
+    }
+
+    function numeralToChord(numeral) {
+      let tok = numeral.replace(/\s+/g,'');
+      tok = tok.replace(/[°o]/g,'dim');
+      const accidental = tok.startsWith('#') ? 1 : tok.startsWith('b') ? -1 : 0;
+      if (accidental) tok = tok.slice(1);
+      const match = tok.match(/^([ivIV]{1,3})([mM]?)(maj7|M7|m7b5|m7|7)?$/);
+      if (!match) return null;
+      const roman = match[1];
+      const optQual = match[2];
+      const seventh = match[3] || '';
+      const isLower = roman === roman.toLowerCase();
+      // degree
+      const map = { I:1, II:2, III:3, IV:4, V:5, VI:6, VII:7 };
+      const deg = map[roman.toUpperCase()];
+      let rootPc = mod(DEGREE_TO_PC_MAJOR[deg] + accidental, 12);
+      // quality baseline
+      let quality = isLower ? 'minor' : 'major';
+      if (/dim/i.test(tok)) quality = 'dim';
+      if (/aug|\+/i.test(tok)) quality = 'aug';
+      // seventh mapping
+      let kind = quality;
+      if (seventh) {
+        if (/maj7|M7/.test(seventh)) kind = 'maj7';
+        else if (/m7b5/.test(seventh)) kind = 'm7b5';
+        else if (/m7/.test(seventh)) kind = 'm7';
+        else if (/7/.test(seventh)) kind = '7';
+      }
+      // For lowercase with 7 and no explicit minor marker, prefer minor seventh on ii, iii, vi
+      if (!seventh && isLower) {
+        // keep triad quality
+      }
+      return { rootPc, kind, symbol: numeral };
+    }
+
+    function nameToChord(name) {
+      let tok = name.replace(/\s+/g,'');
+      // handle inversion
+      const invIdx = tok.indexOf('/');
+      if (invIdx !== -1) tok = tok.slice(0, invIdx);
+      const m = tok.match(/^([A-Ga-g])([#b]?)(maj7|M7|m7b5|m7|7|maj|m|min|dim|aug)?$/);
+      if (!m) return null;
+      const letter = m[1].toUpperCase();
+      const acc = m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0;
+      const qualRaw = m[3] || '';
+      let rootPc = mod(LETTER_TO_PC[letter] + acc, 12);
+      let kind = 'major';
+      if (/maj7|M7/.test(qualRaw)) kind = 'maj7';
+      else if (/m7b5/.test(qualRaw)) kind = 'm7b5';
+      else if (/m7/.test(qualRaw)) kind = 'm7';
+      else if (/7/.test(qualRaw)) kind = '7';
+      else if (/maj/.test(qualRaw)) kind = 'major';
+      else if (/m|min/.test(qualRaw)) kind = 'minor';
+      else if (/dim/.test(qualRaw)) kind = 'dim';
+      else if (/aug/.test(qualRaw)) kind = 'aug';
+      return { rootPc, kind, symbol: name };
+    }
+
+    function chordKindToPcs(kind) {
+      if (SEVENTHS[kind]) return SEVENTHS[kind];
+      if (TRIADS[kind]) return TRIADS[kind];
+      // default major
+      return TRIADS.major;
+    }
+
+    function pcToStepAlter(pc) { return PC_TO_LETTER[mod(pc,12)]; }
+
+    function midiFromPcNear(pc, targetMidi) {
+      // choose midi for given pc near targetMidi
+      let baseOct = Math.floor(targetMidi / 12);
+      let candidates = [baseOct - 1, baseOct, baseOct + 1].map(o => o*12 + pc);
+      let best = candidates[0];
+      let bestDist = Math.abs(candidates[0] - targetMidi);
+      for (let i=1;i<candidates.length;i++) {
+        const d = Math.abs(candidates[i] - targetMidi);
+        if (d < bestDist) { best = candidates[i]; bestDist = d; }
+      }
+      return best;
+    }
+
+    function enforceRange(midi, minMidi, maxMidi) {
+      while (midi < minMidi) midi += 12;
+      while (midi > maxMidi) midi -= 12;
+      return clamp(midi, minMidi, maxMidi);
+    }
+
+    function diatonicStep(pc, step) {
+      // C major diatonic movement by step (+/-1 or 2) in semitones approximated
+      const cmaj = [0,2,4,5,7,9,11,12];
+      let idx = 0;
+      for (let i=0;i<cmaj.length;i++) { if (cmaj[i] % 12 === (pc%12)) { idx = i; break; } }
+      let newIdx = clamp(idx + step, 0, cmaj.length-1);
+      return cmaj[newIdx] % 12;
+    }
+
+    function parseProgression(input, style, barsHint) {
+      let tokens = [];
+      const raw = (input || '').trim();
+      if (!raw) {
+        const preset = parseStylePreset(style);
+        const bars = Math.max(barsHint || DEFAULT_BARS_EMPTY_INPUT, preset.length);
+        let seq = [];
+        for (let i=0;i<bars;i++) seq.push(preset[i % preset.length]);
+        tokens = seq;
+      } else {
+        // split by spaces and keep '|' tokens
+        const parts = raw.split(/\s+/).flatMap(t => t.split(/(?=\|)|(?<=\|)/)).filter(Boolean);
+        // expand durations and remove barlines (we treat them as measure separators only when durations are specified)
+        let currentBar = [];
+        let bars = [];
+        for (const p of parts) {
+          if (p === '|') {
+            if (currentBar.length) { bars.push(currentBar.slice()); currentBar = []; }
+            continue;
+          }
+          const durMatch = p.match(/^(.*?):(\d+)$/);
+          const base = durMatch ? durMatch[1] : p;
+          const count = durMatch ? parseInt(durMatch[2],10) : 1;
+          for (let i=0;i<count;i++) {
+            if (currentBar.length) { bars.push(currentBar.slice()); currentBar = []; }
+            bars.push([base]);
+          }
+          if (!durMatch) currentBar.push(base);
+        }
+        if (currentBar.length) bars.push(currentBar.slice());
+        // If bars were not explicitly formed, map each token to a bar
+        if (bars.length === 0) bars = parts.filter(x=>x!== '|').map(x=>[x]);
+        tokens = bars.map(bar => bar[0]);
+      }
+
+      // interpret tokens to chords per bar
+      const chords = tokens.map(tok => {
+        const cleaned = tok.replace(/\|/g,'');
+        let chord = null;
+        if (isRomanNumeralToken(cleaned)) chord = numeralToChord(cleaned);
+        if (!chord) chord = nameToChord(cleaned);
+        if (!chord) chord = { rootPc: 0, kind: 'major', symbol: 'C' };
+        const pcs = chordKindToPcs(chord.kind).map(semi => mod(chord.rootPc + semi, 12));
+        return { ...chord, pcs };
+      });
+      return chords;
+    }
+
+    function makeHarmonyXML(chord) {
+      const { rootPc, kind } = chord;
+      const ra = pcToStepAlter(rootPc);
+      let kindTag = 'major';
+      if (kind === 'minor') kindTag = 'minor';
+      else if (kind === 'dim') kindTag = 'diminished';
+      else if (kind === 'aug') kindTag = 'augmented';
+      else if (kind === 'maj7') kindTag = 'major-seventh';
+      else if (kind === '7') kindTag = 'dominant';
+      else if (kind === 'm7') kindTag = 'minor-seventh';
+      else if (kind === 'm7b5') kindTag = 'half-diminished';
+      const alterTag = (typeof ra.alter === 'number' && ra.alter !== 0) ? `\n          <root-alter>${ra.alter}</root-alter>` : '';
+      return `        <harmony>\n          <root>\n            <root-step>${ra.step}</root-step>${alterTag}\n          </root>\n          <kind>${kindTag}</kind>\n        </harmony>`;
+    }
+
+    function noteXML(step, alter, octave, duration, chordTag=false) {
+      const alterLine = (typeof alter === 'number' && alter !== 0) ? `\n        <alter>${alter}</alter>` : '';
+      const chordLine = chordTag ? `\n      <chord/>` : '';
+      return `      <note>${chordLine}\n        <pitch>\n          <step>${step}</step>${alterLine}\n          <octave>${octave}</octave>\n        </pitch>\n        <duration>${duration}</duration>\n        <type>quarter</type>\n      </note>`;
+    }
+
+    function attributesXML(clef) {
+      const clefXml = clef === 'treble'
+        ? '<sign>G</sign>\n          <line>2</line>'
+        : clef === 'alto'
+        ? '<sign>C</sign>\n          <line>3</line>'
+        : '<sign>F</sign>\n          <line>4</line>';
+      return `        <attributes>\n          <divisions>${DIVISIONS}</divisions>\n          <key>\n            <fifths>${KEY.fifths}</fifths>\n            <mode>${KEY.mode}</mode>\n          </key>\n          <time>\n            <beats>${TIME_SIGNATURE.beats}</beats>\n            <beat-type>${TIME_SIGNATURE.beatType}</beat-type>\n          </time>\n          <clef>\n            ${clefXml}\n          </clef>\n        </attributes>`;
+    }
+
+    function barlineFinalXML() {
+      return `        <barline location="right">\n          <bar-style>light-heavy</bar-style>\n        </barline>`;
+    }
+
+    function pcsToMidiChoice(pcs, prevMidi, rangeMin, rangeMax, preferRoot=false, rootPc=null) {
+      const target = prevMidi != null ? prevMidi : Math.round((rangeMin + rangeMax)/2);
+      let bestMidi = null;
+      let bestDist = Infinity;
+      for (const pc of pcs) {
+        let candidate = midiFromPcNear(pc, target);
+        candidate = enforceRange(candidate, rangeMin, rangeMax);
+        let dist = Math.abs(candidate - target);
+        if (preferRoot && rootPc != null && pc === rootPc) dist -= 0.25;
+        if (dist < bestDist) { bestDist = dist; bestMidi = candidate; }
+      }
+      return bestMidi;
+    }
+
+    function generateParts(chordTimeline, style) {
+      const beatsPerBar = TIME_SIGNATURE.beats;
+      const parts = {
+        Guitar: { clef: 'treble', range:[52,76], measures: [] },
+        'Violin I': { clef: 'treble', range:[60,100], measures: [] },
+        'Violin II': { clef: 'treble', range:[55,90], measures: [] },
+        Viola: { clef: 'alto', range:[50,76], measures: [] },
+        Cello: { clef: 'bass', range:[36,60], measures: [] }
+      };
+
+      let prev = {
+        Guitar: null,
+        'Violin I': null,
+        'Violin II': null,
+        Viola: null,
+        Cello: null
+      };
+
+      for (let barIndex=0; barIndex<chordTimeline.length; barIndex++) {
+        const chord = chordTimeline[barIndex];
+        const rootPc = chord.rootPc;
+        const pcs = chord.pcs;
+
+        // Guitar: chord stack on beat 1, then root/fifth pattern
+        {
+          const [minR, maxR] = parts.Guitar.range;
+          const measureNotes = [];
+          // Beat 1 chord
+          const stackPcs = pcs.slice(0, Math.min(pcs.length, 4));
+          let baseTarget = prev.Guitar != null ? prev.Guitar : minR + 12;
+          let rootMidi = enforceRange(midiFromPcNear(rootPc, baseTarget), minR, maxR);
+          let voicingBase = rootMidi;
+          const stacked = [];
+          for (let i=0;i<stackPcs.length;i++) {
+            const pc = stackPcs[i];
+            let midi = midiFromPcNear(pc, voicingBase + i*3);
+            midi = enforceRange(midi, minR, maxR);
+            stacked.push(midi);
+          }
+          // write stacked as simultaneous quarter notes
+          stacked.forEach((midi, idx) => {
+            const ra = pcToStepAlter(mod(midi,12));
+            const oct = Math.floor(midi/12) - 1;
+            measureNotes.push(noteXML(ra.step, ra.alter, oct, 1, idx>0));
+          });
+          prev.Guitar = stacked[0];
+          // Beats 2-4 root/fifth alternation
+          const fifthPc = mod(rootPc + 7, 12);
+          for (let beat=2; beat<=beatsPerBar; beat++) {
+            const usePc = (beat % 2 === 0) ? rootPc : fifthPc;
+            let midi = midiFromPcNear(usePc, prev.Guitar);
+            midi = enforceRange(midi, minR, maxR);
+            prev.Guitar = midi;
+            const ra = pcToStepAlter(mod(midi,12));
+            const oct = Math.floor(midi/12) - 1;
+            measureNotes.push(noteXML(ra.step, ra.alter, oct, 1, false));
+          }
+          parts.Guitar.measures.push({ harmony: chord, notes: measureNotes });
+        }
+
+        // Cello: root on 1 & 3; optional fifth on 3 (especially Jazz penultimate)
+        {
+          const [minR, maxR] = parts.Cello.range;
+          const measureNotes = [];
+          let baseTarget = prev.Cello != null ? prev.Cello : minR + 7;
+          let rootMidi = enforceRange(midiFromPcNear(rootPc, baseTarget), minR, maxR);
+          let fifthMidi = enforceRange(midiFromPcNear(mod(rootPc+7,12), rootMidi+5), minR, maxR);
+          for (let beat=1; beat<=beatsPerBar; beat++) {
+            let useMidi = rootMidi;
+            if (beat === 3) {
+              const jazzApproach = (style === 'Jazz' && barIndex === chordTimeline.length - 2);
+              useMidi = jazzApproach ? fifthMidi : (Math.random() < 0.6 ? fifthMidi : rootMidi);
+            }
+            const ra = pcToStepAlter(mod(useMidi,12));
+            const oct = Math.floor(useMidi/12) - 1;
+            measureNotes.push(noteXML(ra.step, ra.alter, oct, 1, false));
+            prev.Cello = useMidi;
+          }
+          parts.Cello.measures.push({ notes: measureNotes });
+        }
+
+        // Inner voices (Viola, Violin II): chord tones, move <= 3 semitones if possible
+        for (const name of ['Viola','Violin II']) {
+          const [minR, maxR] = parts[name].range;
+          const measureNotes = [];
+          let pPrev = prev[name] != null ? prev[name] : Math.round((minR+maxR)/2);
+          let choice = pcsToMidiChoice(pcs, pPrev, minR, maxR, false, rootPc);
+          for (let beat=1; beat<=beatsPerBar; beat++) {
+            // Small adjustments per beat
+            if (beat > 1) {
+              // prefer staying or small move within chord tones
+              const candidates = pcs.map(pc => enforceRange(midiFromPcNear(pc, choice), minR, maxR));
+              let best = choice; let bestDist = 0;
+              for (const cand of candidates) {
+                const d = Math.abs(cand - choice);
+                if (d <= 3 && (best === choice || d < bestDist)) { best = cand; bestDist = d; }
+              }
+              choice = best;
+            }
+            const ra = pcToStepAlter(mod(choice,12));
+            const oct = Math.floor(choice/12) - 1;
+            measureNotes.push(noteXML(ra.step, ra.alter, oct, 1, false));
+            prev[name] = choice;
+          }
+          parts[name].measures.push({ notes: measureNotes });
+        }
+
+        // Melody (Violin I): chord tones on strong beats; weak beats may have non-chord tones (~30%)
+        {
+          const [minR, maxR] = parts['Violin I'].range;
+          const measureNotes = [];
+          let pPrev = prev['Violin I'] != null ? prev['Violin I'] : Math.round((minR+maxR)/2) + 5;
+          for (let beat=1; beat<=beatsPerBar; beat++) {
+            const strong = (beat === 1 || beat === 3);
+            let pc;
+            if (strong) {
+              const choiceMidi = pcsToMidiChoice(pcs, pPrev, minR, maxR, false, rootPc);
+              pc = mod(choiceMidi, 12);
+              pPrev = choiceMidi;
+            } else {
+              if (Math.random() < 0.3) {
+                const step = (Math.random() < 0.5 ? -1 : 1) * (Math.random() < 0.7 ? 1 : 2);
+                pc = diatonicStep(mod(pPrev,12), step);
+                let midi = midiFromPcNear(pc, pPrev);
+                midi = enforceRange(midi, minR, maxR);
+                pPrev = midi;
+              } else {
+                const choiceMidi = pcsToMidiChoice(pcs, pPrev, minR, maxR, false, rootPc);
+                pc = mod(choiceMidi, 12);
+                pPrev = choiceMidi;
+              }
+            }
+            const ra = pcToStepAlter(pc);
+            const oct = Math.floor(pPrev/12) - 1;
+            measureNotes.push(noteXML(ra.step, ra.alter, oct, 1, false));
+          }
+          prev['Violin I'] = pPrev;
+          parts['Violin I'].measures.push({ notes: measureNotes });
+        }
+      }
+
+      return parts;
+    }
+
+    function buildMusicXML(parts, chordTimeline) {
+      const partIds = [
+        { id: 'P1', name: 'Guitar', clef: parts.Guitar.clef },
+        { id: 'P2', name: 'Violin I', clef: parts['Violin I'].clef },
+        { id: 'P3', name: 'Violin II', clef: parts['Violin II'].clef },
+        { id: 'P4', name: 'Viola', clef: parts.Viola.clef },
+        { id: 'P5', name: 'Cello', clef: parts.Cello.clef }
+      ];
+
+      function partListXML() {
+        return partIds.map(p => `    <score-part id="${p.id}">\n      <part-name>${p.name}</part-name>\n    </score-part>`).join('\n');
+      }
+
+      function measuresXML(partName, id) {
+        const measures = parts[partName].measures;
+        const clef = parts[partName].clef;
+        const isGuitar = (partName === 'Guitar');
+        let xml = '';
+        for (let i=0;i<measures.length;i++) {
+          const m = measures[i];
+          xml += `  <measure number="${i+1}">\n`;
+          if (i === 0) xml += attributesXML(clef) + '\n';
+          if (isGuitar) xml += makeHarmonyXML(chordTimeline[i]) + '\n';
+          xml += m.notes.join('\n') + '\n';
+          if (i === measures.length - 1) xml += barlineFinalXML() + '\n';
+          xml += '  </measure>\n';
+        }
+        return xml;
+      }
+
+      const header = `<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE score-partwise PUBLIC \"-//Recordare//DTD MusicXML 3.1 Partwise//EN\" \"http://www.musicxml.org/dtds/partwise.dtd\">\n<score-partwise version="3.1">\n  <part-list>\n${partListXML()}\n  </part-list>`;
+      const footer = '</score-partwise>';
+      const bodies = partIds.map(p => `<part id="${p.id}">\n${measuresXML(p.name, p.id)}</part>`).join('\n');
+      return [header, bodies, footer].join('\n');
+    }
+
+    function runDiagnostics(parts, chordTimeline) {
+      const bars = chordTimeline.length;
+      const lines = [];
+      lines.push(`Bars: ${bars}, Time: ${TIME_SIGNATURE.beats}/${TIME_SIGNATURE.beatType}, Key: C major`);
+      // duration sums
+      for (const name of ['Guitar','Violin I','Violin II','Viola','Cello']) {
+        const ms = parts[name].measures;
+        for (let i=0;i<ms.length;i++) {
+          const sum = ms[i].notes.length * DIVISIONS; // each note is quarter = 1
+          const ok = sum === TIME_SIGNATURE.beats * DIVISIONS ? 'OK' : 'BAD';
+          if (i === 0 && name === 'Guitar') {
+            lines.push(`Bar ${i+1} ${name}: duration=${sum} (${ok}), harmony tag present`);
+          } else {
+            lines.push(`Bar ${i+1} ${name}: duration=${sum} (${ok})`);
+          }
+        }
+      }
+      diagnosticsEl.textContent = lines.join('\n');
+    }
+
+    function generate() {
+      const style = styleSelect.value;
+      const chords = parseProgression(chordInput.value, style, DEFAULT_BARS_EMPTY_INPUT);
+      const parts = generateParts(chords, style);
+      runDiagnostics(parts, chords);
+      const xml = buildMusicXML(parts, chords);
+      window.__lastXML = xml;
+      return xml;
+    }
+
+    function exportXML() {
+      const xml = window.__lastXML || generate();
+      const blob = new Blob([xml], { type: 'application/vnd.recordare.musicxml+xml' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'quintet_v11_0.musicxml';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=>URL.revokeObjectURL(a.href), 5000);
+    }
+
+    function copyHTML() {
+      const src = document.documentElement.outerHTML;
+      navigator.clipboard.writeText(src).then(() => {
+        diagnosticsEl.textContent = (diagnosticsEl.textContent || '') + '\nCopied HTML to clipboard.';
+      }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = src;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+        diagnosticsEl.textContent = (diagnosticsEl.textContent || '') + '\nCopied HTML to clipboard (fallback).';
+      });
+    }
+
+    generateBtn.addEventListener('click', generate);
+    exportBtn.addEventListener('click', exportXML);
+    copyHtmlBtn.addEventListener('click', copyHTML);
+
+    // Initial generate
+    generate();
+  })();
+  </script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quintet Composer v11.0 – Harmonic Framework First</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            color: white;
+            text-align: center;
+        }
+        
+        .version-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        .main-controls {
+            padding: 30px;
+            background: white;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        input, select, textarea {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .midi-import-zone {
+            grid-column: span 2;
+            border: 3px dashed #667eea;
+            padding: 40px;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .midi-import-zone:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .midi-import-zone.dragover {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+            transform: scale(1.02);
+        }
+        
+        #midiFileInput {
+            display: none;
+        }
+        
+        .import-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        .theme-input-group {
+            grid-column: span 3;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+        }
+        
+        .theme-input {
+            width: 100%;
+            font-family: monospace;
+            min-height: 60px;
+        }
+        
+        .composer-grid {
+            padding: 30px;
+            background: #f8f9fa;
+        }
+        
+        .composer-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .composer-card {
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .composer-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .composer-card.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        }
+        
+        .composer-icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        
+        .form-buttons {
+            padding: 30px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .form-button {
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .form-button.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .form-button.secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .form-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .sections-container {
+            padding: 30px;
+            background: white;
+        }
+        
+        .section {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .section-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .section-header:hover {
+            background: #e9ecef;
+        }
+        
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+        
+        .section-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            background: #667eea;
+            color: white;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-left: 10px;
+        }
+        
+        .section-form-badge {
+            background: #28a745;
+        }
+        
+        .section-controls {
+            padding: 20px;
+            background: white;
+        }
+        
+        .section-controls.collapsed {
+            display: none;
+        }
+        
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .instrument-controls {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .instrument-header {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #495057;
+        }
+        
+        .instrument-settings {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        
+        .mini-composer-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .mini-composer-card {
+            padding: 10px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+        }
+        
+        .mini-composer-card:hover {
+            background: #f8f9fa;
+        }
+        
+        .mini-composer-card.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        }
+        
+        .status-message {
+            padding: 15px;
+            margin: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .toggle-arrow {
+            transition: transform 0.3s ease;
+        }
+        
+        .toggle-arrow.collapsed {
+            transform: rotate(-90deg);
+        }
+        
+        .diagnostics {
+            margin: 0 30px 30px 30px;
+            background: #fff8e1;
+            border: 1px solid #ffe082;
+            color: #6d4c41;
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: blob:;">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="color-scheme" content="light" />
+    <meta http-equiv="Permissions-Policy" content="clipboard-write=(self)" />
+    <link rel="icon" href="data:,">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎼 Quintet Composer</h1>
+            <p>v11.0 – Harmonic Framework First</p>
+            <div class="version-badge">Version 11.0 – Harmonic</div>
+        </div>
+        
+        <div class="main-controls">
+            <div class="control-group">
+                <label>Title</label>
+                <input type="text" id="title" placeholder="My Quintet" value="String Quintet in C">
+            </div>
+            <div class="control-group">
+                <label>Composer Name</label>
+                <input type="text" id="composerName" placeholder="Your Name" value="GML Composer">
+            </div>
+            <div class="control-group">
+                <label>Tempo (BPM)</label>
+                <input type="number" id="tempo" min="40" max="200" value="120">
+            </div>
+            <div class="control-group">
+                <label>Complexity</label>
+                <select id="complexity">
+                    <option value="simple">Simple</option>
+                    <option value="moderate" selected>Moderate</option>
+                    <option value="complex">Complex</option>
+                </select>
+            </div>
+            
+            <div class="midi-import-zone" id="midiDropZone" onclick="document.getElementById('midiFileInput').click()">
+                <input type="file" id="midiFileInput" accept=".mid,.midi" style="display: none;">
+                <div class="import-icon">📁</div>
+                <div><strong>Drop MIDI file here or click to browse</strong></div>
+                <div id="midiStatus" style="margin-top: 10px; color: #667eea;"></div>
+            </div>
+            
+            <div class="theme-input-group">
+                <label>Main Theme (MIDI note numbers, comma-separated)</label>
+                <textarea id="themeInput" class="theme-input" placeholder="60, 64, 67, 72, 71, 67, 64, 60">60, 64, 67, 72, 71, 67, 64, 60</textarea>
+                <div id="themePreview" style="margin-top: 10px; font-family: monospace; color: #667eea;"></div>
+            </div>
+        </div>
+        
+        <div class="composer-grid">
+            <h3 style="margin-bottom: 20px;">Choose Default Composer Style</h3>
+            <div class="composer-cards" id="composerCards">
+                <div class="composer-card" data-composer="bach">
+                    <div class="composer-icon">🎹</div>
+                    <div><strong>Bach</strong></div>
+                    <div style="font-size: 12px; color: #666;">Fugal • Contrapuntal</div>
+                </div>
+                <div class="composer-card selected" data-composer="mozart">
+                    <div class="composer-icon">🎼</div>
+                    <div><strong>Mozart</strong></div>
+                    <div style="font-size: 12px; color: #666;">Classical • Elegant</div>
+                </div>
+                <div class="composer-card" data-composer="beethoven">
+                    <div class="composer-icon">🎵</div>
+                    <div><strong>Beethoven</strong></div>
+                    <div style="font-size: 12px; color: #666;">Dramatic • Powerful</div>
+                </div>
+                <div class="composer-card" data-composer="brahms">
+                    <div class="composer-icon">🎻</div>
+                    <div><strong>Brahms</strong></div>
+                    <div style="font-size: 12px; color: #666;">Romantic • Dense</div>
+                </div>
+                <div class="composer-card" data-composer="ravel">
+                    <div class="composer-icon">🌊</div>
+                    <div><strong>Ravel</strong></div>
+                    <div style="font-size: 12px; color: #666;">Impressionist • Colorful</div>
+                </div>
+                <div class="composer-card" data-composer="glass">
+                    <div class="composer-icon">🔄</div>
+                    <div><strong>Glass</strong></div>
+                    <div style="font-size: 12px; color: #666;">Minimalist • Repetitive</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-buttons">
+            <button class="form-button secondary" onclick="addSection('exposition')">+ Exposition</button>
+            <button class="form-button secondary" onclick="addSection('development')">+ Development</button>
+            <button class="form-button secondary" onclick="addSection('recapitulation')">+ Recapitulation</button>
+            <button class="form-button secondary" onclick="addSection('coda')">+ Coda</button>
+            <button class="form-button secondary" onclick="addSection('custom')">+ Custom Section</button>
+        </div>
+        
+        <div class="sections-container" id="sectionsContainer"></div>
+        
+        <div id="statusMessage"></div>
+        
+        <div class="diagnostics" id="diagnostics" style="display:none;"></div>
+        
+        <div class="form-buttons">
+            <button class="form-button primary" onclick="generateComposition()">Generate Composition</button>
+            <button class="form-button secondary" onclick="exportMusicXML()" id="exportBtn" style="display:none;">Export (.musicxml)</button>
+            <button class="form-button secondary" onclick="exportMIDI()" id="exportMidiBtn" style="display:none;">Export (.midi)</button>
+            <button class="form-button secondary" onclick="copyThisHTML()">Copy HTML</button>
+        </div>
+    </div>
+    
+    <script>
+        // ===================== Global State =====================
+        let selectedComposer = 'mozart';
+        let sections = [];
+        let generatedXML = '';
+        let generatedMIDI = null;
+        let importedTheme = null;
+        let mainTheme = [60, 64, 67, 72, 71, 67, 64, 60];
+        let lastVoiceMidi = { guitar: null, violin1: null, violin2: null, viola: null, cello: null };
+        
+        // ===================== Constants =====================
+        const DIVISIONS = 4; // quarter = 4
+        const NOTE_NAMES_SHARP = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+        const HARMONY_KINDS = {
+            'major': 'major',
+            'minor': 'minor',
+            'dim': 'diminished',
+            'aug': 'augmented',
+            '7': 'dominant',
+            'maj7': 'major-seventh',
+            'm7': 'minor-seventh',
+            'm7b5': 'half-diminished'
+        };
+        const CHORD_SETS = {
+            'major': [0,4,7],
+            'minor': [0,3,7],
+            'dim': [0,3,6],
+            'aug': [0,4,8],
+            'maj7': [0,4,7,11],
+            '7': [0,4,7,10],
+            'm7': [0,3,7,10],
+            'm7b5': [0,3,6,10]
+        };
+        const PRESETS = {
+            Bach: ['I','V','I','vi','ii','V','I'],
+            Mozart: ['I','IV','I','V','I'],
+            Jazz: ['IIm7','V7','IMaj7']
+        };
+        const MAJOR_DEGREE_TO_SEMITONES = { I:0, II:2, III:4, IV:5, V:7, VI:9, VII:11 };
+        const KEY_TO_FIFTHS = { 'C':0, 'G':1, 'D':2, 'A':3, 'E':4, 'B':5, 'F#':6, 'F':-1, 'Bb':-2, 'Eb':-3, 'Ab':-4, 'Db':-5, 'Gb':-6 };
+        
+        // ===================== Init =====================
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            addSection('exposition');
+            updateThemePreview();
+        });
+        
+        function setupEventListeners() {
+            document.querySelectorAll('.composer-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    document.querySelectorAll('.composer-card').forEach(c => c.classList.remove('selected'));
+                    this.classList.add('selected');
+                    selectedComposer = this.dataset.composer;
+                });
+            });
+            
+            const dropZone = document.getElementById('midiDropZone');
+            const fileInput = document.getElementById('midiFileInput');
+            dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+            dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('dragover'); });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) handleMidiFile(files[0]);
+            });
+            fileInput.addEventListener('change', (e) => { if (e.target.files.length > 0) handleMidiFile(e.target.files[0]); });
+            document.getElementById('themeInput').addEventListener('input', updateThemePreview);
+        }
+        
+        // ===================== MIDI Import (unchanged simplified) =====================
+        function handleMidiFile(file) {
+            if (!file.name.match(/\.(mid|midi)$/i)) { showStatus('Please select a valid MIDI file', 'error'); return; }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    parseMidiFile(new Uint8Array(e.target.result));
+                    document.getElementById('midiStatus').innerHTML = `✓ Loaded: ${file.name}`;
+                    showStatus('MIDI file imported successfully!', 'success');
+                } catch (error) {
+                    console.error('MIDI parse error:', error);
+                    document.getElementById('midiStatus').innerHTML = '✗ Error loading MIDI';
+                    showStatus('Error parsing MIDI file', 'error');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+        
+        function parseMidiFile(data) {
+            const extractedNotes = [];
+            let offset = 14; // Skip header
+            while (offset < data.length - 8) {
+                const chunkType = String.fromCharCode(data[offset], data[offset+1], data[offset+2], data[offset+3]);
+                const chunkLength = (data[offset+4] << 24) | (data[offset+5] << 16) | (data[offset+6] << 8) | data[offset+7];
+                if (chunkType === 'MTrk') {
+                    let trackOffset = offset + 8;
+                    const trackEnd = trackOffset + chunkLength;
+                    while (trackOffset < trackEnd && extractedNotes.length < 16) {
+                        while (trackOffset < trackEnd && (data[trackOffset] & 0x80)) trackOffset++;
+                        trackOffset++;
+                        if (trackOffset >= trackEnd) break;
+                        const status = data[trackOffset];
+                        if ((status & 0xF0) === 0x90) {
+                            trackOffset++;
+                            if (trackOffset < trackEnd) {
+                                const note = data[trackOffset];
+                                const velocity = data[trackOffset + 1];
+                                if (velocity > 0) extractedNotes.push(note);
+                                trackOffset += 2;
+                            }
+                        } else {
+                            trackOffset++;
+                        }
+                        if (extractedNotes.length >= 8) break;
+                    }
+                }
+                offset += 8 + chunkLength;
+            }
+            if (extractedNotes.length >= 4) {
+                mainTheme = extractedNotes.slice(0, 8);
+                while (mainTheme.length < 8) mainTheme.push(mainTheme[mainTheme.length % 4]);
+            } else {
+                mainTheme = [60, 64, 67, 72, 71, 67, 64, 60];
+            }
+            document.getElementById('themeInput').value = mainTheme.join(', ');
+            updateThemePreview();
+            importedTheme = {
+                notes: mainTheme.map(n => midiToName(n)),
+                octaves: mainTheme.map(n => Math.floor(n / 12) - 1),
+                durations: Array(mainTheme.length).fill(4)
+            };
+        }
+        
+        function updateThemePreview() {
+            const input = document.getElementById('themeInput').value;
+            const notes = input.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+            if (notes.length > 0) {
+                mainTheme = notes;
+                const noteNames = notes.map(n => midiToName(n) + Math.floor(n / 12 - 1));
+                document.getElementById('themePreview').textContent = 'Preview: ' + noteNames.join(' - ');
+            }
+        }
+        
+        // ===================== Sections =====================
+        function addSection(type) {
+            const sectionId = 'section_' + Date.now();
+            const sectionNumber = sections.length + 1;
+            let defaults = {
+                'exposition': { key: 'C', bars: 8, timeSignature: '4/4', transformation: 'original', style: 'Mozart' },
+                'development': { key: 'G', bars: 12, timeSignature: '4/4', transformation: 'fragmented', style: 'Bach' },
+                'recapitulation': { key: 'C', bars: 8, timeSignature: '4/4', transformation: 'inverted', style: 'Mozart' },
+                'coda': { key: 'C', bars: 4, timeSignature: '4/4', transformation: 'augmented', style: 'Mozart' },
+                'custom': { key: 'C', bars: 8, timeSignature: '4/4', transformation: 'original', style: 'Mozart' }
+            };
+            const section = {
+                id: sectionId,
+                type: type,
+                number: sectionNumber,
+                composer: selectedComposer,
+                key: defaults[type].key,
+                timeSignature: defaults[type].timeSignature,
+                bars: defaults[type].bars,
+                transformation: defaults[type].transformation,
+                style: defaults[type].style,
+                chordInput: '',
+                instruments: {
+                    guitar: { pattern: 'chords', polyrhythm: 'none', dynamics: 'mf' },
+                    violin1: { pattern: 'melody', polyrhythm: 'none', dynamics: 'mf' },
+                    violin2: { pattern: 'harmony', polyrhythm: 'none', dynamics: 'mp' },
+                    viola: { pattern: 'rhythm', polyrhythm: 'none', dynamics: 'mp' },
+                    cello: { pattern: 'bass', polyrhythm: 'none', dynamics: 'mf' }
+                }
+            };
+            sections.push(section);
+            renderSection(section);
+        }
+        
+        function renderSection(section) {
+            const container = document.getElementById('sectionsContainer');
+            const sectionDiv = document.createElement('div');
+            sectionDiv.className = 'section';
+            sectionDiv.id = section.id;
+            const formTypeLabel = section.type.charAt(0).toUpperCase() + section.type.slice(1);
+            sectionDiv.innerHTML = `
+                <div class="section-header" onclick="toggleSection('${section.id}')">
+                    <div class="section-title">
+                        <span class="toggle-arrow">▼</span>
+                        <span>Section ${section.number}: ${formTypeLabel}</span>
+                        <span class="section-badge section-form-badge">${formTypeLabel}</span>
+                        <span class="section-badge">${section.composer}</span>
+                    </div>
+                    <button class="form-button secondary" style="padding: 5px 15px;" onclick="removeSection('${section.id}'); event.stopPropagation();">Remove</button>
+                </div>
+                <div class="section-controls" id="controls_${section.id}">
+                    <div class="mini-composer-grid">
+                        ${['bach', 'mozart', 'beethoven', 'brahms', 'ravel', 'glass'].map(c => `
+                            <div class="mini-composer-card ${c === section.composer ? 'selected' : ''}" onclick="updateSectionComposer('${section.id}', '${c}')">
+                                ${c.charAt(0).toUpperCase() + c.slice(1)}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="controls-grid">
+                        <div class="control-group">
+                            <label>Key</label>
+                            <select onchange="updateSectionProperty('${section.id}', 'key', this.value)">
+                                ${['C', 'G', 'D', 'F', 'Bb', 'A', 'Eb'].map(k => 
+                                    `<option value="${k}" ${k === section.key ? 'selected' : ''}>${k} Major</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>Time Signature</label>
+                            <select onchange="updateSectionProperty('${section.id}', 'timeSignature', this.value)">
+                                ${['4/4', '3/4', '5/4', '6/8', '7/8'].map(t => 
+                                    `<option value="${t}" ${t === section.timeSignature ? 'selected' : ''}>${t}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>Measures</label>
+                            <input type="number" value="${section.bars}" min="1" max="32" onchange="updateSectionProperty('${section.id}', 'bars', this.value)">
+                        </div>
+                        <div class="control-group">
+                            <label>Theme Transformation</label>
+                            <select onchange="updateSectionProperty('${section.id}', 'transformation', this.value)">
+                                ${['original', 'fragmented', 'inverted', 'augmented', 'retrograde'].map(t => 
+                                    `<option value="${t}" ${t === section.transformation ? 'selected' : ''}>${t}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="control-group" style="grid-column: span 2;">
+                            <label>Chord progression</label>
+                            <input type="text" id="chordInput_${section.id}" placeholder="Chord progression: C G Am F or I V vi IV or Cmaj7 Dm7 G7 Cmaj7" value="${section.chordInput}" oninput="updateSectionChordInput('${section.id}', this.value)">
+                        </div>
+                        <div class="control-group">
+                            <label>Style (used if progression empty)</label>
+                            <select id="style_${section.id}" onchange="updateSectionProperty('${section.id}', 'style', this.value)">
+                                ${['Bach','Mozart','Jazz'].map(s => `<option value="${s}" ${s === section.style ? 'selected' : ''}>${s}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                    ${Object.entries(section.instruments).map(([inst, settings]) => `
+                        <div class="instrument-controls">
+                            <div class="instrument-header">${getInstrumentDisplayName(inst)}</div>
+                            <div class="instrument-settings">
+                                <div class="control-group">
+                                    <label>Pattern</label>
+                                    <select onchange="updateInstrumentProperty('${section.id}', '${inst}', 'pattern', this.value)">
+                                        ${getPatternOptions(inst).map(p => 
+                                            `<option value="${p.value}" ${p.value === settings.pattern ? 'selected' : ''}>${p.label}</option>`
+                                        ).join('')}
+                                    </select>
+                                </div>
+                                <div class="control-group">
+                                    <label>Polyrhythm</label>
+                                    <select onchange="updateInstrumentProperty('${section.id}', '${inst}', 'polyrhythm', this.value)">
+                                        <option value="none" ${settings.polyrhythm === 'none' ? 'selected' : ''}>None</option>
+                                        <option value="3:2" ${settings.polyrhythm === '3:2' ? 'selected' : ''}>3:2</option>
+                                        <option value="4:3" ${settings.polyrhythm === '4:3' ? 'selected' : ''}>4:3</option>
+                                        <option value="5:4" ${settings.polyrhythm === '5:4' ? 'selected' : ''}>5:4</option>
+                                        <option value="7:6" ${settings.polyrhythm === '7:6' ? 'selected' : ''}>7:6</option>
+                                    </select>
+                                </div>
+                                <div class="control-group">
+                                    <label>Dynamics</label>
+                                    <select onchange="updateInstrumentProperty('${section.id}', '${inst}', 'dynamics', this.value)">
+                                        ${['pp', 'p', 'mp', 'mf', 'f', 'ff'].map(d => 
+                                            `<option value="${d}" ${d === settings.dynamics ? 'selected' : ''}>${d}</option>`
+                                        ).join('')}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            container.appendChild(sectionDiv);
+        }
+        
+        function getInstrumentDisplayName(inst) {
+            const names = { 'guitar':'🎸 Guitar', 'violin1':'🎻 Violin I', 'violin2':'🎻 Violin II', 'viola':'🎻 Viola', 'cello':'🎻 Cello' };
+            return names[inst] || inst;
+        }
+        function getPatternOptions(_) {
+            return [
+                { value: 'melody', label: 'Melody' },
+                { value: 'harmony', label: 'Harmony' },
+                { value: 'bass', label: 'Bass Line' },
+                { value: 'rhythm', label: 'Rhythmic' },
+                { value: 'chords', label: 'Chords' },
+                { value: 'tremolo', label: 'Tremolo' },
+                { value: 'pizzicato', label: 'Pizzicato' },
+                { value: 'arpeggio', label: 'Arpeggio' },
+                { value: 'pedal', label: 'Pedal Tone' },
+                { value: 'theme', label: 'Use Theme' }
+            ];
+        }
+        function toggleSection(sectionId) {
+            const controls = document.getElementById('controls_' + sectionId);
+            const arrow = document.querySelector(`#${sectionId} .toggle-arrow`);
+            controls.classList.toggle('collapsed');
+            arrow.classList.toggle('collapsed');
+        }
+        function updateSectionComposer(sectionId, composer) {
+            const section = sections.find(s => s.id === sectionId);
+            if (section) {
+                section.composer = composer;
+                document.querySelectorAll(`#${sectionId} .mini-composer-card`).forEach(card => {
+                    card.classList.remove('selected');
+                    if (card.textContent.toLowerCase().includes(composer)) card.classList.add('selected');
+                });
+                document.querySelector(`#${sectionId} .section-badge:not(.section-form-badge)`).textContent = composer;
+            }
+        }
+        function updateSectionProperty(sectionId, property, value) {
+            const section = sections.find(s => s.id === sectionId);
+            if (section) section[property] = property === 'bars' ? parseInt(value) : value;
+        }
+        function updateSectionChordInput(sectionId, value) {
+            const section = sections.find(s => s.id === sectionId);
+            if (section) section.chordInput = value;
+        }
+        function updateInstrumentProperty(sectionId, instrument, property, value) {
+            const section = sections.find(s => s.id === sectionId);
+            if (section && section.instruments[instrument]) section.instruments[instrument][property] = value;
+        }
+        function removeSection(sectionId) {
+            sections = sections.filter(s => s.id !== sectionId);
+            document.getElementById(sectionId).remove();
+            sections.forEach((s, i) => { s.number = i + 1; });
+        }
+        
+        // ===================== Harmony Parsing =====================
+        function parseProgression(input, key, bars, style) {
+            let tokens = [];
+            if (!input || input.trim() === '') {
+                const base = PRESETS[style] || PRESETS['Mozart'];
+                tokens = [];
+                while (tokens.length < bars) tokens = tokens.concat(base);
+                tokens = tokens.slice(0, bars);
+            } else {
+                input = input.replace(/\|/g, ' | ');
+                tokens = input.trim().split(/\s+/);
+            }
+            const measures = [];
+            let i = 0;
+            while (i < tokens.length && measures.length < bars) {
+                const t = tokens[i];
+                if (t === '|') { i++; continue; }
+                const { symbol, durationBars, chord } = interpretChordToken(t, key);
+                const dur = Math.max(1, durationBars || 1);
+                for (let d = 0; d < dur && measures.length < bars; d++) {
+                    measures.push({ symbol, chord });
+                }
+                i++;
+            }
+            // If not enough measures filled, loop
+            if (measures.length < bars) {
+                let idx = 0;
+                while (measures.length < bars && measures.length > 0) {
+                    measures.push(measures[idx % measures.length]);
+                    idx++;
+                }
+            }
+            return measures.slice(0, bars);
+        }
+        
+        function interpretChordToken(token, key) {
+            // Handle optional duration suffix like C:2
+            let durationBars = 1;
+            let core = token;
+            const durMatch = token.match(/^(.*?):(\d+)$/);
+            if (durMatch) { core = durMatch[1]; durationBars = parseInt(durMatch[2]) || 1; }
+            // Inversions like C/E: ignore slash bass for now
+            core = core.split('/')[0];
+            // Decide if Roman numeral
+            if (/^[#b]*[ivIV]+/.test(core)) {
+                return fromRoman(core, key, durationBars);
+            } else {
+                return fromChordSymbol(core, durationBars);
+            }
+        }
+        
+        function fromRoman(roman, key, durationBars) {
+            // Extract accidentals before numeral and quality after
+            const m = roman.match(/^([#b]*)([ivIV]+)(.*)$/);
+            const accidental = m[1] || '';
+            const numeral = m[2];
+            let qualitySuffix = (m[3] || '').trim();
+            // Determine base triad quality by case if no explicit suffix
+            let triadQuality = /[iv]/.test(numeral.charAt(0)) ? 'minor' : 'major';
+            // Quality inference from suffix
+            let quality = triadQuality;
+            if (/maj7/i.test(qualitySuffix)) quality = 'maj7';
+            else if (/m7b5/i.test(qualitySuffix)) quality = 'm7b5';
+            else if (/m7/i.test(qualitySuffix)) quality = 'm7';
+            else if (/7/.test(qualitySuffix)) quality = '7';
+            else if (/dim|\u00B0/.test(qualitySuffix)) quality = 'dim';
+            else if (/aug|\+/.test(qualitySuffix)) quality = 'aug';
+            const semis = MAJOR_DEGREE_TO_SEMITONES[numeral.toUpperCase()] || 0;
+            let rootMidi = keyToC0Midi(key) + semis;
+            if (accidental.includes('#')) rootMidi += (accidental.match(/#/g) || []).length;
+            if (accidental.includes('b')) rootMidi -= (accidental.match(/b/g) || []).length;
+            const root = midiToPitch(rootMidi + 60); // around C4 for naming
+            const chord = { rootStep: root.step, rootAlter: root.alter, quality, pcs: CHORD_SETS[quality] || CHORD_SETS[triadQuality] };
+            const symbol = numeral.toUpperCase() + (quality === 'major' ? '' : quality);
+            return { symbol, durationBars, chord };
+        }
+        
+        function fromChordSymbol(sym, durationBars) {
+            // Examples: C, G, Am, Cmaj7, Dm7, G7, C/E
+            const m = sym.match(/^([A-G])(#{1,2}|b{1,2})?(maj7|m7b5|m7|maj|m|min|dim|aug|7)?/i);
+            if (!m) {
+                // Fallback to C major triad
+                return { symbol: 'C', durationBars, chord: { rootStep: 'C', rootAlter: 0, quality: 'major', pcs: CHORD_SETS['major'] } };
+            }
+            const step = m[1].toUpperCase();
+            const acc = m[2] || '';
+            const qualityToken = (m[3] || '').toLowerCase();
+            const alter = (acc.match(/#/g) || []).length - (acc.match(/b/g) || []).length;
+            let quality = 'major';
+            if (qualityToken === 'm' || qualityToken === 'min') quality = 'minor';
+            else if (qualityToken === 'maj') quality = 'major';
+            else if (qualityToken === 'dim') quality = 'dim';
+            else if (qualityToken === 'aug') quality = 'aug';
+            else if (qualityToken === '7') quality = '7';
+            else if (qualityToken === 'maj7') quality = 'maj7';
+            else if (qualityToken === 'm7') quality = 'm7';
+            else if (qualityToken === 'm7b5') quality = 'm7b5';
+            const chord = { rootStep: step, rootAlter: alter, quality, pcs: CHORD_SETS[quality] || CHORD_SETS['major'] };
+            const symbol = step + (alter > 0 ? '#'.repeat(alter) : alter < 0 ? 'b'.repeat(-alter) : '') + (qualityToken ? qualityToken : '');
+            return { symbol, durationBars, chord };
+        }
+        
+        function keyToC0Midi(key) {
+            // Map key tonic to semitone above C based on sharp names
+            const base = { 'C':0,'C#':1,'Db':1,'D':2,'D#':3,'Eb':3,'E':4,'F':5,'F#':6,'Gb':6,'G':7,'G#':8,'Ab':8,'A':9,'A#':10,'Bb':10,'B':11 };
+            return base[key] || 0;
+        }
+        
+        // ===================== Generation =====================
+        function generateComposition() {
+            if (sections.length === 0) { showStatus('Please add at least one section', 'error'); return; }
+            showStatus('Generating composition...', 'success');
+            lastVoiceMidi = { guitar: null, violin1: null, violin2: null, viola: null, cello: null };
+            generatedXML = generateMusicXML();
+            generatedMIDI = generateMIDI();
+            document.getElementById('exportBtn').style.display = 'inline-block';
+            document.getElementById('exportMidiBtn').style.display = 'inline-block';
+            showStatus('Composition generated successfully!', 'success');
+        }
+        
+        function generateMusicXML() {
+            const title = document.getElementById('title').value;
+            const composer = document.getElementById('composerName').value;
+            const diagnostics = [];
+            let xml = `<?xml version="1.0" encoding="UTF-8"?>\n` +
+`<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">\n` +
+`<score-partwise version="3.1">\n` +
+`  <work>\n` +
+`    <work-title>${title}</work-title>\n` +
+`  </work>\n` +
+`  <identification>\n` +
+`    <creator type="composer">${composer}</creator>\n` +
+`    <encoding>\n` +
+`      <software>Quintet Composer v11.0</software>\n` +
+`      <encoding-date>${new Date().toISOString().split('T')[0]}</encoding-date>\n` +
+`    </encoding>\n` +
+`  </identification>\n` +
+`  <part-list>\n` +
+`    <score-part id="P1"><part-name>Guitar</part-name></score-part>\n` +
+`    <score-part id="P2"><part-name>Violin I</part-name></score-part>\n` +
+`    <score-part id="P3"><part-name>Violin II</part-name></score-part>\n` +
+`    <score-part id="P4"><part-name>Viola</part-name></score-part>\n` +
+`    <score-part id="P5"><part-name>Cello</part-name></score-part>\n` +
+`  </part-list>`;
+            const instruments = ['guitar', 'violin1', 'violin2', 'viola', 'cello'];
+            const partIds = ['P1', 'P2', 'P3', 'P4', 'P5'];
+            instruments.forEach((inst, idx) => {
+                xml += `\n  <part id="${partIds[idx]}">`;
+                let measureNumber = 1;
+                sections.forEach((section, sectionIdx) => {
+                    const beatsPerMeasure = parseInt(section.timeSignature.split('/')[0]);
+                    const beatType = parseInt(section.timeSignature.split('/')[1]);
+                    const harmonicTimeline = parseProgression(section.chordInput, section.key, section.bars, section.style);
+                    for (let m = 0; m < section.bars; m++) {
+                        const isFirstOverall = (measureNumber === 1);
+                        xml += `\n    <measure number="${measureNumber}">`;
+                        if (isFirstOverall) {
+                            const clefSign = inst === 'cello' ? 'F' : inst === 'viola' ? 'C' : 'G';
+                            const clefLine = inst === 'cello' ? '4' : inst === 'viola' ? '3' : '2';
+                            xml += `\n      <attributes>\n        <divisions>${DIVISIONS}</divisions>\n        <key><fifths>${getKeyFifths(section.key)}</fifths></key>\n        <time><beats>${beatsPerMeasure}</beats><beat-type>${beatType}</beat-type></time>\n        <clef><sign>${clefSign}</sign><line>${clefLine}</line></clef>\n      </attributes>`;
+                        }
+                        const barChord = harmonicTimeline[m];
+                        const beatDur = DIVISIONS; // quarter
+                        let sumDur = 0;
+                        if (inst === 'guitar') {
+                            // Harmony tag at bar start
+                            xml += createHarmonyTag(barChord);
+                            // Beat 1 stacked chord
+                            const chordMidis = buildChordMidis(barChord, instrumentBaseOctave(inst));
+                            xml += chordMidis.map((nm, j) => createNoteXML(nm.step, nm.octave, nm.alter, beatDur, j > 0, 'quarter')).join('');
+                            sumDur += beatDur;
+                            // Remaining beats: light root/fifth pattern
+                            for (let b = 1; b < beatsPerMeasure; b++) {
+                                const pick = (b % 2 === 1 && barChord.chord.pcs.length >= 2) ? transposePitch(barChord, barChord.chord.pcs[1], instrumentBaseOctave(inst)) : transposePitch(barChord, 0, instrumentBaseOctave(inst));
+                                xml += createNoteXML(pick.step, pick.octave, pick.alter, beatDur, false, 'quarter');
+                                sumDur += beatDur;
+                            }
+                        } else if (inst === 'cello') {
+                            const beatsForCello = beatsPerMeasure === 3 ? [0] : [0,2];
+                            for (let b = 0; b < beatsPerMeasure; b++) {
+                                let pitch;
+                                if (beatsForCello.includes(b)) {
+                                    if (b === 2 && Math.random() < 0.4 && barChord.chord.pcs.length > 1) pitch = transposePitch(barChord, barChord.chord.pcs[1], instrumentBaseOctave(inst));
+                                    else pitch = transposePitch(barChord, 0, instrumentBaseOctave(inst));
+                                } else {
+                                    // sustain as quarter rests replaced by repeating root
+                                    pitch = transposePitch(barChord, 0, instrumentBaseOctave(inst));
+                                }
+                                xml += createNoteXML(pitch.step, pitch.octave, pitch.alter, beatDur, false, 'quarter');
+                                sumDur += beatDur;
+                                lastVoiceMidi.cello = pitch.midi;
+                            }
+                        } else if (inst === 'violin2' || inst === 'viola') {
+                            // Inner voices on chord tones with <=3 semitone movement
+                            for (let b = 0; b < beatsPerMeasure; b++) {
+                                const targetInts = barChord.chord.pcs.length > 2 ? [barChord.chord.pcs[2], barChord.chord.pcs[1]] : [barChord.chord.pcs[1] || 0];
+                                const candidates = targetInts.map(intv => transposePitch(barChord, intv, instrumentBaseOctave(inst)));
+                                const chosen = chooseNearest(lastVoiceMidi[inst] ?? candidates[0].midi, candidates, 3);
+                                xml += createNoteXML(chosen.step, chosen.octave, chosen.alter, beatDur, false, 'quarter');
+                                sumDur += beatDur;
+                                lastVoiceMidi[inst] = chosen.midi;
+                            }
+                        } else if (inst === 'violin1') {
+                            // Melody: chord tones on strong beats, optional diatonic passing/neighbor on weak beats
+                            const scaleMidis = buildMajorScaleMidis(section.key, instrumentBaseOctave(inst)+1);
+                            for (let b = 0; b < beatsPerMeasure; b++) {
+                                const strong = (b % 2 === 0);
+                                if (strong) {
+                                    const toneInts = barChord.chord.pcs;
+                                    const cands = toneInts.map(i => transposePitch(barChord, i, instrumentBaseOctave(inst)+1));
+                                    const chosen = chooseNearest(lastVoiceMidi.violin1 ?? cands[0].midi, cands, 7);
+                                    xml += createNoteXML(chosen.step, chosen.octave, chosen.alter, beatDur, false, 'quarter');
+                                    lastVoiceMidi.violin1 = chosen.midi;
+                                } else {
+                                    const doNCT = Math.random() < 0.3;
+                                    if (doNCT && lastVoiceMidi.violin1 != null) {
+                                        const up = lastVoiceMidi.violin1 + 2; // stepwise preference
+                                        const down = lastVoiceMidi.violin1 - 2;
+                                        const near = nearestInSet(lastVoiceMidi.violin1, scaleMidis);
+                                        const targetMidi = [up, down, near].reduce((a,b)=> Math.abs(b-lastVoiceMidi.violin1) < Math.abs(a-lastVoiceMidi.violin1)? b : a, near);
+                                        const pitch = midiToPitch(targetMidi);
+                                        xml += createNoteXML(pitch.step, pitch.octave, pitch.alter, beatDur, false, 'quarter');
+                                        lastVoiceMidi.violin1 = targetMidi;
+                                    } else {
+                                        const toneInts = barChord.chord.pcs;
+                                        const cands = toneInts.map(i => transposePitch(barChord, i, instrumentBaseOctave(inst)+1));
+                                        const chosen = chooseNearest(lastVoiceMidi.violin1 ?? cands[0].midi, cands, 5);
+                                        xml += createNoteXML(chosen.step, chosen.octave, chosen.alter, beatDur, false, 'quarter');
+                                        lastVoiceMidi.violin1 = chosen.midi;
+                                    }
+                                }
+                                sumDur += beatDur;
+                            }
+                        }
+                        // Final barline if last section & last bar
+                        if (sectionIdx === sections.length - 1 && m === section.bars - 1) {
+                            xml += `\n      <barline location="right"><bar-style>light-heavy</bar-style></barline>`;
+                        }
+                        xml += `\n    </measure>`;
+                        diagnostics.push(`${partIds[idx]} m${measureNumber}: total=${sumDur} (expected ${beatsPerMeasure*DIVISIONS})${inst==='guitar'?' harmony=Y':''}`);
+                        measureNumber++;
+                    }
+                });
+                xml += `\n  </part>`;
+            });
+            xml += `\n</score-partwise>`;
+            const diagDiv = document.getElementById('diagnostics');
+            diagDiv.style.display = 'block';
+            diagDiv.textContent = diagnostics.join('\n');
+            return xml;
+        }
+        
+        // ===================== Note/Chord Helpers =====================
+        function createHarmonyTag(barChord) {
+            const kind = HARMONY_KINDS[barChord.chord.quality] || 'major';
+            const rootStep = barChord.chord.rootStep;
+            const rootAlter = barChord.chord.rootAlter;
+            return `\n      <harmony>\n        <root>\n          <root-step>${rootStep}</root-step>${rootAlter ? `\n          <root-alter>${rootAlter}</root-alter>` : ''}\n        </root>\n        <kind>${kind}</kind>\n      </harmony>`;
+        }
+        function instrumentBaseOctave(inst) {
+            return inst === 'guitar' ? 3 : inst === 'cello' ? 2 : inst === 'viola' ? 3 : 4;
+        }
+        function buildChordMidis(barChord, baseOctave) {
+            return barChord.chord.pcs.slice(0,4).map(intv => transposePitch(barChord, intv, baseOctave));
+        }
+        function transposePitch(barChord, semitoneOffset, baseOctave) {
+            // Root midi around base octave
+            const rootMidi = nameToMidi(barChord.chord.rootStep, barChord.chord.rootAlter, baseOctave);
+            const midi = rootMidi + semitoneOffset;
+            const p = midiToPitch(midi);
+            return { step: p.step, alter: p.alter, octave: p.octave, midi };
+        }
+        function buildMajorScaleMidis(key, baseOct) {
+            const steps = [0,2,4,5,7,9,11];
+            const tonic = keyToC0Midi(key) + (baseOct*12);
+            return steps.map(s => tonic + s);
+        }
+        function chooseNearest(prevMidi, candidates, maxLeapSemis) {
+            let best = candidates[0];
+            let bestDist = Math.abs(candidates[0].midi - prevMidi);
+            for (const c of candidates) {
+                const d = Math.abs(c.midi - prevMidi);
+                if (d < bestDist) { best = c; bestDist = d; }
+            }
+            if (bestDist > maxLeapSemis) {
+                // adjust by adding/subtracting octave to reduce leap if possible
+                const adjusted = candidates.map(c => {
+                    const options = [c.midi-12, c.midi, c.midi+12].map(mm => ({...c, midi:mm}));
+                    return options.reduce((a,b)=> Math.abs(b.midi-prevMidi)<Math.abs(a.midi-prevMidi)? b:a);
+                });
+                return adjusted.reduce((a,b)=> Math.abs(b.midi-prevMidi)<Math.abs(a.midi-prevMidi)? b:a);
+            }
+            return best;
+        }
+        function nearestInSet(target, set) {
+            return set.reduce((a,b)=> Math.abs(b-target)<Math.abs(a-target)? b:a);
+        }
+        
+        // ===================== MusicXML Helpers =====================
+        function createNoteXML(step, octave, alter, duration, isChord, type) {
+            let xml = '\n      <note>';
+            if (isChord) xml += '\n        <chord/>';
+            xml += `\n        <pitch>\n          <step>${step}</step>`;
+            if (alter && alter !== 0) xml += `\n          <alter>${alter}</alter>`;
+            xml += `\n          <octave>${octave}</octave>\n        </pitch>\n        <duration>${duration}</duration>\n        <type>${type || durationType(duration)}</type>\n      </note>`;
+            return xml;
+        }
+        function durationType(duration) {
+            const types = { 16:'whole', 12:'half.', 8:'half', 6:'quarter.', 4:'quarter', 3:'eighth.', 2:'eighth', 1:'16th' };
+            return types[duration] || 'quarter';
+        }
+        function getKeyFifths(key) { return KEY_TO_FIFTHS[key] ?? 0; }
+        
+        // ===================== Pitch Utils =====================
+        function midiToName(midi) { return NOTE_NAMES_SHARP[midi % 12]; }
+        function midiToPitch(midi) {
+            const name = midiToName(midi);
+            const step = name.charAt(0);
+            const alter = name.includes('#') ? 1 : 0;
+            const octave = Math.floor(midi / 12) - 1;
+            return { step, alter, octave };
+        }
+        function nameToMidi(step, alter, octave) {
+            const index = {C:0,D:2,E:4,F:5,G:7,A:9,B:11}[step] + (alter||0);
+            return (octave + 1) * 12 + index;
+        }
+        
+        // ===================== Export / UI =====================
+        function generateMIDI() {
+            const tracks = [];
+            const tempo = 120; // Default tempo
+            
+            // Create header
+            const header = [0x4D, 0x54, 0x68, 0x64, 0, 0, 0, 6, 0, 1, 0, 5, 1, 0xE0];
+            
+            // Create tracks for each instrument
+            const instruments = ['Guitar', 'Violin I', 'Violin II', 'Viola', 'Cello'];
+            const midiChannels = [0, 1, 2, 3, 4];
+            const midiPrograms = [24, 40, 40, 41, 42]; // Guitar, Violin, Violin, Viola, Cello
+            
+            sections.forEach((section, sectionIdx) => {
+                section.voices.forEach((voice, voiceIdx) => {
+                    if (voiceIdx >= 5) return; // Only process first 5 voices
+                    
+                    const track = [];
+                    track.push(0, 0xFF, 3, instruments[voiceIdx].length, ...Array.from(instruments[voiceIdx]).map(c => c.charCodeAt(0)));
+                    
+                    if (voiceIdx === 0) {
+                        // Add tempo to first track
+                        const tempoMicroseconds = Math.floor(60000000 / tempo);
+                        track.push(0, 0xFF, 0x51, 3, (tempoMicroseconds >> 16) & 0xFF, (tempoMicroseconds >> 8) & 0xFF, tempoMicroseconds & 0xFF);
+                    }
+                    
+                    track.push(0, 0xC0 | midiChannels[voiceIdx], midiPrograms[voiceIdx]);
+                    
+                    let currentTime = 0;
+                    voice.forEach(note => {
+                        if (note.midi && note.midi >= 21 && note.midi <= 108) {
+                            // Note on
+                            track.push(0, 0x90 | midiChannels[voiceIdx], note.midi, 0x50);
+                            
+                            // Note duration
+                            const ticks = Math.round(note.duration * 480); // 480 ticks per quarter note
+                            if (ticks < 128) {
+                                track.push(ticks);
+                            } else {
+                                track.push(0x80 | (ticks >> 7), ticks & 0x7F);
+                            }
+                            
+                            // Note off
+                            track.push(0x80 | midiChannels[voiceIdx], note.midi, 0);
+                        }
+                        currentTime += note.duration * 480;
+                    });
+                    
+                    track.push(0, 0xFF, 0x2F, 0); // End of track
+                    
+                    tracks.push({
+                        header: [0x4D, 0x54, 0x72, 0x6B],
+                        length: track.length,
+                        data: track
+                    });
+                });
+            });
+            
+            // Combine all tracks
+            const midiData = [...header];
+            tracks.forEach(track => {
+                midiData.push(...track.header);
+                midiData.push((track.length >> 24) & 0xFF, (track.length >> 16) & 0xFF, (track.length >> 8) & 0xFF, track.length & 0xFF);
+                midiData.push(...track.data);
+            });
+            
+            return new Uint8Array(midiData);
+        }
+        
+        function exportMusicXML() {
+            if (!generatedXML) { showStatus('Please generate a composition first', 'error'); return; }
+            const blob = new Blob([generatedXML], { type: 'application/vnd.recordare.musicxml+xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const date = new Date().toISOString().split('T')[0];
+            a.download = `quintet_v12_1_${date}.musicxml`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showStatus('MusicXML exported successfully!', 'success');
+        }
+        
+        function exportMIDI() {
+            if (!generatedMIDI) { showStatus('Please generate a composition first', 'error'); return; }
+            const blob = new Blob([generatedMIDI], { type: 'audio/midi' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const date = new Date().toISOString().split('T')[0];
+            a.download = `quintet_v12_1_${date}.mid`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showStatus('MIDI exported successfully!', 'success');
+        }
+        function copyThisHTML() {
+            const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+            navigator.clipboard.writeText(html).then(()=>{
+                showStatus('HTML copied to clipboard', 'success');
+            }).catch(()=>{
+                showStatus('Clipboard copy failed', 'error');
+            });
+        }
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.className = `status-message status-${type}`;
+            statusDiv.textContent = message;
+            setTimeout(() => { statusDiv.className = ''; statusDiv.textContent = ''; }, 3000);
+        }
+    </script>
+</body>
+</html>
+
