@@ -499,64 +499,136 @@
             bach: {
                 name: 'Bach',
                 characteristics: {
-                    progressions: [[1, 4, 5, 1], [1, 6, 4, 5], [1, 5, 6, 4]],
-                    rhythms: ['half', 'quarter', 'quarter'],
+                    progressions: [[1, 4, 5, 1], [1, 6, 4, 5], [1, 5, 6, 4], [1, 4, 6, 5], [1, 5, 1, 4]],
+                    rhythms: ['half', 'quarter', 'quarter', 'eighth', 'eighth', 'quarter'],
                     harmony: 'counterpoint'
+                }
+            },
+            handel: {
+                name: 'Handel',
+                characteristics: {
+                    progressions: [[1, 4, 5, 1], [1, 5, 6, 4], [1, 4, 6, 5], [1, 5, 1, 4]],
+                    rhythms: ['quarter', 'quarter', 'half', 'eighth', 'eighth'],
+                    harmony: 'baroque'
+                }
+            },
+            vivaldi: {
+                name: 'Vivaldi',
+                characteristics: {
+                    progressions: [[1, 4, 5, 1], [1, 6, 4, 5], [1, 5, 6, 4], [1, 4, 6, 5]],
+                    rhythms: ['quarter', 'quarter', 'quarter', 'quarter', 'eighth', 'eighth'],
+                    harmony: 'baroque'
                 }
             },
             mozart: {
                 name: 'Mozart',
                 characteristics: {
-                    progressions: [[1, 4, 5, 1], [1, 6, 4, 5]],
-                    rhythms: ['quarter', 'quarter', 'half'],
+                    progressions: [[1, 4, 5, 1], [1, 6, 4, 5], [1, 5, 6, 4], [1, 4, 6, 5]],
+                    rhythms: ['quarter', 'quarter', 'half', 'eighth', 'eighth', 'quarter'],
+                    harmony: 'classical'
+                }
+            },
+            haydn: {
+                name: 'Haydn',
+                characteristics: {
+                    progressions: [[1, 4, 5, 1], [1, 6, 4, 5], [1, 5, 6, 4], [1, 4, 6, 5]],
+                    rhythms: ['half', 'quarter', 'quarter', 'eighth', 'eighth'],
                     harmony: 'classical'
                 }
             },
             beethoven: {
                 name: 'Beethoven',
                 characteristics: {
-                    progressions: [[1, 4, 5, 1], [1, 6, 4, 5], [1, 5, 6, 4]],
-                    rhythms: ['dotted-half', 'quarter'],
+                    progressions: [[1, 4, 5, 1], [1, 6, 4, 5], [1, 5, 6, 4], [1, 4, 6, 5], [1, 5, 1, 4]],
+                    rhythms: ['dotted-half', 'quarter', 'eighth', 'eighth', 'quarter'],
+                    harmony: 'romantic'
+                }
+            },
+            schubert: {
+                name: 'Schubert',
+                characteristics: {
+                    progressions: [[1, 6, 4, 5], [1, 4, 6, 5], [1, 5, 6, 4], [1, 4, 5, 1]],
+                    rhythms: ['half', 'quarter', 'quarter', 'eighth', 'eighth'],
                     harmony: 'romantic'
                 }
             },
             chopin: {
                 name: 'Chopin',
                 characteristics: {
-                    progressions: [[1, 6, 4, 5], [1, 4, 6, 5]],
-                    rhythms: ['half', 'quarter', 'quarter'],
+                    progressions: [[1, 6, 4, 5], [1, 4, 6, 5], [1, 5, 6, 4], [1, 4, 5, 1]],
+                    rhythms: ['half', 'quarter', 'quarter', 'eighth', 'eighth', 'quarter'],
+                    harmony: 'romantic'
+                }
+            },
+            schumann: {
+                name: 'Schumann',
+                characteristics: {
+                    progressions: [[1, 6, 4, 5], [1, 4, 6, 5], [1, 5, 6, 4], [1, 4, 5, 1]],
+                    rhythms: ['quarter', 'quarter', 'half', 'eighth', 'eighth'],
+                    harmony: 'romantic'
+                }
+            },
+            brahms: {
+                name: 'Brahms',
+                characteristics: {
+                    progressions: [[1, 4, 5, 1], [1, 6, 4, 5], [1, 5, 6, 4], [1, 4, 6, 5]],
+                    rhythms: ['half', 'quarter', 'quarter', 'eighth', 'eighth', 'quarter'],
                     harmony: 'romantic'
                 }
             },
             debussy: {
                 name: 'Debussy',
                 characteristics: {
-                    progressions: [[1, 4, 6, 5], [1, 6, 4, 5]],
-                    rhythms: ['whole', 'half'],
+                    progressions: [[1, 4, 6, 5], [1, 6, 4, 5], [1, 5, 6, 4], [1, 4, 5, 1]],
+                    rhythms: ['whole', 'half', 'quarter', 'eighth', 'eighth'],
                     harmony: 'impressionist'
+                }
+            },
+            ravel: {
+                name: 'Ravel',
+                characteristics: {
+                    progressions: [[1, 4, 6, 5], [1, 6, 4, 5], [1, 5, 6, 4], [1, 4, 5, 1]],
+                    rhythms: ['half', 'quarter', 'quarter', 'eighth', 'eighth', 'quarter'],
+                    harmony: 'impressionist'
+                }
+            },
+            stravinsky: {
+                name: 'Stravinsky',
+                characteristics: {
+                    progressions: [[1, 4, 5, 1], [1, 6, 4, 5], [1, 5, 6, 4], [1, 4, 6, 5]],
+                    rhythms: ['quarter', 'quarter', 'quarter', 'quarter', 'eighth', 'eighth'],
+                    harmony: 'modern'
                 }
             },
             jazz: {
                 name: 'Jazz',
                 characteristics: {
-                    progressions: [[1, 6, 2, 5], [1, 4, 6, 5]],
-                    rhythms: ['quarter', 'eighth', 'eighth'],
+                    progressions: [[1, 6, 2, 5], [1, 4, 6, 5], [1, 5, 6, 4], [1, 4, 5, 1]],
+                    rhythms: ['quarter', 'eighth', 'eighth', 'quarter', 'eighth', 'eighth'],
                     harmony: 'jazz'
+                }
+            },
+            blues: {
+                name: 'Blues',
+                characteristics: {
+                    progressions: [[1, 1, 1, 1], [4, 4, 1, 1], [5, 4, 1, 1], [1, 4, 5, 1]],
+                    rhythms: ['quarter', 'quarter', 'quarter', 'quarter', 'eighth', 'eighth'],
+                    harmony: 'blues'
                 }
             },
             modern: {
                 name: 'Modern',
                 characteristics: {
-                    progressions: [[1, 4, 5, 1], [1, 6, 4, 5]],
-                    rhythms: ['quarter', 'quarter', 'quarter', 'quarter'],
+                    progressions: [[1, 4, 5, 1], [1, 6, 4, 5], [1, 5, 6, 4], [1, 4, 6, 5]],
+                    rhythms: ['quarter', 'quarter', 'quarter', 'quarter', 'eighth', 'eighth'],
                     harmony: 'modern'
                 }
             },
             minimalist: {
                 name: 'Minimalist',
                 characteristics: {
-                    progressions: [[1, 1, 1, 1], [1, 5, 1, 5]],
-                    rhythms: ['half', 'half'],
+                    progressions: [[1, 1, 1, 1], [1, 5, 1, 5], [1, 4, 1, 4], [1, 6, 1, 6]],
+                    rhythms: ['half', 'half', 'quarter', 'quarter'],
                     harmony: 'minimalist'
                 }
             }
@@ -639,11 +711,20 @@
                                 <label for="section-composer-${sectionCounter}">Composer:</label>
                                 <select id="section-composer-${sectionCounter}" onchange="updateComposerBadge(${sectionCounter})">
                                     <option value="bach">Bach</option>
+                                    <option value="handel">Handel</option>
+                                    <option value="vivaldi">Vivaldi</option>
                                     <option value="mozart">Mozart</option>
+                                    <option value="haydn">Haydn</option>
                                     <option value="beethoven">Beethoven</option>
+                                    <option value="schubert">Schubert</option>
                                     <option value="chopin">Chopin</option>
+                                    <option value="schumann">Schumann</option>
+                                    <option value="brahms">Brahms</option>
                                     <option value="debussy">Debussy</option>
+                                    <option value="ravel">Ravel</option>
+                                    <option value="stravinsky">Stravinsky</option>
                                     <option value="jazz">Jazz</option>
+                                    <option value="blues">Blues</option>
                                     <option value="modern">Modern</option>
                                     <option value="minimalist">Minimalist</option>
                                 </select>
@@ -657,10 +738,12 @@
                                     <label for="section-guitar-${sectionCounter}">Guitar:</label>
                                     <select id="section-guitar-${sectionCounter}">
                                         <option value="chords">Chords</option>
+                                        <option value="fingerpicking">Fingerpicking</option>
+                                        <option value="strumming">Strumming</option>
+                                        <option value="arpeggios">Arpeggios</option>
                                         <option value="melody">Melody</option>
                                         <option value="countermelody">Countermelody</option>
                                         <option value="harmony">Harmony</option>
-                                        <option value="arpeggios">Arpeggios</option>
                                         <option value="bassline">Bass Line</option>
                                     </select>
                                 </div>
@@ -672,6 +755,8 @@
                                         <option value="countermelody">Countermelody</option>
                                         <option value="harmony">Harmony</option>
                                         <option value="arpeggios">Arpeggios</option>
+                                        <option value="tremolo">Tremolo</option>
+                                        <option value="pizzicato">Pizzicato</option>
                                         <option value="bassline">Bass Line</option>
                                     </select>
                                 </div>
@@ -683,6 +768,8 @@
                                         <option value="chords">Chords</option>
                                         <option value="countermelody">Countermelody</option>
                                         <option value="arpeggios">Arpeggios</option>
+                                        <option value="tremolo">Tremolo</option>
+                                        <option value="pizzicato">Pizzicato</option>
                                         <option value="bassline">Bass Line</option>
                                     </select>
                                 </div>
@@ -694,6 +781,8 @@
                                         <option value="chords">Chords</option>
                                         <option value="countermelody">Countermelody</option>
                                         <option value="arpeggios">Arpeggios</option>
+                                        <option value="tremolo">Tremolo</option>
+                                        <option value="pizzicato">Pizzicato</option>
                                         <option value="bassline">Bass Line</option>
                                     </select>
                                 </div>
@@ -897,6 +986,14 @@
             // Generate notes based on the instrument pattern for this section
             if (instrumentPattern === 'chords') {
                 xml += generateChords(chord, composer, range);
+            } else if (instrumentPattern === 'fingerpicking') {
+                xml += generateFingerpicking(chord, composer, range);
+            } else if (instrumentPattern === 'strumming') {
+                xml += generateStrumming(chord, composer, range);
+            } else if (instrumentPattern === 'tremolo') {
+                xml += generateTremolo(chord, composer, range);
+            } else if (instrumentPattern === 'pizzicato') {
+                xml += generatePizzicato(chord, composer, range);
             } else if (instrumentPattern === 'melody') {
                 xml += generateMelody(chord, composer, range);
             } else if (instrumentPattern === 'countermelody') {
@@ -1113,6 +1210,123 @@
                     xml += generateNoteXML(bassNotes[noteIndex], duration, false);
                     measureDuration += duration;
                     noteIndex = (noteIndex + 1) % bassNotes.length;
+                } else {
+                    break;
+                }
+            }
+            
+            return xml;
+        }
+        
+        // Generate fingerpicking using working implementation
+        function generateFingerpicking(chord, composer, range) {
+            let xml = '';
+            
+            // Generate fingerpicking pattern (bass note + treble chord)
+            const bassMidi = noteToMidi(chord.root, 3);
+            const trebleNotes = [
+                noteToMidi(chord.root, 4),
+                noteToMidi(chord.notes[1], 4),
+                noteToMidi(chord.notes[2], 4)
+            ].filter(note => note >= range.low && note <= range.high);
+            
+            // Bass note first
+            xml += generateNoteXML(bassMidi, 1, false);
+            
+            // Then treble chord
+            trebleNotes.forEach((note, i) => {
+                xml += generateNoteXML(note, 1, i > 0);
+            });
+            
+            return xml;
+        }
+        
+        // Generate strumming using working implementation
+        function generateStrumming(chord, composer, range) {
+            let xml = '';
+            
+            // Generate strumming pattern (chord with strumming rhythm)
+            const rootMidi = noteToMidi(chord.root, 3);
+            const thirdMidi = noteToMidi(chord.notes[1], 3);
+            const fifthMidi = noteToMidi(chord.notes[2], 3);
+            
+            const chordNotes = [rootMidi, thirdMidi, fifthMidi]
+                .filter(note => note >= range.low && note <= range.high);
+            
+            // Strumming pattern: down, up, down, up
+            const strumPattern = [1, 0.5, 0.5, 1, 0.5, 0.5];
+            let measureDuration = 0;
+            let strumIndex = 0;
+            
+            while (measureDuration < 4 && strumIndex < strumPattern.length) {
+                const duration = strumPattern[strumIndex];
+                if (measureDuration + duration <= 4) {
+                    chordNotes.forEach((note, i) => {
+                        xml += generateNoteXML(note, duration, i > 0);
+                    });
+                    measureDuration += duration;
+                    strumIndex++;
+                } else {
+                    break;
+                }
+            }
+            
+            return xml;
+        }
+        
+        // Generate tremolo using working implementation
+        function generateTremolo(chord, composer, range) {
+            let xml = '';
+            
+            // Generate tremolo pattern (rapid alternation of two notes)
+            const rootMidi = noteToMidi(chord.root, 4);
+            const thirdMidi = noteToMidi(chord.notes[1], 4);
+            
+            const tremoloNotes = [rootMidi, thirdMidi]
+                .filter(note => note >= range.low && note <= range.high);
+            
+            // Tremolo pattern: rapid eighth notes
+            const tremoloPattern = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5];
+            let measureDuration = 0;
+            let noteIndex = 0;
+            
+            while (measureDuration < 4 && noteIndex < tremoloPattern.length) {
+                const duration = tremoloPattern[noteIndex];
+                if (measureDuration + duration <= 4) {
+                    xml += generateNoteXML(tremoloNotes[noteIndex % tremoloNotes.length], duration, false);
+                    measureDuration += duration;
+                    noteIndex++;
+                } else {
+                    break;
+                }
+            }
+            
+            return xml;
+        }
+        
+        // Generate pizzicato using working implementation
+        function generatePizzicato(chord, composer, range) {
+            let xml = '';
+            
+            // Generate pizzicato pattern (plucked notes with staccato feel)
+            const rootMidi = noteToMidi(chord.root, 3);
+            const thirdMidi = noteToMidi(chord.notes[1], 3);
+            const fifthMidi = noteToMidi(chord.notes[2], 3);
+            
+            const pizzNotes = [rootMidi, thirdMidi, fifthMidi]
+                .filter(note => note >= range.low && note <= range.high);
+            
+            // Pizzicato pattern: short, detached notes
+            const pizzPattern = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5];
+            let measureDuration = 0;
+            let noteIndex = 0;
+            
+            while (measureDuration < 4 && noteIndex < pizzPattern.length) {
+                const duration = pizzPattern[noteIndex];
+                if (measureDuration + duration <= 4) {
+                    xml += generateNoteXML(pizzNotes[noteIndex % pizzNotes.length], duration, false);
+                    measureDuration += duration;
+                    noteIndex++;
                 } else {
                     break;
                 }
