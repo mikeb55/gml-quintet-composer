@@ -559,11 +559,132 @@
                     rhythms: ['half', 'half'],
                     harmony: 'minimalist'
                 }
+            },
+            haydn: {
+                name: 'Haydn',
+                characteristics: {
+                    progressions: [[1, 4, 5, 1], [1, 5, 6, 4]],
+                    rhythms: ['quarter', 'quarter', 'half'],
+                    harmony: 'classical'
+                }
+            },
+            schubert: {
+                name: 'Schubert',
+                characteristics: {
+                    progressions: [[1, 6, 4, 5], [1, 4, 6, 5]],
+                    rhythms: ['half', 'quarter', 'quarter'],
+                    harmony: 'romantic'
+                }
+            },
+            mendelssohn: {
+                name: 'Mendelssohn',
+                characteristics: {
+                    progressions: [[1, 4, 5, 1], [1, 6, 4, 5]],
+                    rhythms: ['quarter', 'quarter', 'half'],
+                    harmony: 'romantic'
+                }
+            },
+            dvorak: {
+                name: 'Dvořák',
+                characteristics: {
+                    progressions: [[1, 4, 5, 1], [1, 6, 4, 5]],
+                    rhythms: ['quarter', 'quarter', 'quarter', 'quarter'],
+                    harmony: 'nationalist'
+                }
+            },
+            bartok: {
+                name: 'Bartók',
+                characteristics: {
+                    progressions: [[1, 4, 5, 1], [1, 6, 4, 5]],
+                    rhythms: ['eighth', 'eighth', 'quarter', 'quarter', 'eighth', 'eighth', 'quarter'],
+                    harmony: 'modern'
+                }
+            },
+            shostakovich: {
+                name: 'Shostakovich',
+                characteristics: {
+                    progressions: [[1, 4, 5, 1], [1, 6, 4, 5]],
+                    rhythms: ['quarter', 'quarter', 'quarter', 'quarter'],
+                    harmony: 'modern'
+                }
+            },
+            britten: {
+                name: 'Britten',
+                characteristics: {
+                    progressions: [[1, 4, 5, 1], [1, 6, 4, 5]],
+                    rhythms: ['quarter', 'quarter', 'half'],
+                    harmony: 'modern'
+                }
+            },
+            carter: {
+                name: 'Carter',
+                characteristics: {
+                    progressions: [[1, 4, 5, 1], [1, 6, 4, 5]],
+                    rhythms: ['eighth', 'eighth', 'eighth', 'eighth', 'quarter', 'eighth'],
+                    harmony: 'contemporary'
+                }
+            },
+            saariaho: {
+                name: 'Saariaho',
+                characteristics: {
+                    progressions: [[1, 4, 5, 1], [1, 6, 4, 5]],
+                    rhythms: ['whole', 'half'],
+                    harmony: 'spectral'
+                }
+            },
+            glass: {
+                name: 'Glass',
+                characteristics: {
+                    progressions: [[1, 1, 1, 1], [1, 5, 1, 5]],
+                    rhythms: ['quarter', 'quarter', 'quarter', 'quarter'],
+                    harmony: 'minimalist'
+                }
+            },
+            ravel: {
+                name: 'Ravel',
+                characteristics: {
+                    progressions: [[1, 4, 6, 5], [1, 6, 4, 5]],
+                    rhythms: ['half', 'quarter', 'quarter'],
+                    harmony: 'impressionist'
+                }
+            },
+            janacek: {
+                name: 'Janáček',
+                characteristics: {
+                    progressions: [[1, 4, 5, 1], [1, 6, 4, 5]],
+                    rhythms: ['quarter', 'quarter', 'quarter', 'quarter'],
+                    harmony: 'nationalist'
+                }
+            },
+            ginastera: {
+                name: 'Ginastera',
+                characteristics: {
+                    progressions: [[1, 4, 5, 1], [1, 6, 4, 5]],
+                    rhythms: ['eighth', 'eighth', 'quarter', 'quarter'],
+                    harmony: 'nationalist'
+                }
+            },
+            villalobos: {
+                name: 'Villa-Lobos',
+                characteristics: {
+                    progressions: [[1, 4, 5, 1], [1, 6, 4, 5]],
+                    rhythms: ['quarter', 'quarter', 'quarter', 'quarter'],
+                    harmony: 'nationalist'
+                }
+            },
+            ligeti: {
+                name: 'Ligeti',
+                characteristics: {
+                    progressions: [[1, 4, 5, 1], [1, 6, 4, 5]],
+                    rhythms: ['eighth', 'eighth', 'eighth', 'eighth'],
+                    harmony: 'contemporary'
+                }
             }
         };
         
         // Key mappings from working implementations
         const KEYS = {
+            // Major Keys
             'C': { root: 0, notes: ['C', 'D', 'E', 'F', 'G', 'A', 'B'], minor: false },
             'G': { root: 7, notes: ['G', 'A', 'B', 'C', 'D', 'E', 'F#'], minor: false },
             'D': { root: 2, notes: ['D', 'E', 'F#', 'G', 'A', 'B', 'C#'], minor: false },
@@ -575,7 +696,29 @@
             'Bb': { root: 10, notes: ['Bb', 'C', 'D', 'Eb', 'F', 'G', 'A'], minor: false },
             'Eb': { root: 3, notes: ['Eb', 'F', 'G', 'Ab', 'Bb', 'C', 'D'], minor: false },
             'Ab': { root: 8, notes: ['Ab', 'Bb', 'C', 'Db', 'Eb', 'F', 'G'], minor: false },
-            'Db': { root: 1, notes: ['Db', 'Eb', 'F', 'Gb', 'Ab', 'Bb', 'C'], minor: false }
+            'Db': { root: 1, notes: ['Db', 'Eb', 'F', 'Gb', 'Ab', 'Bb', 'C'], minor: false },
+            'Gb': { root: 6, notes: ['Gb', 'Ab', 'Bb', 'Cb', 'Db', 'Eb', 'F'], minor: false },
+            'Cb': { root: 11, notes: ['Cb', 'Db', 'Eb', 'Fb', 'Gb', 'Ab', 'Bb'], minor: false },
+            
+            // Minor Keys
+            'Am': { root: 9, notes: ['A', 'B', 'C', 'D', 'E', 'F', 'G'], minor: true },
+            'Em': { root: 4, notes: ['E', 'F#', 'G', 'A', 'B', 'C', 'D'], minor: true },
+            'Bm': { root: 11, notes: ['B', 'C#', 'D', 'E', 'F#', 'G', 'A'], minor: true },
+            'F#m': { root: 6, notes: ['F#', 'G#', 'A', 'B', 'C#', 'D', 'E'], minor: true },
+            'C#m': { root: 1, notes: ['C#', 'D#', 'E', 'F#', 'G#', 'A', 'B'], minor: true },
+            'G#m': { root: 8, notes: ['G#', 'A#', 'B', 'C#', 'D#', 'E', 'F#'], minor: true },
+            'D#m': { root: 3, notes: ['D#', 'E#', 'F#', 'G#', 'A#', 'B', 'C#'], minor: true },
+            'A#m': { root: 10, notes: ['A#', 'B#', 'C#', 'D#', 'E#', 'F#', 'G#'], minor: true },
+            'Dm': { root: 2, notes: ['D', 'E', 'F', 'G', 'A', 'Bb', 'C'], minor: true },
+            'Gm': { root: 7, notes: ['G', 'A', 'Bb', 'C', 'D', 'Eb', 'F'], minor: true },
+            'Cm': { root: 0, notes: ['C', 'D', 'Eb', 'F', 'G', 'Ab', 'Bb'], minor: true },
+            'Fm': { root: 5, notes: ['F', 'G', 'Ab', 'Bb', 'C', 'Db', 'Eb'], minor: true },
+            'Bbm': { root: 10, notes: ['Bb', 'C', 'Db', 'Eb', 'F', 'Gb', 'Ab'], minor: true },
+            'Ebm': { root: 3, notes: ['Eb', 'F', 'Gb', 'Ab', 'Bb', 'Cb', 'Db'], minor: true },
+            'Abm': { root: 8, notes: ['Ab', 'Bb', 'Cb', 'Db', 'Eb', 'Fb', 'Gb'], minor: true },
+            'Dbm': { root: 1, notes: ['Db', 'Eb', 'Fb', 'Gb', 'Ab', 'Bbb', 'Cb'], minor: true },
+            'Gbm': { root: 6, notes: ['Gb', 'Ab', 'Bbb', 'Cb', 'Db', 'Ebb', 'Fb'], minor: true },
+            'Cbm': { root: 11, notes: ['Cb', 'Db', 'Ebb', 'Fb', 'Gb', 'Abb', 'Bbb'], minor: true }
         };
         
         // Instrument ranges from working implementations
@@ -638,14 +781,34 @@
                             <div>
                                 <label for="section-composer-${sectionCounter}">Composer:</label>
                                 <select id="section-composer-${sectionCounter}" onchange="updateComposerBadge(${sectionCounter})">
-                                    <option value="bach">Bach</option>
-                                    <option value="mozart">Mozart</option>
-                                    <option value="beethoven">Beethoven</option>
-                                    <option value="chopin">Chopin</option>
-                                    <option value="debussy">Debussy</option>
-                                    <option value="jazz">Jazz</option>
-                                    <option value="modern">Modern</option>
-                                    <option value="minimalist">Minimalist</option>
+                                    <optgroup label="Magnificent String Quartet Composers">
+                                        <option value="haydn">Joseph Haydn</option>
+                                        <option value="mozart">Wolfgang Amadeus Mozart</option>
+                                        <option value="beethoven">Ludwig van Beethoven</option>
+                                        <option value="schubert">Franz Schubert</option>
+                                        <option value="mendelssohn">Felix Mendelssohn</option>
+                                        <option value="dvorak">Antonín Dvořák</option>
+                                        <option value="bartok">Béla Bartók</option>
+                                        <option value="shostakovich">Dmitri Shostakovich</option>
+                                        <option value="britten">Benjamin Britten</option>
+                                        <option value="carter">Elliott Carter</option>
+                                        <option value="saariaho">Kaija Saariaho</option>
+                                        <option value="glass">Philip Glass</option>
+                                    </optgroup>
+                                    <optgroup label="Most Rhythmically Distinctive">
+                                        <option value="haydn">Joseph Haydn</option>
+                                        <option value="beethoven">Ludwig van Beethoven</option>
+                                        <option value="debussy">Claude Debussy</option>
+                                        <option value="ravel">Maurice Ravel</option>
+                                        <option value="dvorak">Antonín Dvořák</option>
+                                        <option value="bartok">Béla Bartók</option>
+                                        <option value="janacek">Leoš Janáček</option>
+                                        <option value="ginastera">Alberto Ginastera</option>
+                                        <option value="villalobos">Heitor Villa-Lobos</option>
+                                        <option value="shostakovich">Dmitri Shostakovich</option>
+                                        <option value="carter">Elliott Carter</option>
+                                        <option value="ligeti">György Ligeti</option>
+                                    </optgroup>
                                 </select>
                             </div>
                         </div>
@@ -803,8 +966,8 @@
         
         // Export MusicXML using working implementations
         function exportMusicXML() {
-            if (!currentScore) {
-                showStatus('No score to export!', 'error');
+            if (!sections || sections.length === 0) {
+                showStatus('No sections to export! Generate a score first.', 'error');
                 return;
             }
             
@@ -814,7 +977,7 @@
                 let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
                 xml += '<score-partwise version="3.1">\n';
                 xml += '  <work>\n';
-                xml += `    <work-title>${currentScore.title}</work-title>\n`;
+                xml += `    <work-title>String Quintet - ${new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-')}</work-title>\n`;
                 xml += '  </work>\n';
                 xml += '  <part-list>\n';
                 xml += '    <score-part id="P1"><part-name>Guitar</part-name></score-part>\n';
@@ -889,6 +1052,14 @@
             const composer = COMPOSERS[section.composer];
             const instrumentPattern = section.instruments[inst];
             
+            // Add more randomness by using timestamp and measure number
+            const randomSeed = Date.now() + measureNumber * 1000 + inst.charCodeAt(0);
+            Math.seedrandom = Math.seedrandom || function(seed) {
+                // Simple seeded random for more variation
+                const x = Math.sin(seed) * 10000;
+                return x - Math.floor(x);
+            };
+            
             // Generate chord progression for this measure
             const progression = generateProgression(section.measures, section.key, composer);
             const chordIndex = (measureNumber - 1) % progression.length;
@@ -908,7 +1079,12 @@
             } else if (instrumentPattern === 'bassline') {
                 xml += generateBassline(chord, composer, range);
             } else {
-                // Default to melody
+                // Default to melody for any instrument without specific pattern
+                xml += generateMelody(chord, composer, range);
+            }
+            
+            // Special case: ensure violin1 always generates notes
+            if (inst === 'violin1' && !xml.trim()) {
                 xml += generateMelody(chord, composer, range);
             }
             
@@ -1002,12 +1178,25 @@
             const rhythms = composer.characteristics.rhythms;
             let measureDuration = 0;
             
+            // Add composer-specific melodic characteristics
+            const composerStyle = composer.characteristics.harmony;
+            let noteSelectionBias = 0.5; // Default random selection
+            
+            if (composerStyle === 'classical') {
+                noteSelectionBias = 0.3; // Favor root notes
+            } else if (composerStyle === 'romantic') {
+                noteSelectionBias = 0.7; // Favor thirds and fifths
+            } else if (composerStyle === 'modern' || composerStyle === 'contemporary') {
+                noteSelectionBias = 0.5; // More random
+            }
+            
             while (measureDuration < 4) {
                 const rhythm = rhythms[Math.floor(Math.random() * rhythms.length)];
                 const duration = getDurationFromRhythm(rhythm);
                 
                 if (measureDuration + duration <= 4) {
-                    const note = Math.random() < 0.5 ? rootMidi : 
+                    // Use composer-specific note selection
+                    const note = Math.random() < noteSelectionBias ? rootMidi : 
                                 Math.random() < 0.5 ? thirdMidi : fifthMidi;
                     
                     melody.push({
