@@ -42,12 +42,12 @@
             font-size: 14px;
         }
         select {
-            background: white !important;
-            color: #495057 !important;
+            background: rgba(255,255,255,0.2) !important;
+            color: white !important;
         }
         select option {
-            background: white !important;
-            color: #495057 !important;
+            background: rgba(0,0,0,0.8) !important;
+            color: white !important;
         }
         button {
             background: #4CAF50;
@@ -106,168 +106,13 @@
         .error { color: #ff6666; }
         .success { color: #66ff66; }
         .warning { color: #ffff66; }
-        
-        .form-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            padding: 1rem;
-            background: #f8f9fa;
-            border-radius: 12px;
-            margin: 1rem 0;
-        }
-        
-        .form-btn {
-            padding: 0.75rem 1.5rem;
-            background: white;
-            color: #495057;
-            border: 2px solid #dee2e6;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .form-btn:hover {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-        }
-        
-        .sections-container {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 1rem;
-            max-height: 400px;
-            overflow-y: auto;
-            margin: 1rem 0;
-        }
-        
-        .section-item {
-            background: white;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border: 2px solid #dee2e6;
-            transition: all 0.3s ease;
-        }
-        
-        .section-item:hover {
-            border-color: #667eea;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
-        }
-        
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #f0f0f0;
-        }
-        
-        .section-title {
-            font-weight: 700;
-            color: #2c3e50;
-            font-size: 1.1rem;
-        }
-        
-        .section-controls {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 0.75rem;
-        }
-        
-        .mini-control {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-        }
-        
-        .mini-control label {
-            font-size: 0.75rem;
-            color: #6c757d;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .mini-control select {
-            padding: 0.5rem;
-            border: 1px solid #dee2e6;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            background: white;
-        }
-        
-        .remove-btn {
-            background: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 0.25rem 0.5rem;
-            cursor: pointer;
-            font-size: 0.8rem;
-        }
-        
-        .remove-btn:hover {
-            background: #c82333;
-        }
-        
-        .section-item.dragging {
-            opacity: 0.5;
-            transform: rotate(5deg);
-        }
-        
-        .section-item.drag-over {
-            border-color: #667eea;
-            border-style: dashed;
-        }
-        
-        .section-controls-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-        
-        .section-actions {
-            display: flex;
-            gap: 0.25rem;
-        }
-        
-        .copy-btn {
-            background: #17a2b8;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 0.25rem 0.5rem;
-            cursor: pointer;
-            font-size: 0.8rem;
-        }
-        
-        .copy-btn:hover {
-            background: #138496;
-        }
-        
-        .drag-handle {
-            cursor: move;
-            color: #6c757d;
-            font-size: 1.2rem;
-            margin-right: 0.5rem;
-        }
-        
-        .drag-handle:hover {
-            color: #667eea;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎼 Complete String Quintet Generator v12.7 - FIXED VERSION</h1>
+        <h1>🎼 Complete String Quintet Generator v12.0 - Advanced Harmonic Intelligence</h1>
         
-        <div id="status">✅ FIXED - All critical issues resolved: MusicXML validation, voice spacing, rhythmic variety, bass parts, composer profiles</div>
+        <div id="status">Ready to Generate</div>
         
         <div class="control-panel">
             <div class="section">
@@ -325,21 +170,6 @@
                 
                 <label>Tempo Base (BPM):</label>
                 <input type="number" id="tempo" min="60" max="200" value="120">
-                
-            </div>
-            
-            <!-- Add Section Buttons -->
-            <div class="form-buttons">
-                <button class="form-btn" onclick="addSection('exposition')">+ Exposition</button>
-                <button class="form-btn" onclick="addSection('development')">+ Development</button>
-                <button class="form-btn" onclick="addSection('recapitulation')">+ Recapitulation</button>
-                <button class="form-btn" onclick="addSection('coda')">+ Coda</button>
-                <button class="form-btn" onclick="addSection('custom')">+ Custom Section</button>
-            </div>
-            
-            <!-- Sections Container -->
-            <div class="sections-container" id="sectionsContainer">
-                <!-- Sections will be added here dynamically -->
             </div>
             
             <div class="section">
@@ -396,46 +226,6 @@
                 this.variations = [];
                 this.motifs = [];
                 this.themes = [];
-                
-                // FIXED: Add working composer profiles from v60
-                this.composerProfiles = {
-                    'haydn': {
-                        harmony: { complexity: 0.3, chromaticism: 0.1, modulation: 0.2 },
-                        rhythm: { complexity: 0.3, syncopation: 0.1, rubato: 0 },
-                        melody: { leaps: 0.3, chromaticism: 0.1, ornamentation: 0.2 },
-                        texture: { density: 0.3, independence: 0.5, dynamics: 0.4 },
-                        progressions: [['I', 'V', 'I'], ['I', 'IV', 'V', 'I']],
-                        guitarPattern: 'alberti',
-                        description: 'Light, witty, clear structure with surprising turns'
-                    },
-                    'mozart': {
-                        harmony: { complexity: 0.4, chromaticism: 0.2, modulation: 0.3 },
-                        rhythm: { complexity: 0.4, syncopation: 0.1, rubato: 0.1 },
-                        melody: { leaps: 0.4, chromaticism: 0.2, ornamentation: 0.4 },
-                        texture: { density: 0.4, independence: 0.6, dynamics: 0.5 },
-                        progressions: [['I', 'IV', 'V', 'I'], ['I', 'vi', 'ii', 'V', 'I']],
-                        guitarPattern: 'classical',
-                        description: 'Elegant balance, singing melodies, perfect proportions'
-                    },
-                    'beethoven': {
-                        harmony: { complexity: 0.6, chromaticism: 0.3, modulation: 0.4 },
-                        rhythm: { complexity: 0.6, syncopation: 0.3, rubato: 0.2 },
-                        melody: { leaps: 0.6, chromaticism: 0.3, ornamentation: 0.2 },
-                        texture: { density: 0.6, independence: 0.7, dynamics: 0.8 },
-                        progressions: [['I', 'I', 'V', 'V', 'vi', 'IV', 'V', 'I']],
-                        guitarPattern: 'block',
-                        description: 'Dramatic dynamics with strong rhythmic motifs'
-                    },
-                    'brahms': {
-                        harmony: { complexity: 0.7, chromaticism: 0.4, modulation: 0.5 },
-                        rhythm: { complexity: 0.7, syncopation: 0.4, rubato: 0.3 },
-                        melody: { leaps: 0.5, chromaticism: 0.4, ornamentation: 0.3 },
-                        texture: { density: 0.7, independence: 0.8, dynamics: 0.7 },
-                        progressions: [['I', 'vi', 'IV', 'V', 'I', 'vi', 'ii', 'V']],
-                        guitarPattern: 'romantic',
-                        description: 'Rich harmonies, complex textures, emotional depth'
-                    }
-                };
                 
                 // Embedded generators
                 this.structureTemplates = {
@@ -521,53 +311,8 @@
                 this.updateProgress(100);
                 
                 // Create final composition with melodic development
-                const sectionCount = options.sections ? options.sections.length : 0;
-                const sectionInfo = sectionCount > 0 ? `${sectionCount} Sections` : 'Complete';
-                
-                // Generate section-specific parts
-                let parts = {};
-                
-                if (options.sections && options.sections.length > 0) {
-                    // Generate section-specific parts
-                    const barsPerSection = Math.ceil(totalBars / options.sections.length);
-                    
-                    parts = {
-                        violin1: [],
-                        violin2: [],
-                        viola: [],
-                        cello: [],
-                        guitar: []
-                    };
-                    
-                    options.sections.forEach((section, sectionIndex) => {
-                        const sectionStyle = section.composer || style;
-                        const startBar = sectionIndex * barsPerSection;
-                        const endBar = Math.min((sectionIndex + 1) * barsPerSection, totalBars);
-                        const sectionBars = endBar - startBar;
-                        
-                        // Generate section-specific motifs
-                        const sectionMotif = this.generateMotifs(key, sectionStyle)[0];
-                        
-                        // Generate parts for this section
-                        parts.violin1.push(...this.developMelody(sectionMotif, sectionBars, sectionStyle));
-                        parts.violin2.push(...this.developMelody(this.transformMotif(sectionMotif, 'sequence'), sectionBars, sectionStyle));
-                        parts.viola.push(...this.developMelody(this.transformMotif(sectionMotif, 'inversion'), sectionBars, sectionStyle));
-                        parts.cello.push(...this.developMelody(this.transformMotif(sectionMotif, 'fragmentation'), sectionBars, sectionStyle));
-                        parts.guitar.push(...this.generateComposerGuitarPart(progression, {guitarPattern: 'classical'}, sectionStyle, sectionBars));
-                    });
-                } else {
-                    // Generate with global style
-                    parts = {
-                        violin1: this.developMelody(primaryMotif, totalBars, style),
-                        violin2: this.developMelody(this.transformMotif(primaryMotif, 'sequence'), totalBars, style),
-                        viola: this.developMelody(this.transformMotif(primaryMotif, 'inversion'), totalBars, style),
-                        cello: this.developMelody(this.transformMotif(primaryMotif, 'fragmentation'), totalBars, style),
-                        guitar: this.generateComposerGuitarPart(progression, {guitarPattern: 'classical'}, 'classical', totalBars)
-                    };
-                }
-                
                 this.composition = {
-                    title: `String Quintet in ${key} Major - ${sectionInfo}`,
+                    title: `String Quintet in ${key} Major (${style.replace(/_/g, ' ')})`,
                     duration: duration,
                     tempo: tempo,
                     style: style,
@@ -577,37 +322,20 @@
                     score: best.score,
                     generationTime: Date.now() - this.startTime,
                     motifs: motifs,
-                    parts: parts
+                    parts: {
+                        violin1: this.developMelody(primaryMotif, totalBars, style),
+                        violin2: this.developMelody(this.transformMotif(primaryMotif, 'sequence'), totalBars, style),
+                        viola: this.developMelody(this.transformMotif(primaryMotif, 'inversion'), totalBars, style),
+                        cello: this.developMelody(this.transformMotif(primaryMotif, 'fragmentation'), totalBars, style),
+                        guitar: this.generateComposerGuitarPart(progression, {guitarPattern: 'classical'}, 'classical', totalBars)
+                    }
                 };
                 
                 // Apply composer-specific styling to all parts
-                if (options.sections && options.sections.length > 0) {
-                    // Use section-specific styles for different parts
-                    const partNames = Object.keys(this.composition.parts);
-                    const sectionsPerPart = Math.ceil(totalBars / options.sections.length);
-                    
-                    options.sections.forEach((section, sectionIndex) => {
-                        const sectionStyle = section.composer || style;
-                        const startBar = sectionIndex * sectionsPerPart;
-                        const endBar = Math.min((sectionIndex + 1) * sectionsPerPart, totalBars);
-                        
-                        partNames.forEach(partName => {
-                            // Apply section-specific style to this part's measures
-                            for (let bar = startBar; bar < endBar; bar++) {
-                                if (this.composition.parts[partName][bar]) {
-                                    this.composition.parts[partName][bar] = this.applyComposerStyle(
-                                        this.composition.parts[partName][bar], sectionStyle);
-                                }
-                            }
-                        });
-                    });
-                } else {
-                    // Use global style
-                    Object.keys(this.composition.parts).forEach(partName => {
-                        this.composition.parts[partName] = this.applyComposerStyle(
-                            this.composition.parts[partName], style);
-                    });
-                }
+                Object.keys(this.composition.parts).forEach(partName => {
+                    this.composition.parts[partName] = this.applyComposerStyle(
+                        this.composition.parts[partName], style);
+                });
                 
                 this.updateStatus('✅ Generation complete!');
                 return this.composition;
@@ -880,8 +608,6 @@
             exportToMusicXML() {
                 if (!this.composition) return null;
                 
-                try {
-                
                 let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
                 xml += '<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" ';
                 xml += '"http://www.musicxml.org/dtds/partwise.dtd">\n';
@@ -911,24 +637,16 @@
                             xml += '<time><beats>4</beats><beat-type>4</beat-type></time></attributes>\n';
                         }
                         
-                // FIXED: Generate varied rhythms that fit in 4/4 time
-                const instrumentName = instruments[p];
-                const rhythmPattern = this.getRhythmPattern(m, instrumentName);
-                const chord = this.composition.progression[(m-1) % this.composition.progression.length];
-                
-                // Validate that total duration doesn't exceed 4 beats
-                const totalDuration = rhythmPattern.reduce((sum, d) => sum + d, 0);
-                if (totalDuration > 4) {
-                    // FIXED: Use instrument-specific fallback patterns
-                    const fallbackPatterns = {
-                        guitar: [1, 1, 1, 1],
-                        violin1: [0.5, 0.5, 1, 1, 1],
-                        violin2: [1, 1, 1, 1],
-                        viola: [2, 2],
-                        cello: [4]
-                    };
-                    rhythmPattern.splice(0, rhythmPattern.length, ...(fallbackPatterns[instrumentName] || [1, 1, 1, 1]));
-                }
+                        // Generate varied rhythms that fit in 4/4 time
+                        const rhythmPattern = this.getRhythmPattern(m, p);
+                        const chord = this.composition.progression[(m-1) % this.composition.progression.length];
+                        
+                        // Validate that total duration doesn't exceed 4 beats
+                        const totalDuration = rhythmPattern.reduce((sum, d) => sum + d, 0);
+                        if (totalDuration > 4) {
+                            // Fallback to simple quarter notes if pattern is too long
+                            rhythmPattern.splice(0, rhythmPattern.length, 1, 1, 1, 1);
+                        }
                         
                         rhythmPattern.forEach((duration, i) => {
                             const noteValue = this.getNoteForInstrument(chord, instruments[p], i);
@@ -938,9 +656,7 @@
                                 xml += '<alter>' + noteValue.alter + '</alter>';
                             }
                             xml += '<octave>' + noteValue.octave + '</octave></pitch>';
-                            // FIXED: Ensure duration is always a positive integer
-                            const durationInt = Math.max(1, Math.round(duration * 4));
-                            xml += '<duration>' + durationInt + '</duration><type>' + this.getNoteType(duration) + '</type></note>\n';
+                            xml += '<duration>' + duration + '</duration><type>' + this.getNoteType(duration) + '</type></note>\n';
                         });
                         
                         xml += '    </measure>\n';
@@ -950,11 +666,6 @@
                 
                 xml += '</score-partwise>';
                 return xml;
-                
-                } catch (error) {
-                    console.error('MusicXML export error:', error);
-                    return null;
-                }
             }
             
             getRhythmPattern(measure, instrument) {
@@ -1037,15 +748,6 @@
             getNoteForInstrument(chord, instrument, noteIndex) {
                 const chordNotes = chord.notes || [60, 64, 67]; // Default C major triad
                 
-                // FIXED: Use proper instrument ranges from bulletproof version
-                const instrumentRanges = {
-                    guitar: { min: 40, max: 76 },
-                    violin1: { min: 55, max: 88 },
-                    violin2: { min: 55, max: 84 },
-                    viola: { min: 48, max: 72 },
-                    cello: { min: 36, max: 69 }
-                };
-                
                 let midiNote;
                 switch(instrument) {
                     case 'guitar':
@@ -1074,17 +776,24 @@
                     midiNote += variation;
                 }
                 
-                // FIXED: Use proper instrument ranges instead of global limits
-                const range = instrumentRanges[instrument] || { min: 21, max: 108 };
-                const clampedMidi = Math.max(range.min, Math.min(range.max, midiNote));
+                // Ensure valid MIDI range
+                const clampedMidi = Math.max(21, Math.min(108, midiNote));
                 const noteIndex_mod = clampedMidi % 12;
                 const octave = Math.floor(clampedMidi / 12) - 1;
                 
-                // FIXED: Use working step mapping from bulletproof version
-                const names = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-                const name = names[noteIndex_mod];
-                const step = name.replace('#','');
-                const alter = name.includes('#') ? 1 : 0;
+                // Map to valid MusicXML steps
+                const stepMap = ['C', 'C', 'D', 'D', 'E', 'F', 'F', 'G', 'G', 'A', 'A', 'B'];
+                const alterMap = [0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0];
+                
+                let step = stepMap[noteIndex_mod];
+                let alter = alterMap[noteIndex_mod];
+                
+                // Ensure valid step
+                const validSteps = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+                if (!validSteps.includes(step)) {
+                    step = 'C';
+                    alter = 0;
+                }
                 
                 return { step, octave, alter };
             }
@@ -1320,38 +1029,45 @@
             }
             
             applyComposerStyle(melody, style) {
-                // FIXED: Handle both array and object melody structures
-                if (!melody || typeof melody !== 'object') {
-                    return melody;
-                }
-                
-                // If melody is an array of measures
-                if (Array.isArray(melody)) {
+                if (style.includes('BACH')) {
+                    // Add Baroque ornamentation
                     return melody.map(measure => {
-                        if (Array.isArray(measure)) {
-                            return measure.map(note => {
-                                if (typeof note === 'object' && note !== null) {
-                                    const styledNote = { ...note };
-                                    
-                                    // Apply basic styling based on composer
-                                    if (style.includes('BACH')) {
-                                        if (Math.random() < 0.3) styledNote.ornamentation = 'trill';
-                                    } else if (style.includes('MOZART')) {
-                                        if (Math.random() < 0.2) styledNote.ornamentation = 'grace_note';
-                                    } else if (style.includes('BEETHOVEN')) {
-                                        styledNote.dynamics = Math.random() < 0.5 ? 'f' : 'mf';
-                                    }
-                                    
-                                    return styledNote;
-                                }
-                                return note;
-                            });
-                        }
-                        return measure;
+                        return measure.map(note => {
+                            if (Math.random() < 0.3) {
+                                // Add trill or mordent
+                                return {
+                                    ...note,
+                                    ornamentation: 'trill'
+                                };
+                            }
+                            return note;
+                        });
+                    });
+                } else if (style.includes('MOZART')) {
+                    // Add classical grace notes
+                    return melody.map(measure => {
+                        return measure.map(note => {
+                            if (Math.random() < 0.2) {
+                                return {
+                                    ...note,
+                                    ornamentation: 'grace_note'
+                                };
+                            }
+                            return note;
+                        });
+                    });
+                } else if (style.includes('BEETHOVEN')) {
+                    // Add dramatic dynamics
+                    return melody.map(measure => {
+                        return measure.map(note => {
+                            return {
+                                ...note,
+                                dynamics: Math.random() < 0.5 ? 'f' : 'mf'
+                            };
+                        });
                     });
                 }
                 
-                // If melody is an object, return as-is for now
                 return melody;
             }
             
@@ -1405,38 +1121,13 @@
             document.getElementById('generateBtn').disabled = true;
             document.getElementById('quickBtn').disabled = true;
             
-            // Collect section data from dynamic sections
-            const sectionData = [];
-            sections.forEach(section => {
-                const sectionElement = document.getElementById(section.id);
-                if (sectionElement) {
-                    const sectionInfo = {
-                        type: section.type,
-                        id: section.id
-                    };
-                    
-                    // Collect all form data from this section
-                    const inputs = sectionElement.querySelectorAll('input, select, textarea');
-                    inputs.forEach(input => {
-                        if (input.id) {
-                            const key = input.id.replace(section.id + '_', '');
-                            sectionInfo[key] = input.value;
-                        }
-                    });
-                    
-                    sectionData.push(sectionInfo);
-                }
-            });
-            
             const options = {
                 style: document.getElementById('style').value,
                 duration: parseInt(document.getElementById('duration').value),
                 key: document.getElementById('key').value,
                 tempo: parseInt(document.getElementById('tempo').value),
                 variations: parseInt(document.getElementById('variations').value),
-                timeSignature: document.getElementById('timeSignature').value,
-                sections: sectionData,
-                useSectionStyles: true // Flag to use section-specific styles
+                timeSignature: document.getElementById('timeSignature').value
             };
             
             // Start timer
@@ -1552,13 +1243,12 @@
                 console.log('Generating MusicXML...');
                 
                 try {
-                    console.log('Starting MusicXML export...');
                     const xml = generator.exportToMusicXML();
                     console.log('MusicXML generated:', xml ? 'SUCCESS' : 'FAILED');
                     console.log('XML length:', xml ? xml.length : 0);
                     
                     if (!xml) {
-                        alert('Failed to generate MusicXML! Check console for errors.');
+                        alert('Failed to generate MusicXML!');
                         return;
                     }
                     
@@ -1569,7 +1259,6 @@
                     a.download = 'quintet_' + Date.now() + '.musicxml';
                     a.click();
                     console.log('Download started');
-                    alert('MusicXML exported successfully!');
                 } catch (error) {
                     console.error('Export error:', error);
                     alert('Export failed: ' + error.message);
@@ -1587,237 +1276,6 @@
             }
         }
         
-        // Global variables for sections
-        let sections = [];
-        let sectionCounter = 0;
-        
-        function addSection(type) {
-            sectionCounter++;
-            const sectionId = `${type}_${sectionCounter}`;
-            
-            let sectionHTML = '';
-            let sectionTitle = '';
-            let sectionControls = '';
-            
-            switch(type) {
-                case 'exposition':
-                    sectionTitle = 'Exposition';
-                    sectionControls = `
-                        <div class="mini-control">
-                            <label>Primary Theme</label>
-                            <select id="${sectionId}_primary">
-                                <option value="lyrical">Lyrical Theme</option>
-                                <option value="rhythmic">Rhythmic Theme</option>
-                                <option value="melodic">Melodic Theme</option>
-                            </select>
-                        </div>
-                        <div class="mini-control">
-                            <label>Secondary Theme</label>
-                            <select id="${sectionId}_secondary">
-                                <option value="contrasting">Contrasting Theme</option>
-                                <option value="complementary">Complementary Theme</option>
-                                <option value="variation">Variation Theme</option>
-                            </select>
-                        </div>
-                    `;
-                    break;
-                case 'development':
-                    sectionTitle = 'Development';
-                    sectionControls = `
-                        <div class="mini-control">
-                            <label>Development Technique</label>
-                            <select id="${sectionId}_technique">
-                                <option value="fragmentation">Fragmentation</option>
-                                <option value="sequence">Sequence</option>
-                                <option value="inversion">Inversion</option>
-                                <option value="augmentation">Augmentation</option>
-                            </select>
-                        </div>
-                        <div class="mini-control">
-                            <label>Harmonic Complexity</label>
-                            <select id="${sectionId}_harmony">
-                                <option value="moderate">Moderate</option>
-                                <option value="complex">Complex</option>
-                                <option value="chromatic">Chromatic</option>
-                            </select>
-                        </div>
-                    `;
-                    break;
-                case 'recapitulation':
-                    sectionTitle = 'Recapitulation';
-                    sectionControls = `
-                        <div class="mini-control">
-                            <label>Recapitulation Style</label>
-                            <select id="${sectionId}_style">
-                                <option value="exact">Exact Repetition</option>
-                                <option value="varied">Varied Repetition</option>
-                                <option value="condensed">Condensed</option>
-                            </select>
-                        </div>
-                        <div class="mini-control">
-                            <label>Final Cadence</label>
-                            <select id="${sectionId}_cadence">
-                                <option value="authentic">Authentic Cadence</option>
-                                <option value="plagal">Plagal Cadence</option>
-                                <option value="deceptive">Deceptive Cadence</option>
-                            </select>
-                        </div>
-                    `;
-                    break;
-                case 'coda':
-                    sectionTitle = 'Coda';
-                    sectionControls = `
-                        <div class="mini-control">
-                            <label>Coda Length</label>
-                            <select id="${sectionId}_length">
-                                <option value="short">Short (2-4 measures)</option>
-                                <option value="medium">Medium (4-8 measures)</option>
-                                <option value="extended">Extended (8+ measures)</option>
-                            </select>
-                        </div>
-                        <div class="mini-control">
-                            <label>Coda Style</label>
-                            <select id="${sectionId}_style">
-                                <option value="concluding">Concluding</option>
-                                <option value="dramatic">Dramatic</option>
-                                <option value="fade">Fade Out</option>
-                            </select>
-                        </div>
-                    `;
-                    break;
-                case 'custom':
-                    sectionTitle = 'Custom Section';
-                    sectionControls = `
-                        <div class="mini-control">
-                            <label>Custom Characteristics</label>
-                            <textarea id="${sectionId}_characteristics" placeholder="Describe the musical characteristics..." rows="3"></textarea>
-                        </div>
-                        <div class="mini-control">
-                            <label>Custom Structure</label>
-                            <input type="text" id="${sectionId}_structure" placeholder="e.g., A-B-A-C, Rondo, etc.">
-                        </div>
-                    `;
-                    break;
-            }
-            
-            sectionHTML = `
-                <div class="section-item" id="${sectionId}" draggable="true">
-                    <div class="section-header">
-                        <div class="section-title">
-                            <span class="drag-handle">⋮⋮</span>
-                            ${sectionTitle}
-                        </div>
-                        <div class="section-actions">
-                            <button class="copy-btn" onclick="copySection('${sectionId}')">Copy</button>
-                            <button class="remove-btn" onclick="removeSection('${sectionId}')">Remove</button>
-                        </div>
-                    </div>
-                    <div class="section-controls">
-                        <div class="mini-control">
-                            <label>Composer Style</label>
-                            <select id="${sectionId}_composer">
-                                <optgroup label="Classical Period">
-                                    <option value="CLASSICAL_STANDARD">Classical Standard</option>
-                                    <option value="HAYDN_OP20">Haydn Op.20</option>
-                                    <option value="MOZART_PRUSSIAN">Mozart Prussian</option>
-                                </optgroup>
-                                <optgroup label="Romantic Period">
-                                    <option value="BEETHOVEN_LATE">Beethoven Late</option>
-                                    <option value="SCHUBERT_DEATH">Schubert Death & Maiden</option>
-                                    <option value="BRAHMS">Brahms</option>
-                                    <option value="DVORAK_AMERICAN">Dvořák American</option>
-                                </optgroup>
-                                <optgroup label="Modern">
-                                    <option value="DEBUSSY_IMPRESSIONIST">Debussy Impressionist</option>
-                                    <option value="RAVEL">Ravel</option>
-                                    <option value="BARTOK_ARCH">Bartók Arch</option>
-                                    <option value="SHOSTAKOVICH">Shostakovich</option>
-                                </optgroup>
-                                <optgroup label="Contemporary">
-                                    <option value="GLASS_MINIMALIST">Glass Minimalist</option>
-                                    <option value="SPECTRAL">Spectral</option>
-                                    <option value="OPEN_MODULAR">Open/Modular</option>
-                                </optgroup>
-                            </select>
-                        </div>
-                        ${sectionControls}
-                    </div>
-                </div>
-            `;
-            
-            document.getElementById('sectionsContainer').insertAdjacentHTML('beforeend', sectionHTML);
-            sections.push({id: sectionId, type: type});
-        }
-        
-        function removeSection(sectionId) {
-            document.getElementById(sectionId).remove();
-            sections = sections.filter(s => s.id !== sectionId);
-        }
-        
-        function copySection(sectionId) {
-            const originalSection = sections.find(s => s.id === sectionId);
-            if (originalSection) {
-                addSection(originalSection.type);
-            }
-        }
-        
-        // Drag and drop functionality
-        function setupDragAndDrop() {
-            const container = document.getElementById('sectionsContainer');
-            
-            container.addEventListener('dragstart', function(e) {
-                if (e.target.classList.contains('section-item')) {
-                    e.target.classList.add('dragging');
-                    e.dataTransfer.effectAllowed = 'move';
-                    e.dataTransfer.setData('text/html', e.target.outerHTML);
-                }
-            });
-            
-            container.addEventListener('dragend', function(e) {
-                e.target.classList.remove('dragging');
-            });
-            
-            container.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                e.dataTransfer.dropEffect = 'move';
-                
-                const dragging = document.querySelector('.dragging');
-                const afterElement = getDragAfterElement(container, e.clientY);
-                
-                if (afterElement == null) {
-                    container.appendChild(dragging);
-                } else {
-                    container.insertBefore(dragging, afterElement);
-                }
-            });
-            
-            container.addEventListener('drop', function(e) {
-                e.preventDefault();
-                const draggedElement = document.querySelector('.dragging');
-                if (draggedElement) {
-                    // Update sections array order
-                    const container = document.getElementById('sectionsContainer');
-                    const sectionElements = Array.from(container.children);
-                    sections = sectionElements.map(el => sections.find(s => s.id === el.id)).filter(Boolean);
-                }
-            });
-        }
-        
-        function getDragAfterElement(container, y) {
-            const draggableElements = [...container.querySelectorAll('.section-item:not(.dragging)')];
-            
-            return draggableElements.reduce((closest, child) => {
-                const box = child.getBoundingClientRect();
-                const offset = y - box.top - box.height / 2;
-                
-                if (offset < 0 && offset > closest.offset) {
-                    return { offset: offset, element: child };
-                } else {
-                    return closest;
-                }
-            }, { offset: Number.NEGATIVE_INFINITY }).element;
-        }
-        
         function reset() {
             generator.composition = null;
             generator.variations = [];
@@ -1827,57 +1285,7 @@
             document.getElementById('timer').textContent = '';
             document.getElementById('previewBtn').disabled = true;
             document.getElementById('exportBtn').disabled = true;
-            
-            // Clear sections
-            sections = [];
-            sectionCounter = 0;
-            document.getElementById('sectionsContainer').innerHTML = '';
         }
-        
-        // Initialize drag and drop and section functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            setupDragAndDrop();
-            
-            const sectionTypeSelect = document.getElementById('sectionType');
-            const customSectionName = document.getElementById('customSectionName');
-            
-            // Get all section menus
-            const expositionMenu = document.getElementById('expositionMenu');
-            const developmentMenu = document.getElementById('developmentMenu');
-            const recapitulationMenu = document.getElementById('recapitulationMenu');
-            const codaMenu = document.getElementById('codaMenu');
-            const customMenu = document.getElementById('customMenu');
-            
-            sectionTypeSelect.addEventListener('change', function() {
-                // Hide all section menus first
-                expositionMenu.style.display = 'none';
-                developmentMenu.style.display = 'none';
-                recapitulationMenu.style.display = 'none';
-                codaMenu.style.display = 'none';
-                customMenu.style.display = 'none';
-                customSectionName.style.display = 'none';
-                
-                // Show the appropriate menu based on selection
-                switch(this.value) {
-                    case 'exposition':
-                        expositionMenu.style.display = 'block';
-                        break;
-                    case 'development':
-                        developmentMenu.style.display = 'block';
-                        break;
-                    case 'recapitulation':
-                        recapitulationMenu.style.display = 'block';
-                        break;
-                    case 'coda':
-                        codaMenu.style.display = 'block';
-                        break;
-                    case 'custom':
-                        customMenu.style.display = 'block';
-                        customSectionName.style.display = 'block';
-                        break;
-                }
-            });
-        });
     </script>
 </body>
 </html>
