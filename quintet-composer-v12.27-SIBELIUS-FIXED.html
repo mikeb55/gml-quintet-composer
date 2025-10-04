@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quintet Composer v12.27 - Sibelius Fixed</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #5a67d8;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .version {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+        
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .control-group {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .control-group input, .control-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎼 Quintet Composer v12.27</h1>
+        <p class="version">Sibelius Fixed - Advanced Rhythmic Variety</p>
+        
+        <div class="controls-grid">
+            <div class="control-group">
+                <label>Composition Title</label>
+                <input type="text" id="title" value="Quintet in C Major - Sibelius Fixed">
+            </div>
+            
+            <div class="control-group">
+                <label>Key Signature</label>
+                <select id="key">
+                    <option value="C">C Major</option>
+                    <option value="G">G Major</option>
+                    <option value="D">D Major</option>
+                    <option value="A">A Major</option>
+                    <option value="F">F Major</option>
+                    <option value="Bb">B♭ Major</option>
+                    <option value="Am">A Minor</option>
+                    <option value="Em">E Minor</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label>Time Signature</label>
+                <select id="timeSignature">
+                    <option value="4/4">4/4 (Common)</option>
+                    <option value="3/4">3/4 (Waltz)</option>
+                    <option value="6/8">6/8 (Compound)</option>
+                    <option value="2/4">2/4 (March)</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label>Measures</label>
+                <input type="number" id="measures" value="16" min="4" max="64">
+            </div>
+            
+            <div class="control-group">
+                <label>Rhythmic Complexity</label>
+                <select id="rhythmComplexity">
+                    <option value="simple">Simple (Quarter/Half)</option>
+                    <option value="moderate">Moderate (+Eighth)</option>
+                    <option value="complex">Complex (+Sixteenth)</option>
+                    <option value="advanced">Advanced (+Syncopation)</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label>Composer Style</label>
+                <select id="composer">
+                    <option value="bach">J.S. Bach (Baroque)</option>
+                    <option value="mozart">W.A. Mozart (Classical)</option>
+                    <option value="beethoven">L. Beethoven (Romantic)</option>
+                    <option value="brahms">J. Brahms (Late Romantic)</option>
+                    <option value="debussy">C. Debussy (Impressionist)</option>
+                </select>
+            </div>
+        </div>
+        
+        <div style="text-align: center;">
+            <button class="btn" onclick="generateComposition()">Generate Composition</button>
+            <button class="btn" onclick="exportMusicXML()">Export MusicXML</button>
+            <button class="btn" onclick="exportMIDI()">Export MIDI</button>
+        </div>
+        
+        <div class="status" id="status"></div>
+    </div>
+
+    <script>
+        // ==================== SIBELIUS-FIXED QUINTET COMPOSER ====================
+        
+        class SibeliusFixedComposer {
+            constructor() {
+                this.composition = null;
+                this.divisions = 1024; // Higher resolution for better rhythmic variety
+                this.instruments = {
+                    'guitar': { name: 'Guitar', clef: 'G', line: 2, range: [48, 84] },
+                    'violin1': { name: 'Violin I', clef: 'G', line: 2, range: [55, 88] },
+                    'violin2': { name: 'Violin II', clef: 'G', line: 2, range: [55, 84] },
+                    'viola': { name: 'Viola', clef: 'C', line: 3, range: [48, 76] },
+                    'cello': { name: 'Cello', clef: 'F', line: 4, range: [36, 72] }
+                };
+                
+                this.composers = {
+                    'bach': {
+                        name: 'J.S. Bach',
+                        characteristics: ['contrapuntal', 'walking_bass', 'ornamentation'],
+                        rhythms: ['quarter', 'eighth', 'sixteenth', 'dotted_quarter']
+                    },
+                    'mozart': {
+                        name: 'W.A. Mozart',
+                        characteristics: ['elegant', 'balanced', 'melodic'],
+                        rhythms: ['quarter', 'eighth', 'dotted_eighth']
+                    },
+                    'beethoven': {
+                        name: 'L. Beethoven',
+                        characteristics: ['dramatic', 'dynamic', 'syncopated'],
+                        rhythms: ['quarter', 'eighth', 'sixteenth', 'syncopated']
+                    },
+                    'brahms': {
+                        name: 'J. Brahms',
+                        characteristics: ['complex', 'chromatic', 'dense'],
+                        rhythms: ['quarter', 'eighth', 'sixteenth', 'triplets']
+                    },
+                    'debussy': {
+                        name: 'C. Debussy',
+                        characteristics: ['impressionist', 'whole_tone', 'parallel'],
+                        rhythms: ['quarter', 'eighth', 'dotted_eighth', 'whole']
+                    }
+                };
+            }
+            
+            generateComposition() {
+                const title = document.getElementById('title').value;
+                const key = document.getElementById('key').value;
+                const timeSignature = document.getElementById('timeSignature').value;
+                const measures = parseInt(document.getElementById('measures').value);
+                const rhythmComplexity = document.getElementById('rhythmComplexity').value;
+                const composer = document.getElementById('composer').value;
+                
+                this.composition = {
+                    title,
+                    key,
+                    timeSignature,
+                    measures,
+                    rhythmComplexity,
+                    composer,
+                    parts: {}
+                };
+                
+                // Generate each instrument part
+                Object.keys(this.instruments).forEach(inst => {
+                    this.composition.parts[inst] = this.generatePart(inst, measures, rhythmComplexity, composer);
+                });
+                
+                showStatus('Composition generated successfully!', 'success');
+            }
+            
+            generatePart(instrument, measures, rhythmComplexity, composer) {
+                const part = [];
+                const composerData = this.composers[composer];
+                const instData = this.instruments[instrument];
+                
+                for (let m = 0; m < measures; m++) {
+                    const measure = this.generateMeasure(instrument, m, rhythmComplexity, composerData);
+                    part.push(measure);
+                }
+                
+                return part;
+            }
+            
+            generateMeasure(instrument, measureIndex, rhythmComplexity, composerData) {
+                const measure = [];
+                const timeSignature = this.composition.timeSignature;
+                const beatsPerMeasure = parseInt(timeSignature.split('/')[0]);
+                const beatUnit = parseInt(timeSignature.split('/')[1]);
+                
+                // Generate rhythmic pattern based on complexity
+                const rhythmPattern = this.generateRhythmPattern(rhythmComplexity, composerData);
+                
+                // Generate notes for each beat
+                let currentTick = 0;
+                rhythmPattern.forEach(rhythm => {
+                    const note = this.generateNote(instrument, measureIndex, rhythm, currentTick);
+                    measure.push(note);
+                    currentTick += rhythm.duration;
+                });
+                
+                return measure;
+            }
+            
+            generateRhythmPattern(complexity, composerData) {
+                const patterns = {
+                    'simple': [
+                        { type: 'quarter', duration: this.divisions },
+                        { type: 'quarter', duration: this.divisions },
+                        { type: 'quarter', duration: this.divisions },
+                        { type: 'quarter', duration: this.divisions }
+                    ],
+                    'moderate': [
+                        { type: 'quarter', duration: this.divisions },
+                        { type: 'eighth', duration: this.divisions / 2 },
+                        { type: 'eighth', duration: this.divisions / 2 },
+                        { type: 'quarter', duration: this.divisions },
+                        { type: 'quarter', duration: this.divisions }
+                    ],
+                    'complex': [
+                        { type: 'eighth', duration: this.divisions / 2 },
+                        { type: 'eighth', duration: this.divisions / 2 },
+                        { type: 'sixteenth', duration: this.divisions / 4 },
+                        { type: 'sixteenth', duration: this.divisions / 4 },
+                        { type: 'eighth', duration: this.divisions / 2 },
+                        { type: 'quarter', duration: this.divisions },
+                        { type: 'quarter', duration: this.divisions }
+                    ],
+                    'advanced': [
+                        { type: 'eighth', duration: this.divisions / 2 },
+                        { type: 'sixteenth', duration: this.divisions / 4 },
+                        { type: 'sixteenth', duration: this.divisions / 4 },
+                        { type: 'eighth', duration: this.divisions / 2 },
+                        { type: 'dotted_eighth', duration: (this.divisions / 2) * 1.5 },
+                        { type: 'sixteenth', duration: this.divisions / 4 },
+                        { type: 'quarter', duration: this.divisions }
+                    ]
+                };
+                
+                return patterns[complexity] || patterns['simple'];
+            }
+            
+            generateNote(instrument, measureIndex, rhythm, tick) {
+                const instData = this.instruments[instrument];
+                const key = this.composition.key;
+                const scale = this.getScale(key);
+                
+                // Generate pitch within instrument range
+                const pitch = this.generatePitch(scale, instData.range);
+                
+                return {
+                    pitch: pitch.note,
+                    octave: pitch.octave,
+                    duration: rhythm.duration,
+                    type: rhythm.type,
+                    tick: tick,
+                    instrument: instrument
+                };
+            }
+            
+            generatePitch(scale, range) {
+                const [minMidi, maxMidi] = range;
+                const midiNote = Math.floor(Math.random() * (maxMidi - minMidi + 1)) + minMidi;
+                const octave = Math.floor(midiNote / 12) - 1;
+                const noteIndex = midiNote % 12;
+                const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+                
+                return {
+                    note: noteNames[noteIndex],
+                    octave: octave,
+                    midi: midiNote
+                };
+            }
+            
+            getScale(key) {
+                const scales = {
+                    'C': ['C', 'D', 'E', 'F', 'G', 'A', 'B'],
+                    'G': ['G', 'A', 'B', 'C', 'D', 'E', 'F#'],
+                    'D': ['D', 'E', 'F#', 'G', 'A', 'B', 'C#'],
+                    'A': ['A', 'B', 'C#', 'D', 'E', 'F#', 'G#'],
+                    'F': ['F', 'G', 'A', 'Bb', 'C', 'D', 'E'],
+                    'Bb': ['Bb', 'C', 'D', 'Eb', 'F', 'G', 'A'],
+                    'Am': ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
+                    'Em': ['E', 'F#', 'G', 'A', 'B', 'C', 'D']
+                };
+                
+                return scales[key] || scales['C'];
+            }
+            
+            // ==================== SIBELIUS-FIXED MUSICXML EXPORT ====================
+            
+            exportMusicXML() {
+                if (!this.composition) {
+                    showStatus('Please generate a composition first!', 'error');
+                    return;
+                }
+                
+                try {
+                    let xml = this.generateMusicXMLHeader();
+                    xml += this.generatePartList();
+                    
+                    // Generate each part
+                    Object.keys(this.instruments).forEach((inst, index) => {
+                        xml += this.generatePartXML(inst, index + 1);
+                    });
+                    
+                    xml += '</score-partwise>';
+                    
+                    // CRITICAL: Clean XML for Sibelius compatibility
+                    xml = this.cleanMusicXML(xml);
+                    
+                    this.downloadXML(xml);
+                    showStatus('MusicXML exported successfully!', 'success');
+                    
+                } catch (error) {
+                    console.error('Export error:', error);
+                    showStatus(`Export error: ${error.message}`, 'error');
+                }
+            }
+            
+            generateMusicXMLHeader() {
+                return `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">
+<score-partwise version="3.1">
+  <work>
+    <work-title>${this.composition.title}</work-title>
+  </work>
+  <identification>
+    <creator type="composer">Quintet Composer v12.27</creator>
+    <encoding>
+      <software>Quintet Composer v12.27</software>
+      <encoding-date>${new Date().toISOString().split('T')[0]}</encoding-date>
+    </encoding>
+  </identification>`;
+            }
+            
+            generatePartList() {
+                let xml = '  <part-list>\n';
+                Object.keys(this.instruments).forEach((inst, index) => {
+                    xml += `    <score-part id="P${index + 1}">\n`;
+                    xml += `      <part-name>${this.instruments[inst].name}</part-name>\n`;
+                    xml += `    </score-part>\n`;
+                });
+                xml += '  </part-list>\n';
+                return xml;
+            }
+            
+            generatePartXML(instrument, partNumber) {
+                const instData = this.instruments[instrument];
+                const part = this.composition.parts[instrument];
+                let xml = `  <part id="P${partNumber}">\n`;
+                
+                part.forEach((measure, measureIndex) => {
+                    xml += `    <measure number="${measureIndex + 1}">\n`;
+                    
+                    // Add attributes to first measure
+                    if (measureIndex === 0) {
+                        xml += this.generateAttributes(instrument);
+                    }
+                    
+                    // Add notes
+                    measure.forEach(note => {
+                        xml += this.generateNoteXML(note);
+                    });
+                    
+                    xml += '    </measure>\n';
+                });
+                
+                xml += '  </part>\n';
+                return xml;
+            }
+            
+            generateAttributes(instrument) {
+                const instData = this.instruments[instrument];
+                const keyFifths = this.getKeyFifths(this.composition.key);
+                const timeSignature = this.composition.timeSignature;
+                const [beats, beatType] = timeSignature.split('/');
+                
+                return `      <attributes>
+        <divisions>${this.divisions}</divisions>
+        <key>
+          <fifths>${keyFifths}</fifths>
+        </key>
+        <time>
+          <beats>${beats}</beats>
+          <beat-type>${beatType}</beat-type>
+        </time>
+        <clef>
+          <sign>${instData.clef}</sign>
+          <line>${instData.line}</line>
+        </clef>
+      </attributes>\n`;
+            }
+            
+            generateNoteXML(note) {
+                // CRITICAL FIX: Proper XML structure with no stray text
+                let xml = '      <note>\n';
+                
+                if (note.pitch === 'rest') {
+                    xml += '        <rest/>\n';
+                } else {
+                    xml += '        <pitch>\n';
+                    xml += `          <step>${note.pitch}</step>\n`;
+                    xml += `          <octave>${note.octave}</octave>\n`;
+                    xml += '        </pitch>\n';
+                }
+                
+                xml += `        <duration>${note.duration}</duration>\n`;
+                xml += `        <type>${note.type}</type>\n`;
+                xml += '      </note>\n';
+                
+                return xml;
+            }
+            
+            getKeyFifths(key) {
+                const keySignatures = {
+                    'C': 0, 'G': 1, 'D': 2, 'A': 3, 'E': 4, 'B': 5, 'F#': 6,
+                    'F': -1, 'Bb': -2, 'Eb': -3, 'Ab': -4, 'Db': -5, 'Gb': -6,
+                    'Am': 0, 'Em': 1, 'Bm': 2, 'F#m': 3, 'C#m': 4, 'G#m': 5,
+                    'Dm': -1, 'Gm': -2, 'Cm': -3, 'Fm': -4, 'Bbm': -5, 'Ebm': -6
+                };
+                return keySignatures[key] || 0;
+            }
+            
+            // ==================== SIBELIUS COMPATIBILITY FIXES ====================
+            
+            cleanMusicXML(xml) {
+                // Remove all whitespace between tags (CRITICAL for Sibelius)
+                xml = xml.replace(/>\s+</g, '><');
+                
+                // Remove any standalone text content
+                xml = xml.replace(/>[^<]+</g, (match) => {
+                    const text = match.slice(1, -1);
+                    if (text.trim() && !text.includes('<') && !text.includes('>')) {
+                        return '><'; // Remove standalone text
+                    }
+                    return match;
+                });
+                
+                // Ensure proper measure structure
+                xml = xml.replace(/<measure[^>]*>[\s\S]*?<\/measure>/g, (match) => {
+                    // Remove any text content that's not within proper note elements
+                    return match.replace(/>[^<]+</g, (textMatch) => {
+                        const text = textMatch.slice(1, -1);
+                        if (text.trim() && !text.includes('<') && !text.includes('>')) {
+                            return '><'; // Remove standalone text
+                        }
+                        return textMatch;
+                    });
+                });
+                
+                return xml;
+            }
+            
+            downloadXML(xml) {
+                const blob = new Blob([xml], { type: 'application/xml' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `quintet-${Date.now()}.musicxml`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+            
+            exportMIDI() {
+                showStatus('MIDI export coming in next version!', 'info');
+            }
+        }
+        
+        // ==================== GLOBAL FUNCTIONS ====================
+        
+        const composer = new SibeliusFixedComposer();
+        
+        function generateComposition() {
+            composer.generateComposition();
+        }
+        
+        function exportMusicXML() {
+            composer.exportMusicXML();
+        }
+        
+        function exportMIDI() {
+            composer.exportMIDI();
+        }
+        
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+            
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Initialize
+        showStatus('Sibelius Fixed Quintet Composer v12.27 Ready!', 'info');
+    </script>
+</body>
+</html>
+
