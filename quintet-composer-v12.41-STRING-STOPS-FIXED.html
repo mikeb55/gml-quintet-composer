@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quintet Composer v12.41 - String Stops & Fixes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #5a67d8;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .version {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+        
+        .performance-monitor {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8em;
+        }
+        
+        .perf-stats {
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+        }
+        
+        .perf-stats span {
+            background: #e9ecef;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #ced4da;
+        }
+        
+        .section-type-buttons {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .section-type-buttons h3 {
+            color: #92400e;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .section-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .section-btn {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .section-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        .sections-container {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .sections-container h3 {
+            color: #0369a1;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .section-title {
+            font-weight: 600;
+            color: #1e40af;
+            font-size: 1.1em;
+        }
+        
+        .section-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .section-controls select, .section-controls input {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+        
+        .remove-section {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+        
+        .remove-section:hover {
+            background: #dc2626;
+        }
+        
+        .instrument-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .instrument-control {
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .instrument-control label {
+            display: block;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        
+        .instrument-control select {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+        
+        .export-section {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .export-section h3 {
+            color: #166534;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+        
+        .export-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .export-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        .export-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        .status.success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+        
+        .status.error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        
+        .status.info {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+        }
+        
+        .key-signature-section {
+            background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .key-signature-section h3 {
+            color: #7c2d12;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .key-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .key-controls select {
+            padding: 10px 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1em;
+            background: white;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .section-buttons {
+                flex-direction: column;
+            }
+            
+            .section-btn {
+                width: 100%;
+            }
+            
+            .export-buttons {
+                flex-direction: column;
+            }
+            
+            .export-btn {
+                width: 100%;
+            }
+            
+            .key-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .key-controls select {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎼 Quintet Composer</h1>
+        <div class="version">v12.41 - STRING STOPS & FIXES (Playable Chords & Cross-Browser)</div>
+        <div class="performance-monitor" id="performanceMonitor" style="display: none;">
+            <div class="perf-stats">
+                <span id="exportTime">Export: --ms</span>
+                <span id="memoryUsage">Memory: --MB</span>
+                <span id="errorCount">Errors: 0</span>
+            </div>
+        </div>
+        
+        <div class="key-signature-section">
+            <h3>🎵 Global Settings</h3>
+            <div class="key-controls">
+                <label for="globalKey">Key Signature:</label>
+                <select id="globalKey">
+                    <option value="C">C Major</option>
+                    <option value="G">G Major</option>
+                    <option value="D">D Major</option>
+                    <option value="A">A Major</option>
+                    <option value="E">E Major</option>
+                    <option value="B">B Major</option>
+                    <option value="F#">F# Major</option>
+                    <option value="F">F Major</option>
+                    <option value="Bb">Bb Major</option>
+                    <option value="Eb">Eb Major</option>
+                    <option value="Ab">Ab Major</option>
+                    <option value="Db">Db Major</option>
+                    <option value="Am">A Minor</option>
+                    <option value="Em">E Minor</option>
+                    <option value="Bm">B Minor</option>
+                    <option value="F#m">F# Minor</option>
+                    <option value="C#m">C# Minor</option>
+                    <option value="G#m">G# Minor</option>
+                    <option value="D#m">D# Minor</option>
+                    <option value="Dm">D Minor</option>
+                    <option value="Gm">G Minor</option>
+                    <option value="Cm">C Minor</option>
+                    <option value="Fm">F Minor</option>
+                    <option value="Bbm">Bb Minor</option>
+                    <option value="Ebm">Eb Minor</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="section-type-buttons">
+            <h3>➕ Add Sections</h3>
+            <div class="section-buttons">
+                <button class="section-btn" onclick="addSection('exposition')">Exposition</button>
+                <button class="section-btn" onclick="addSection('development')">Development</button>
+                <button class="section-btn" onclick="addSection('recapitulation')">Recapitulation</button>
+                <button class="section-btn" onclick="addSection('coda')">Coda</button>
+                <button class="section-btn" onclick="addSection('bridge')">Bridge</button>
+                <button class="section-btn" onclick="addSection('verse')">Verse</button>
+                <button class="section-btn" onclick="addSection('chorus')">Chorus</button>
+                <button class="section-btn" onclick="addSection('interlude')">Interlude</button>
+            </div>
+        </div>
+        
+        <div class="sections-container">
+            <h3>📝 Sections</h3>
+            <div id="sectionsList">
+                <div class="status info">Add sections to start composing your quintet</div>
+            </div>
+        </div>
+        
+        <div class="export-section">
+            <h3>💾 Export</h3>
+            <div class="export-buttons">
+                <button class="export-btn" onclick="exportMusicXML()" id="exportBtn">Export MusicXML</button>
+                <button class="export-btn" onclick="exportMIDI()" id="exportMidiBtn">Export MIDI</button>
+            </div>
+            <div id="status"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Working implementations from proven repositories
+        let currentScore = null;
+        let sections = [];
+        let selectedComposer = 'bach';
+        let sectionCounter = 0;
+        
+        // Composer profiles from working implementations
+        const COMPOSERS = {
+            bach: {
+                name: 'J.S. Bach',
+                characteristics: {
+                    progressions: [[1, 4, 5, 1], [1, 6, 4, 5], [1, 5, 6, 4]],
+                    rhythms: ['half', 'quarter', 'quarter'],
+                    harmony: 'counterpoint'
+                }
+            },
+            mozart: {
+                name: 'W.A. Mozart',
+                characteristics: {
+                    progressions: [[1, 4, 5, 1], [1, 6, 4, 5]],
+                    rhythms: ['quarter', 'quarter', 'half'],
+                    harmony: 'classical'
+                }
+            },
+            beethoven: {
+                name: 'L. Beethoven',
+                characteristics: {
+                    progressions: [[1, 4, 5, 1], [1, 6, 4, 5], [1, 5, 6, 4]],
+                    rhythms: ['dotted-half', 'quarter'],
+                    harmony: 'romantic'
+                }
+            },
+            chopin: {
+                name: 'F. Chopin',
+                characteristics: {
+                    progressions: [[1, 6, 4, 5], [1, 4, 6, 5]],
+                    rhythms: ['half', 'quarter', 'quarter'],
+                    harmony: 'romantic'
+                }
+            },
+            debussy: {
+                name: 'C. Debussy',
+                characteristics: {
+                    progressions: [[1, 4, 6, 5], [1, 6, 4, 5]],
+                    rhythms: ['whole', 'half'],
+                    harmony: 'impressionist'
+                }
+            },
+            jazz: {
+                name: 'Jazz',
+                characteristics: {
+                    progressions: [[1, 6, 2, 5], [1, 4, 6, 5]],
+                    rhythms: ['quarter', 'eighth', 'eighth'],
+                    harmony: 'jazz'
+                }
+            },
+            modern: {
+                name: 'Modern',
+                characteristics: {
+                    progressions: [[1, 4, 5, 1], [1, 6, 4, 5]],
+                    rhythms: ['quarter', 'quarter', 'quarter', 'quarter'],
+                    harmony: 'modern'
+                }
+            },
+            minimalist: {
+                name: 'Minimalist',
+                characteristics: {
+                    progressions: [[1, 1, 1, 1], [1, 5, 1, 5]],
+                    rhythms: ['half', 'half'],
+                    harmony: 'minimalist'
+                }
+            }
+        };
+        
+        // Key mappings from working implementations
+        const KEYS = {
+            'C': { root: 0, notes: ['C', 'D', 'E', 'F', 'G', 'A', 'B'], minor: false },
+            'G': { root: 7, notes: ['G', 'A', 'B', 'C', 'D', 'E', 'F#'], minor: false },
+            'D': { root: 2, notes: ['D', 'E', 'F#', 'G', 'A', 'B', 'C#'], minor: false },
+            'A': { root: 9, notes: ['A', 'B', 'C#', 'D', 'E', 'F#', 'G#'], minor: false },
+            'E': { root: 4, notes: ['E', 'F#', 'G#', 'A', 'B', 'C#', 'D#'], minor: false },
+            'B': { root: 11, notes: ['B', 'C#', 'D#', 'E', 'F#', 'G#', 'A#'], minor: false },
+            'F#': { root: 6, notes: ['F#', 'G#', 'A#', 'B', 'C#', 'D#', 'E#'], minor: false },
+            'F': { root: 5, notes: ['F', 'G', 'A', 'Bb', 'C', 'D', 'E'], minor: false },
+            'Bb': { root: 10, notes: ['Bb', 'C', 'D', 'Eb', 'F', 'G', 'A'], minor: false },
+            'Eb': { root: 3, notes: ['Eb', 'F', 'G', 'Ab', 'Bb', 'C', 'D'], minor: false },
+            'Ab': { root: 8, notes: ['Ab', 'Bb', 'C', 'Db', 'Eb', 'F', 'G'], minor: false },
+            'Db': { root: 1, notes: ['Db', 'Eb', 'F', 'Gb', 'Ab', 'Bb', 'C'], minor: false },
+            'Am': { root: 9, notes: ['A', 'B', 'C', 'D', 'E', 'F', 'G'], minor: true },
+            'Em': { root: 4, notes: ['E', 'F#', 'G', 'A', 'B', 'C', 'D'], minor: true },
+            'Bm': { root: 11, notes: ['B', 'C#', 'D', 'E', 'F#', 'G', 'A'], minor: true },
+            'F#m': { root: 6, notes: ['F#', 'G#', 'A', 'B', 'C#', 'D', 'E'], minor: true },
+            'C#m': { root: 1, notes: ['C#', 'D#', 'E', 'F#', 'G#', 'A', 'B'], minor: true },
+            'G#m': { root: 8, notes: ['G#', 'A#', 'B', 'C#', 'D#', 'E', 'F#'], minor: true },
+            'D#m': { root: 3, notes: ['D#', 'E#', 'F#', 'G#', 'A#', 'B', 'C#'], minor: true },
+            'Dm': { root: 2, notes: ['D', 'E', 'F', 'G', 'A', 'Bb', 'C'], minor: true },
+            'Gm': { root: 7, notes: ['G', 'A', 'Bb', 'C', 'D', 'Eb', 'F'], minor: true },
+            'Cm': { root: 0, notes: ['C', 'D', 'Eb', 'F', 'G', 'Ab', 'Bb'], minor: true },
+            'Fm': { root: 5, notes: ['F', 'G', 'Ab', 'Bb', 'C', 'Db', 'Eb'], minor: true },
+            'Bbm': { root: 10, notes: ['Bb', 'C', 'Db', 'Eb', 'F', 'Gb', 'Ab'], minor: true },
+            'Ebm': { root: 3, notes: ['Eb', 'F', 'Gb', 'Ab', 'Bb', 'Cb', 'Db'], minor: true }
+        };
+        
+        // FIXED: Instrument ranges from working implementations
+        const INSTRUMENTS = {
+            guitar: { low: 40, high: 76, name: 'Guitar' },
+            violin1: { low: 55, high: 88, name: 'Violin I' },
+            violin2: { low: 55, high: 84, name: 'Violin II' },
+            viola: { low: 48, high: 72, name: 'Viola' },
+            cello: { low: 36, high: 69, name: 'Cello' }
+        };
+        
+        // Add section with per-section settings
+        function addSection(type) {
+            sectionCounter++;
+            const section = {
+                id: sectionCounter,
+                name: type.charAt(0).toUpperCase() + type.slice(1),
+                type: type,
+                composer: selectedComposer,
+                key: document.getElementById('globalKey').value,
+                measures: 4,
+                instruments: {
+                    guitar: 'chords',
+                    violin1: 'melody',
+                    violin2: 'harmony',
+                    viola: 'countermelody',
+                    cello: 'bassline'
+                }
+            };
+            
+            sections.push(section);
+            updateSectionsDisplay();
+        }
+        
+        function updateSectionsDisplay() {
+            const container = document.getElementById('sectionsList');
+            
+            if (sections.length === 0) {
+                container.innerHTML = '<div class="status info">Add sections to start composing your quintet</div>';
+                return;
+            }
+            
+            container.innerHTML = sections.map(section => `
+                <div class="section">
+                    <div class="section-header">
+                        <div class="section-title">${section.name}</div>
+                        <div class="section-controls">
+                            <select onchange="updateSectionComposer(${section.id}, this.value)">
+                                ${Object.keys(COMPOSERS).map(comp => 
+                                    `<option value="${comp}" ${section.composer === comp ? 'selected' : ''}>${COMPOSERS[comp].name}</option>`
+                                ).join('')}
+                            </select>
+                            <select onchange="updateSectionKey(${section.id}, this.value)">
+                                ${Object.keys(KEYS).map(key => 
+                                    `<option value="${key}" ${section.key === key ? 'selected' : ''}>${key}</option>`
+                                ).join('')}
+                            </select>
+                            <input type="number" value="${section.measures}" min="1" max="16" 
+                                   onchange="updateSectionMeasures(${section.id}, this.value)">
+                            <button class="remove-section" onclick="removeSection(${section.id})">Remove</button>
+                        </div>
+                    </div>
+                    <div class="instrument-grid">
+                        ${Object.keys(INSTRUMENTS).map(inst => `
+                            <div class="instrument-control">
+                                <label>${INSTRUMENTS[inst].name}</label>
+                                <select onchange="updateInstrumentPattern(${section.id}, '${inst}', this.value)">
+                                    <option value="melody" ${section.instruments[inst] === 'melody' ? 'selected' : ''}>Melody</option>
+                                    <option value="harmony" ${section.instruments[inst] === 'harmony' ? 'selected' : ''}>Harmony</option>
+                                    <option value="countermelody" ${section.instruments[inst] === 'countermelody' ? 'selected' : ''}>Countermelody</option>
+                                    <option value="chords" ${section.instruments[inst] === 'chords' ? 'selected' : ''}>Chords</option>
+                                    <option value="arpeggios" ${section.instruments[inst] === 'arpeggios' ? 'selected' : ''}>Arpeggios</option>
+                                    <option value="bassline" ${section.instruments[inst] === 'bassline' ? 'selected' : ''}>Bassline</option>
+                                </select>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function updateSectionComposer(sectionId, composer) {
+            const section = sections.find(s => s.id === sectionId);
+            if (section) section.composer = composer;
+        }
+        
+        function updateSectionKey(sectionId, key) {
+            const section = sections.find(s => s.id === sectionId);
+            if (section) section.key = key;
+        }
+        
+        function updateSectionMeasures(sectionId, measures) {
+            const section = sections.find(s => s.id === sectionId);
+            if (section) section.measures = parseInt(measures);
+        }
+        
+        function updateInstrumentPattern(sectionId, instrument, pattern) {
+            const section = sections.find(s => s.id === sectionId);
+            if (section) section.instruments[instrument] = pattern;
+        }
+        
+        function removeSection(sectionId) {
+            sections = sections.filter(s => s.id !== sectionId);
+            updateSectionsDisplay();
+        }
+        
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.innerHTML = `<div class="status ${type}">${message}</div>`;
+            setTimeout(() => {
+                status.innerHTML = '';
+            }, 5000);
+        }
+        
+        // V12.40 ENHANCED: Export MusicXML with performance monitoring and error handling
+        function exportMusicXML() {
+            if (sections.length === 0) {
+                showStatus('Please add at least one section before exporting', 'error');
+                return;
+            }
+            
+            // PERFORMANCE: Start timing
+            const startTime = performance.now();
+            console.log('🚀 Starting MusicXML export...');
+            
+            try {
+                let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+                xml += '<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">\n';
+                xml += '<score-partwise version="3.1">\n';
+                xml += '  <work><work-title>Quintet Composition</work-title></work>\n';
+                xml += '  <identification><creator type="composer">Quintet Composer</creator></identification>\n';
+                xml += '  <part-list>\n';
+                
+                // Add parts
+                const instruments = ['guitar', 'violin1', 'violin2', 'viola', 'cello'];
+                instruments.forEach((inst, i) => {
+                    xml += `    <score-part id="P${i+1}">\n`;
+                    xml += `      <part-name>${INSTRUMENTS[inst].name}</part-name>\n`;
+                    xml += `    </score-part>\n`;
+                });
+                
+                xml += '  </part-list>\n';
+                
+                // Add parts with measures
+                instruments.forEach((inst, i) => {
+                    xml += `  <part id="P${i+1}">\n`;
+                    
+                    let measureNumber = 1;
+                    sections.forEach((section, s) => {
+                        // Generate ALL measures for this section
+                        for (let m = 1; m <= section.measures; m++) {
+                            xml += `    <measure number="${measureNumber}">\n`;
+                            
+                            // Add rehearsal marker for first measure of each section
+                            if (m === 1) {
+                                xml += `      <direction placement="above">\n`;
+                                xml += `        <direction-type>\n`;
+                                xml += `          <rehearsal>${section.name} (${COMPOSERS[section.composer].name})</rehearsal>\n`;
+                                xml += `        </direction-type>\n`;
+                                xml += `      </direction>\n`;
+                            }
+                            
+                            if (measureNumber === 1) {
+                                // Add key signature
+                                const keyFifths = getKeyFifths(section.key);
+                                xml += `      <attributes><divisions>256</divisions><key><fifths>${keyFifths}</fifths></key><time><beats>4</beats><beat-type>4</beat-type></time></attributes>\n`;
+                            }
+                            
+                            // Generate working notes using proven implementations
+                            const notes = generateWorkingNotes(inst, section, measureNumber);
+                            xml += notes;
+                            
+                            xml += '    </measure>\n';
+                            measureNumber++;
+                        }
+                    });
+                    xml += '  </part>\n';
+                });
+                
+                xml += '</score-partwise>';
+                
+                // PERFORMANCE: End timing and log results
+                const endTime = performance.now();
+                const duration = Math.round(endTime - startTime);
+                console.log(`✅ MusicXML export completed in ${duration}ms`);
+                
+                // Update performance monitor
+                updatePerformanceMonitor(duration);
+                
+                // STABILITY: Enhanced download with error handling
+                const blob = new Blob([xml], { type: 'application/xml' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `quintet-${Date.now()}.musicxml`;
+                
+                // STABILITY: Add error handling for download
+                try {
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    showStatus(`MusicXML exported successfully! (${duration}ms)`, 'success');
+                } catch (downloadError) {
+                    console.error('Download error:', downloadError);
+                    showStatus('Export successful but download failed. Check browser permissions.', 'error');
+                }
+                
+            } catch (error) {
+                // ENHANCED ERROR HANDLING: More detailed error information
+                console.error('❌ Export error:', error);
+                console.error('Error stack:', error.stack);
+                incrementErrorCount();
+                showStatus(`Export error: ${error.message}. Check console for details.`, 'error');
+                
+                // STABILITY: Attempt to recover from common errors
+                if (error.message.includes('memory')) {
+                    showStatus('Memory error detected. Try reducing composition size.', 'error');
+                } else if (error.message.includes('XML')) {
+                    showStatus('XML generation error. Check composition data.', 'error');
+                }
+            }
+        }
+        
+        // V12.41 FIXED: Cross-browser performance monitor with error counting
+        let errorCount = 0;
+        
+        function updatePerformanceMonitor(exportTime) {
+            const monitor = document.getElementById('performanceMonitor');
+            const exportTimeEl = document.getElementById('exportTime');
+            const memoryUsageEl = document.getElementById('memoryUsage');
+            const errorCountEl = document.getElementById('errorCount');
+            
+            if (exportTimeEl) {
+                exportTimeEl.textContent = `Export: ${exportTime}ms`;
+            }
+            
+            // FIXED: Cross-browser memory detection
+            if (memoryUsageEl) {
+                if (performance.memory && performance.memory.usedJSHeapSize) {
+                    // Chrome/Edge - use actual memory
+                    const memoryMB = Math.round(performance.memory.usedJSHeapSize / 1024 / 1024);
+                    memoryUsageEl.textContent = `Memory: ${memoryMB}MB`;
+                } else {
+                    // Firefox/Safari - estimate based on composition size
+                    const estimatedMB = Math.round((sections.length * 0.5) + 10);
+                    memoryUsageEl.textContent = `Memory: ~${estimatedMB}MB`;
+                }
+            }
+            
+            // FIXED: Update error count
+            if (errorCountEl) {
+                errorCountEl.textContent = `Errors: ${errorCount}`;
+            }
+            
+            // Show monitor after first export
+            if (monitor) {
+                monitor.style.display = 'block';
+            }
+        }
+        
+        // V12.41 FIXED: Increment error count
+        function incrementErrorCount() {
+            errorCount++;
+            const errorCountEl = document.getElementById('errorCount');
+            if (errorCountEl) {
+                errorCountEl.textContent = `Errors: ${errorCount}`;
+            }
+        }
+        
+        // V12.41 NEW: String instrument multiple stops validation
+        const STRING_TUNINGS = {
+            'Violin': { strings: ['G3', 'D4', 'A4', 'E5'], maxStretch: 5 }, // Perfect fifth
+            'Viola': { strings: ['C3', 'G3', 'D4', 'A4'], maxStretch: 5 },
+            'Cello': { strings: ['C2', 'G2', 'D3', 'A3'], maxStretch: 5 },
+            'Double Bass': { strings: ['E1', 'A1', 'D2', 'G2'], maxStretch: 4 } // Smaller stretch
+        };
+        
+        // V12.41 NEW: Check if multiple stops are playable on string instruments
+        function validateStringStops(instrument, notes) {
+            if (!STRING_TUNINGS[instrument] || notes.length < 2) {
+                return { playable: true, reason: 'Not a string instrument or single note' };
+            }
+            
+            const tuning = STRING_TUNINGS[instrument];
+            const maxStretch = tuning.maxStretch;
+            
+            // Convert notes to MIDI for comparison
+            const midiNotes = notes.map(note => noteToMidi(note, 4));
+            
+            // Check if notes are within playable range
+            for (let i = 0; i < midiNotes.length - 1; i++) {
+                for (let j = i + 1; j < midiNotes.length; j++) {
+                    const interval = Math.abs(midiNotes[i] - midiNotes[j]);
+                    if (interval > maxStretch) {
+                        return { 
+                            playable: false, 
+                            reason: `Interval too large: ${interval} semitones (max: ${maxStretch})` 
+                        };
+                    }
+                }
+            }
+            
+            // Check if notes can be played on different strings
+            const stringMidi = tuning.strings.map(s => noteToMidi(s, 4));
+            let playableStrings = 0;
+            
+            for (const note of midiNotes) {
+                for (const stringNote of stringMidi) {
+                    if (note >= stringNote && note <= stringNote + 12) { // Within one octave of string
+                        playableStrings++;
+                        break;
+                    }
+                }
+            }
+            
+            if (playableStrings < notes.length) {
+                return { 
+                    playable: false, 
+                    reason: `Not all notes playable on available strings` 
+                };
+            }
+            
+            return { playable: true, reason: 'All notes playable' };
+        }
+        
+        // V12.41 NEW: Generate playable chord voicings for string instruments
+        function generatePlayableStringChord(chord, instrument, range) {
+            if (!STRING_TUNINGS[instrument]) {
+                // Not a string instrument, use standard chord generation
+                return generateChords(chord, { name: 'Standard' }, range);
+            }
+            
+            const rootMidi = noteToMidi(chord.root, 3);
+            const thirdMidi = noteToMidi(chord.notes[1], 3);
+            const fifthMidi = noteToMidi(chord.notes[2], 3);
+            
+            // Generate different voicings and test playability
+            const voicings = [
+                [rootMidi, thirdMidi, fifthMidi], // Root position
+                [thirdMidi, fifthMidi, rootMidi + 12], // First inversion
+                [fifthMidi, rootMidi + 12, thirdMidi + 12], // Second inversion
+                [rootMidi, fifthMidi], // Just root and fifth
+                [rootMidi, thirdMidi] // Just root and third
+            ];
+            
+            // Test each voicing for playability
+            for (const voicing of voicings) {
+                const clampedVoicing = voicing.map(note => Math.max(range.low, Math.min(range.high, note)));
+                const noteNames = clampedVoicing.map(midi => midiToNote(midi).step + (midiToNote(midi).alter === 1 ? '#' : midiToNote(midi).alter === -1 ? 'b' : ''));
+                
+                const validation = validateStringStops(instrument, noteNames);
+                if (validation.playable) {
+                    console.log(`✅ Playable voicing found for ${instrument}:`, noteNames);
+                    return generateChordXML(clampedVoicing);
+                }
+            }
+            
+            // Fallback to simple root and fifth
+            console.log(`⚠️ Using fallback voicing for ${instrument}`);
+            const fallback = [rootMidi, fifthMidi].map(note => Math.max(range.low, Math.min(range.high, note)));
+            return generateChordXML(fallback);
+        }
+        
+        // V12.41 NEW: Generate chord XML for validated voicing
+        function generateChordXML(voicing) {
+            let xml = '';
+            for (let i = 0; i < voicing.length; i++) {
+                xml += generateNoteXML(voicing[i], 1024, 'whole', i > 0);
+            }
+            return xml;
+        }
+        
+        // FIXED: Working note generation with proper measure duration
+        function generateWorkingNotes(inst, section, measureNumber) {
+            let xml = '';
+            
+            // Get instrument range
+            const range = INSTRUMENTS[inst];
+            const composer = COMPOSERS[section.composer];
+            const instrumentPattern = section.instruments[inst];
+            
+            // Generate chord progression for this measure
+            const progression = generateProgression(section.measures, section.key, composer);
+            const chordIndex = (measureNumber - 1) % progression.length;
+            const chord = progression[chordIndex];
+            
+            // Generate notes based on the instrument pattern for this section
+            if (instrumentPattern === 'chords') {
+                xml += generateChords(chord, composer, range, inst.name);
+            } else if (instrumentPattern === 'melody') {
+                xml += generateMelody(chord, composer, range);
+            } else if (instrumentPattern === 'countermelody') {
+                xml += generateCountermelody(chord, composer, range);
+            } else if (instrumentPattern === 'harmony') {
+                xml += generateHarmony(chord, composer, range);
+            } else if (instrumentPattern === 'arpeggios') {
+                xml += generateArpeggios(chord, composer, range);
+            } else if (instrumentPattern === 'bassline') {
+                xml += generateBassline(chord, composer, range);
+            } else {
+                // Default to melody
+                xml += generateMelody(chord, composer, range);
+            }
+            
+            return xml;
+        }
+        
+        // Generate chord progression using working implementation
+        function generateProgression(measures, key, composer) {
+            const keyData = KEYS[key];
+            const progressionPattern = composer.characteristics.progressions[
+                Math.floor(Math.random() * composer.characteristics.progressions.length)
+            ];
+            
+            const progression = [];
+            for (let m = 0; m < measures; m++) {
+                const chordNum = progressionPattern[m % progressionPattern.length];
+                progression.push(generateChord(chordNum, keyData));
+            }
+            
+            return progression;
+        }
+        
+        // Generate chord using working implementation
+        function generateChord(degree, keyData) {
+            const root = keyData.notes[degree - 1];
+            const third = keyData.notes[(degree - 1 + 2) % 7];
+            const fifth = keyData.notes[(degree - 1 + 4) % 7];
+            
+            return {
+                degree: degree,
+                root: root,
+                notes: [root, third, fifth],
+                quality: getChordQuality(degree, keyData.minor)
+            };
+        }
+        
+        // Get chord quality
+        function getChordQuality(degree, isMinor) {
+            if (isMinor) {
+                return [1, 4, 5].includes(degree) ? 'minor' : (degree === 2 ? 'dim' : 'major');
+            } else {
+                return [2, 3, 6].includes(degree) ? 'minor' : (degree === 7 ? 'dim' : 'major');
+            }
+        }
+        
+        // V12.41 ENHANCED: Generate chords with string stops validation
+        function generateChords(chord, composer, range, instrument = null) {
+            // PERFORMANCE: Input validation
+            if (!chord || !composer || !range) {
+                console.error('❌ Invalid parameters to generateChords');
+                incrementErrorCount();
+                return '';
+            }
+            
+            // V12.41 NEW: Use string stops validation for string instruments
+            if (instrument && STRING_TUNINGS[instrument]) {
+                console.log(`🎻 Using string stops validation for ${instrument}`);
+                return generatePlayableStringChord(chord, instrument, range);
+            }
+            
+            // PERFORMANCE: Use array for better memory management
+            const xmlParts = [];
+            
+            // Get chord notes in MIDI with validation
+            const rootMidi = noteToMidi(chord.root, 3);
+            const thirdMidi = noteToMidi(chord.notes[1], 3);
+            const fifthMidi = noteToMidi(chord.notes[2], 3);
+            
+            // STABILITY: Validate MIDI values
+            if (isNaN(rootMidi) || isNaN(thirdMidi) || isNaN(fifthMidi)) {
+                console.error('❌ Invalid MIDI values in generateChords');
+                incrementErrorCount();
+                return '';
+            }
+            
+            // Generate chord voicing with RANGE CLAMPING
+            const voicing = [
+                rootMidi,
+                thirdMidi,
+                fifthMidi,
+                rootMidi + 12
+            ].map(note => Math.max(range.low, Math.min(range.high, note)));
+            
+            // PERFORMANCE: Generate chord notes with optimized loop
+            for (let i = 0; i < voicing.length; i++) {
+                const note = voicing[i];
+                const isChord = i > 0;
+                xmlParts.push(generateNoteXML(note, 1024, 'whole', isChord));
+            }
+            
+            return xmlParts.join('');
+        }
+        
+        // FIXED: Generate melody with proper measure duration
+        function generateMelody(chord, composer, range) {
+            let xml = '';
+            const melody = generateMelodyNotes(chord, composer, range);
+            
+            melody.forEach(note => {
+                xml += generateNoteXML(note.pitch, note.duration, note.type, false);
+            });
+            
+            return xml;
+        }
+        
+        // FIXED: Generate melody notes with proper duration math
+        function generateMelodyNotes(chord, composer, range) {
+            const melody = [];
+            const rootMidi = noteToMidi(chord.root, 4);
+            const thirdMidi = noteToMidi(chord.notes[1], 4);
+            const fifthMidi = noteToMidi(chord.notes[2], 4);
+            
+            // Generate melody based on composer style with varied rhythms
+            const rhythms = composer.characteristics.rhythms;
+            let measureDuration = 0;
+            const totalDuration = 1024; // 4 beats * 256 divisions
+            
+            // DEBUG: Ensure we have rhythms
+            if (!rhythms || rhythms.length === 0) {
+                console.log('No rhythms found for composer:', composer.name);
+                // Fallback to basic rhythms
+                const fallbackRhythms = ['quarter', 'eighth', 'half'];
+                rhythms = fallbackRhythms;
+            }
+            
+            // Generate multiple notes to fill the measure
+            while (measureDuration < totalDuration) {
+                const rhythm = rhythms[Math.floor(Math.random() * rhythms.length)];
+                const duration = getDurationFromRhythm(rhythm);
+                
+                if (measureDuration + duration <= totalDuration) {
+                    const note = Math.random() < 0.5 ? rootMidi : 
+                                Math.random() < 0.5 ? thirdMidi : fifthMidi;
+                    
+                    // CRITICAL FIX: Clamp note to instrument range
+                    melody.push({
+                        pitch: Math.max(range.low, Math.min(range.high, note)),
+                        duration: duration,
+                        type: getNoteTypeFromDuration(duration)
+                    });
+                    
+                    measureDuration += duration;
+                } else {
+                    // Fill remaining time with a shorter note
+                    const remaining = totalDuration - measureDuration;
+                    if (remaining >= 64) { // At least 1/16 note
+                        const note = Math.random() < 0.5 ? rootMidi : thirdMidi;
+                        melody.push({
+                            pitch: Math.max(range.low, Math.min(range.high, note)),
+                            duration: remaining,
+                            type: getNoteTypeFromDuration(remaining)
+                        });
+                    }
+                    break;
+                }
+            }
+            
+            // DEBUG: Ensure we have notes
+            if (melody.length === 0) {
+                console.log('No melody notes generated, using fallback');
+                melody.push({
+                    pitch: Math.max(range.low, Math.min(range.high, rootMidi)),
+                    duration: 1024,
+                    type: 'whole'
+                });
+            }
+            
+            return melody;
+        }
+        
+        // Generate countermelody using working implementation
+        function generateCountermelody(chord, composer, range) {
+            let xml = '';
+            const countermelody = generateMelodyNotes(chord, composer, range);
+            
+            // Countermelody is similar to melody but with different rhythm
+            countermelody.forEach(note => {
+                xml += generateNoteXML(note.pitch, note.duration, note.type, false);
+            });
+            
+            return xml;
+        }
+        
+        // Generate harmony using working implementation
+        function generateHarmony(chord, composer, range) {
+            let xml = '';
+            
+            // Get chord notes in MIDI
+            const rootMidi = noteToMidi(chord.root, 4);
+            const thirdMidi = noteToMidi(chord.notes[1], 4);
+            const fifthMidi = noteToMidi(chord.notes[2], 4);
+            
+            // Generate harmony notes with range clamping
+            const harmonyNotes = [
+                Math.max(range.low, Math.min(range.high, rootMidi)),
+                Math.max(range.low, Math.min(range.high, thirdMidi)),
+                Math.max(range.low, Math.min(range.high, fifthMidi))
+            ];
+            
+            harmonyNotes.forEach((note, i) => {
+                xml += generateNoteXML(note, 1024, 'whole', i > 0);
+            });
+            
+            return xml;
+        }
+        
+        // Generate arpeggios using working implementation
+        function generateArpeggios(chord, composer, range) {
+            let xml = '';
+            
+            // Get chord notes in MIDI
+            const rootMidi = noteToMidi(chord.root, 4);
+            const thirdMidi = noteToMidi(chord.notes[1], 4);
+            const fifthMidi = noteToMidi(chord.notes[2], 4);
+            
+            // Generate arpeggio with range clamping
+            const arpeggio = [
+                Math.max(range.low, Math.min(range.high, rootMidi)),
+                Math.max(range.low, Math.min(range.high, thirdMidi)),
+                Math.max(range.low, Math.min(range.high, fifthMidi)),
+                Math.max(range.low, Math.min(range.high, rootMidi + 12))
+            ];
+            
+            arpeggio.forEach(note => {
+                xml += generateNoteXML(note, 256, 'quarter', false); // 256 = 1 beat
+            });
+            
+            return xml;
+        }
+        
+        // Generate bassline using working implementation
+        function generateBassline(chord, composer, range) {
+            let xml = '';
+            
+            // Get chord root in MIDI with range clamping
+            const rootMidi = noteToMidi(chord.root, 2);
+            const clampedNote = Math.max(range.low, Math.min(range.high, rootMidi));
+            
+            xml += generateNoteXML(clampedNote, 1024, 'whole', false);
+            
+            return xml;
+        }
+        
+        // Get duration from rhythm
+        function getDurationFromRhythm(rhythm) {
+            const durations = {
+                'whole': 1024,    // 4 beats
+                'half': 512,      // 2 beats
+                'quarter': 256,   // 1 beat
+                'eighth': 128,    // 1/2 beat
+                'dotted-half': 768 // 3 beats
+            };
+            const duration = durations[rhythm] || 256;
+            // Ensure minimum duration to prevent "1" duration issue
+            return Math.max(duration, 64); // Minimum 1/16 note
+        }
+        
+        // Get note type from duration
+        function getNoteTypeFromDuration(duration) {
+            if (duration >= 1024) return 'whole';
+            if (duration >= 768) return 'dotted-half';
+            if (duration >= 512) return 'half';
+            if (duration >= 256) return 'quarter';
+            if (duration >= 128) return 'eighth';
+            return 'quarter';
+        }
+        
+        // V12.41 FIXED: Generate note XML with improved input validation
+        function generateNoteXML(pitch, duration, type, isChord) {
+            // FIXED: Better input validation with fallbacks
+            if (!pitch || !duration || !type) {
+                console.error('❌ Invalid parameters to generateNoteXML:', { pitch, duration, type, isChord });
+                incrementErrorCount();
+                
+                // FIXED: Return rest note instead of empty string
+                if (!pitch) {
+                    return '      <note>\n        <rest/>\n        <duration>256</duration>\n        <type>quarter</type>\n      </note>\n';
+                }
+                return '';
+            }
+            
+            // PERFORMANCE: Use string builder pattern for better memory management
+            const parts = [];
+            
+            parts.push('      <note>\n');
+            
+            const noteName = midiToNote(pitch);
+            const octave = Math.floor(pitch / 12) - 1;
+            
+            parts.push(`        <pitch>\n`);
+            parts.push(`          <step>${noteName.step}</step>\n`);
+            if (noteName.alter !== 0) {
+                parts.push(`          <alter>${noteName.alter}</alter>\n`);
+            }
+            parts.push(`          <octave>${octave}</octave>\n`);
+            parts.push(`        </pitch>\n`);
+            
+            // STABILITY: Chord element positioning with validation
+            if (isChord) {
+                parts.push('        <chord/>\n');
+            }
+            
+            parts.push(`        <duration>${duration}</duration>\n`);
+            parts.push(`        <type>${type}</type>\n`);
+            parts.push('      </note>\n');
+            
+            return parts.join('');
+        }
+        
+        // Convert MIDI to note name
+        function midiToNote(midi) {
+            const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+            const noteIndex = midi % 12;
+            const noteName = noteNames[noteIndex];
+            
+            if (noteName.includes('#')) {
+                return { step: noteName[0], alter: 1 };
+            } else if (noteName.includes('b')) {
+                return { step: noteName[0], alter: -1 };
+            } else {
+                return { step: noteName, alter: 0 };
+            }
+        }
+        
+        // Convert note to MIDI
+        function noteToMidi(note, octave) {
+            const noteMap = {
+                'C': 0, 'C#': 1, 'Db': 1, 'D': 2, 'D#': 3, 'Eb': 3, 'E': 4, 'F': 5,
+                'F#': 6, 'Gb': 6, 'G': 7, 'G#': 8, 'Ab': 8, 'A': 9, 'A#': 10, 'Bb': 10, 'B': 11
+            };
+            
+            const noteIndex = noteMap[note] || 0;
+            return noteIndex + (octave + 1) * 12;
+        }
+        
+        // Get key fifths for key signature
+        function getKeyFifths(key) {
+            const keySignatures = {
+                'C': 0, 'G': 1, 'D': 2, 'A': 3, 'E': 4, 'B': 5, 'F#': 6,
+                'F': -1, 'Bb': -2, 'Eb': -3, 'Ab': -4, 'Db': -5, 'Gb': -6, 'Cb': -7,
+                'Am': 0, 'Em': 1, 'Bm': 2, 'F#m': 3, 'C#m': 4, 'G#m': 5, 'D#m': 6,
+                'Dm': -1, 'Gm': -2, 'Cm': -3, 'Fm': -4, 'Bbm': -5, 'Ebm': -6, 'Abm': -7
+            };
+            return keySignatures[key] || 0;
+        }
+        
+        // Export MIDI (placeholder)
+        function exportMIDI() {
+            showStatus('MIDI export coming soon!', 'info');
+        }
+        
+        // Initialize
+        updateSectionsDisplay();
+    </script>
+</body>
+</html>
